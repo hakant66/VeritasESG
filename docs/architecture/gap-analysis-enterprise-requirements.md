@@ -1,4 +1,4 @@
-# Gap Analysis: GovernanceIQ vs. Enterprise Sustainability Data Infrastructure Requirements
+# Gap Analysis: VeritasESG vs. Enterprise Sustainability Data Infrastructure Requirements
 
 **Date:** 2026-05-31  
 **Scope:** CSRD/ESRS · IFRS S1/S2 · EU Taxonomy  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-GovernanceIQ today is a **consultancy engagement-management and structured survey-collection platform**. It is architecturally a questionnaire tool, not a regulatory data-infrastructure engine. The target requirements describe a fundamentally different system: a single-ingestion measurement platform with versioned emission-factor-driven calculations, a cross-framework semantic graph, an immutable lineage-bearing compliance ledger, and machine-readable iXBRL output.
+VeritasESG today is a **consultancy engagement-management and structured survey-collection platform**. It is architecturally a questionnaire tool, not a regulatory data-infrastructure engine. The target requirements describe a fundamentally different system: a single-ingestion measurement platform with versioned emission-factor-driven calculations, a cross-framework semantic graph, an immutable lineage-bearing compliance ledger, and machine-readable iXBRL output.
 
 **Five of the eight requirement domains are Critical gaps** requiring greenfield builds. Three domains have meaningful partial foundations. The existing survey/workflow/auth/CRM half of the platform is evolvable; the measurement → calculation → framework-mapping → ledger → digital-reporting half must be built from scratch on a different substrate.
 
@@ -29,7 +29,7 @@ GovernanceIQ today is a **consultancy engagement-management and structured surve
 
 ## 1. Current Platform Capabilities
 
-GovernanceIQ today does five things well:
+VeritasESG today does five things well:
 
 1. **Client and engagement management.** Maintains a directory of customer organisations (`Customer`, `Branch`, `Contact`) and runs reporting projects (`Project`) against them from reusable templates (`Template` → `TemplatePage` → `Question`). Routes: `CustomersPage`, `ProjectsPage`, `ProjectDetailPage`, `CustomerSectorsPage`.
 
@@ -314,7 +314,7 @@ Despite the breadth of gaps, the following existing capabilities meaningfully de
 
 ## 8. Bottom Line
 
-GovernanceIQ is a **survey-collection and engagement-workflow platform** with surprisingly mature ESG-adjacent data fields and audit primitives. The target requires three things the platform fundamentally lacks:
+VeritasESG is a **survey-collection and engagement-workflow platform** with surprisingly mature ESG-adjacent data fields and audit primitives. The target requires three things the platform fundamentally lacks:
 
 1. A **raw-metric data layer** that captures measurements once at source.
 2. A **calculation and cross-framework mapping engine** that derives disclosure values from those metrics using versioned emission-factor libraries.

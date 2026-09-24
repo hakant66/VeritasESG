@@ -132,9 +132,9 @@ function NumberedList({ items }: { items: string[] }) {
 function StepWelcome() {
   return (
     <div className="space-y-5">
-      <SectionTitle>GovernanceIQ — roller ve özellikler rehberi</SectionTitle>
+      <SectionTitle>VeritasESG — roller ve özellikler rehberi</SectionTitle>
       <SectionLead>
-        GovernanceIQ, danışmanlık firmaları için sürdürülebilirlik ve yönetişim
+        VeritasESG, danışmanlık firmaları için sürdürülebilirlik ve yönetişim
         raporlama platformudur. Döngünün tamamını kapsar: firma dizini → sektör
         şablonları → raporlama projeleri → yapılandırılmış veri toplama → inceleme,
         önemlilik ve isteğe bağlı yapay zeka destekli bilgi sohbeti.
@@ -859,7 +859,7 @@ export default function PlatformGuidePage() {
               </span>
             </div>
             <h1 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-900">
-              GovernanceIQ sunumu
+              VeritasESG sunumu
             </h1>
             <p className="mt-1 text-sm text-slate-500">
               Roller, özellikler ve yenilikler — adım adım Türkçe rehber

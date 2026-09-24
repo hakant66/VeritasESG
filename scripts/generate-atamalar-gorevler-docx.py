@@ -89,14 +89,14 @@ def build_document() -> Document:
     set_default_font(doc)
 
     today = date.today().strftime("%d.%m.%Y")
-    add_title(doc, "GovernanceIQ")
+    add_title(doc, "VeritasESG")
     add_title(doc, "Atamalar ve Görevler Akışı")
     add_subtitle(doc, f"Teknik ve kullanıcı dokümantasyonu — {today}")
     doc.add_paragraph()
 
     add_para(
         doc,
-        "Bu belge, GovernanceIQ platformunda proje sorularının kişilere atanması, "
+        "Bu belge, VeritasESG platformunda proje sorularının kişilere atanması, "
         "açık atama yönetimi, e-posta ile resmî görev iletimi ve "
         "«Atamalar ve Görevler» (#/tasks) sayfasındaki yanıt akışını adım adım açıklar.",
     )
@@ -435,7 +435,7 @@ def build_document() -> Document:
     add_h1(doc, "11. Sürüm Notu")
     add_para(
         doc,
-        f"Bu doküman {today} tarihinde GovernanceIQ kod tabanından üretilmiştir. "
+        f"Bu doküman {today} tarihinde VeritasESG kod tabanından üretilmiştir. "
         "Alıcı satırında e-posta gösterimi, AI ile doldur (RAG) ve açık atama tooltip "
         "metinleri bu sürümde mevcuttur.",
     )

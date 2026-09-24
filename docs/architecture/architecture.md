@@ -1,4 +1,4 @@
-# GovernanceIQ — Architecture Analysis
+# VeritasESG — Architecture Analysis
 
 **Generated:** 2026-05-30  
 **Status:** Active — see roadmap for prioritized action items.
@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-This document records the findings of a systematic architectural review of GovernanceIQ. It identifies 14 issues ranked by severity and effort, provides Architecture Decision Records (ADRs) for the 7 most impactful improvements, and a 3-phase roadmap.
+This document records the findings of a systematic architectural review of VeritasESG. It identifies 14 issues ranked by severity and effort, provides Architecture Decision Records (ADRs) for the 7 most impactful improvements, and a 3-phase roadmap.
 
 Two corrections to preliminary assumptions confirmed during review:
 - The "3-copy" platform-role duplication is actually **1 re-export + 1 true duplicate**: `src/lib/platformRoles.ts` re-exports `lib/platformRoles.ts` (no drift risk). The only real duplicate is the hand-typed `PLATFORM_USER_ROLE_ENUM` in `server/models/index.ts:41-48`.

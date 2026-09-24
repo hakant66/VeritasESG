@@ -50,4 +50,4 @@ Tracked as migration leftovers L1–L8 in the plan; cleanup was **Phase 8**, exe
 
 ## Repository context
 
-This repo was cloned from `governanceiq` to pursue the SQL migration while keeping Mongo operational during transition. That transition is over — the clone is now the Postgres-only mainline, and MongoDB is not present in it at all.
+This repo was cloned from `veritasesg` to pursue the SQL migration while keeping Mongo operational during transition. That transition is over — the clone is now the Postgres-only mainline, and MongoDB is not present in it at all.

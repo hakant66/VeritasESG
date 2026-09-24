@@ -1,8 +1,8 @@
-# GovernanceIQ Complete System Workflow & Architecture
+# VeritasESG Complete System Workflow & Architecture
 
 ## Executive Summary
 
-GovernanceIQ is an integrated sustainability reporting platform that coordinates materiality assessment, data collection, standardized reporting, and compliance tracking. This document maps the complete workflow ecosystem, component interactions, data flows, and identifies gaps where enhancements based on IFRS S1/S2, GRI, and ESG frameworks can strengthen the platform.
+VeritasESG is an integrated sustainability reporting platform that coordinates materiality assessment, data collection, standardized reporting, and compliance tracking. This document maps the complete workflow ecosystem, component interactions, data flows, and identifies gaps where enhancements based on IFRS S1/S2, GRI, and ESG frameworks can strengthen the platform.
 
 ---
 
@@ -2354,7 +2354,7 @@ CSRD/IFRS S2 Compliance:
 
 ## Conclusion
 
-GovernanceIQ is a well-architected sustainability platform with strong foundations in project management, materiality assessment, and emissions tracking. The recommended enhancements position it to become the leading integrated platform for IFRS S1/S2, GRI, ESRS, and TCFD compliance.
+VeritasESG is a well-architected sustainability platform with strong foundations in project management, materiality assessment, and emissions tracking. The recommended enhancements position it to become the leading integrated platform for IFRS S1/S2, GRI, ESRS, and TCFD compliance.
 
 **Key Strategic Priorities:**
 1. **Framework Alignment** — Ensure every answer maps to required disclosures

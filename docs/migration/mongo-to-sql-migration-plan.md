@@ -1,4 +1,4 @@
-# GovernanceIQ — MongoDB → Relational (MySQL / PostgreSQL) Migration Plan
+# VeritasESG — MongoDB → Relational (MySQL / PostgreSQL) Migration Plan
 
 > **Status: EXECUTED AND COMPLETE.** This document is the original proposal, retained as the design record for the migration. It has been delivered: the app runs on PostgreSQL via Prisma, Mongoose and MongoDB are removed from the codebase, and the `DB_DRIVER` flag described throughout is gone. **Read the tenses below as history, not as a to-do list.** See the [completion summary](#15-completion-summary-what-actually-shipped) at the end for what deviated from the plan.
 >
@@ -26,7 +26,7 @@ The open questions in §14 have been decided. This section overrides any conflic
 
 ## 1. Executive summary
 
-GovernanceIQ is a React 19 + Vite SPA backed by an Express + **MongoDB (Mongoose 9)** API, with **Qdrant** (vector search), **Redis/BullMQ** (KB ingest queue), **S3/MinIO** (file storage) and **Resend** (email). The data model has **45 collections** and the app was previously migrated **Firebase/Firestore → MongoDB**, leaving behind a thick Firestore-compatibility shim and a dual-identity (`ObjectId` + `legacyFirebaseId`) scheme.
+VeritasESG is a React 19 + Vite SPA backed by an Express + **MongoDB (Mongoose 9)** API, with **Qdrant** (vector search), **Redis/BullMQ** (KB ingest queue), **S3/MinIO** (file storage) and **Resend** (email). The data model has **45 collections** and the app was previously migrated **Firebase/Firestore → MongoDB**, leaving behind a thick Firestore-compatibility shim and a dual-identity (`ObjectId` + `legacyFirebaseId`) scheme.
 
 The good news for a relational migration:
 

@@ -12,7 +12,7 @@ import {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const DEFAULT_EMAIL_FROM_NAME =
-  process.env.RESEND_FROM_NAME || 'Impact AI GovernanceIQ';
+  process.env.RESEND_FROM_NAME || 'Impact AI VeritasESG';
 const DEFAULT_EMAIL_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || '';
 const DEFAULT_REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO_EMAIL || '';
 const DEFAULT_REPLY_TO_NAME =
@@ -47,7 +47,7 @@ function getResendClient(): Resend {
 }
 
 function formatFromAddress(name: string, email: string): string {
-  const safeName = String(name || '').trim() || email.split('@')[0] || 'GovernanceIQ';
+  const safeName = String(name || '').trim() || email.split('@')[0] || 'VeritasESG';
   return `${safeName} <${email}>`;
 }
 

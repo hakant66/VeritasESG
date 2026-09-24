@@ -1,6 +1,6 @@
-# GovernanceIQ Kullanıcı Kılavuzu
+# VeritasESG Kullanıcı Kılavuzu
 
-GovernanceIQ, danışmanlık firmaları için geliştirilmiş bir **sürdürülebilirlik ve yönetişim (ESG) raporlama platformudur**. Bu kılavuz, platformu kullanan her rol için ayrı ayrı düzenlenmiştir. Hangi rolde olduğunuzu öğrenip ilgili bölüme geçebilirsiniz.
+VeritasESG, danışmanlık firmaları için geliştirilmiş bir **sürdürülebilirlik ve yönetişim (ESG) raporlama platformudur**. Bu kılavuz, platformu kullanan her rol için ayrı ayrı düzenlenmiştir. Hangi rolde olduğunuzu öğrenip ilgili bölüme geçebilirsiniz.
 
 Bu kılavuz teknik bilgi gerektirmez. Her bölüm, "ne yapabilirsiniz" ve "nasıl yaparsınız" sorularına adım adım yanıt verir.
 

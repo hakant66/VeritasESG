@@ -7,7 +7,7 @@
 
 ## Context
 
-GovernanceIQ already stores knowledge-base documents in MongoDB (`KnowledgeBase`, `KBDocument`) and
+VeritasESG already stores knowledge-base documents in MongoDB (`KnowledgeBase`, `KBDocument`) and
 extracts cleaned text client-side via Gemini. Chat (`KnowledgeChatPage`) concatenates **all**
 processed document text into a single prompt — workable for a handful of small files, but not
 scalable and not scoped for per-field retrieval.

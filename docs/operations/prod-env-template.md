@@ -16,7 +16,7 @@ For local Docker full stack, see `docker-compose.yml` — app overrides `MONGODB
 | `APP_PUBLIC_URL` | `https://giq.theleadai.co.uk` | Assignment links, public asset URLs |
 | `RESEND_API_KEY` | `re_…` | Transactional email (assignments, OTP, reset) |
 | `RESEND_FROM_EMAIL` | `no-reply@theleadai.co.uk` | Must be verified domain in Resend |
-| `RESEND_FROM_NAME` | `Impact AI GovernanceIQ` | Display name |
+| `RESEND_FROM_NAME` | `Impact AI VeritasESG` | Display name |
 
 Optional but recommended:
 

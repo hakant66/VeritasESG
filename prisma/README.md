@@ -1,6 +1,6 @@
 # Prisma (relational core) — MongoDB migration
 
-This directory holds the provider-neutral Prisma schema for the GovernanceIQ
+This directory holds the provider-neutral Prisma schema for the VeritasESG
 relational core. It is part of the MongoDB → SQL migration
 ([`docs/migration/mongo-to-sql-migration-plan.md`](../docs/migration/mongo-to-sql-migration-plan.md)).
 

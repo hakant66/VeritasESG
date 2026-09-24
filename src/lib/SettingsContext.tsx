@@ -45,7 +45,7 @@ interface AppSettings {
 }
 
 const defaultSettings: AppSettings = {
-  platformName: 'GovernanceIQ',
+  platformName: 'VeritasESG',
   platformLogoSquareUrl: '',
   platformLogoRectangleUrl: '',
   moduleProjectsEnabled: true,

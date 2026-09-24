@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { PlatformUser } from '../../../src/types';
 
 export const defaultSettings = {
-  platformName: 'GovernanceIQ',
+  platformName: 'VeritasESG',
   platformLogoSquareUrl: '',
   platformLogoRectangleUrl: '',
   moduleProjectsEnabled: true,

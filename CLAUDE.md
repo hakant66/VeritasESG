@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GovernanceIQ is a full-stack **sustainability and governance reporting platform** for consultancy firms. It enables organizations to maintain a client directory, run reporting projects, collect structured survey responses, assign tasks, track progress, and optionally use AI-powered knowledge base chat to support consultants.
+VeritasESG is a full-stack **sustainability and governance reporting platform** for consultancy firms. It enables organizations to maintain a client directory, run reporting projects, collect structured survey responses, assign tasks, track progress, and optionally use AI-powered knowledge base chat to support consultants.
 
 The application migrated from Firebase (Auth + Firestore) to MongoDB, and has since completed a second migration from MongoDB to a relational core: Node.js/Express backend with **PostgreSQL persistence via Prisma**, custom JWT authentication, and email delivery through Brevo.
 
@@ -98,7 +98,7 @@ docker compose -f docker-compose.minio.yml up         # MinIO only (object stora
 ### Core Directory Structure
 
 ```
-governanceiq/
+veritasesg/
 ├── src/                           # React frontend (SPA)
 │   ├── main.tsx                   # Entry point
 │   ├── App.tsx                    # Root routing (HashRouter)
@@ -305,7 +305,7 @@ S3_ENDPOINT=http://127.0.0.1:9000
 S3_FORCE_PATH_STYLE=true
 
 # Login page UI customization (Vite rebuild required)
-VITE_LOGIN_TITLE=GovernanceIQ
+VITE_LOGIN_TITLE=VeritasESG
 VITE_LOGIN_TAGLINE=Consultancy governance platform
 VITE_LOGIN_LANG=en  # en | tr
 ```
@@ -362,8 +362,8 @@ Express serves:
 
 ### Docker
 ```bash
-docker build . -t governanceiq:latest
-docker run -p 3010:3010 --env-file .env governanceiq:latest
+docker build . -t veritasesg:latest
+docker run -p 3010:3010 --env-file .env veritasesg:latest
 ```
 
 ### Required External Services

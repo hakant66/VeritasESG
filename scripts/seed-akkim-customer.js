@@ -1,6 +1,6 @@
 /**
  * One-off: rename TechCorp → Akkim Kimya and populate customer profile fields.
- * Run: docker exec -i governanceiq-mongo-1 mongosh mongodb://127.0.0.1:27017/governance < scripts/seed-akkim-customer.js
+ * Run: docker exec -i veritasesg-mongo-1 mongosh mongodb://127.0.0.1:27017/governance < scripts/seed-akkim-customer.js
  */
 
 const customerId = '6a213df07ae56bf26fd1a7bb';

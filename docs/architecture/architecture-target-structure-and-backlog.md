@@ -16,7 +16,7 @@ flowchart LR
   end
 
   subgraph Runtime stack
-    app[governanceiq-app :3010]
+    app[veritasesg-app :3010]
     mongo[mongo :27018 host]
     redis[redis :6379 optional]
     qdrant[qdrant :6333]

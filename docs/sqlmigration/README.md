@@ -2,7 +2,7 @@
 
 > **Status: COMPLETE.** All eight phases delivered, production cut over to PostgreSQL, and MongoDB/Mongoose removed from the codebase. This folder is now a historical record of how the migration was done, not a live plan.
 
-Persistent record of **what was planned** and **what was delivered** for the GovernanceIQ relational migration. This folder is the canonical delivery journal; the original proposal lives in [`../migration/mongo-to-sql-migration-plan.md`](../migration/mongo-to-sql-migration-plan.md).
+Persistent record of **what was planned** and **what was delivered** for the VeritasESG relational migration. This folder is the canonical delivery journal; the original proposal lives in [`../migration/mongo-to-sql-migration-plan.md`](../migration/mongo-to-sql-migration-plan.md).
 
 ## How to read this folder
 

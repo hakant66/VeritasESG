@@ -1,4 +1,4 @@
-# GovernanceIQ Priority 1 — Architecture
+# VeritasESG Priority 1 — Architecture
 
 **Status:** Proposed (for build) | **Date:** 2026-06-03 | **Horizon:** Q2–Q3 2026, 12 weeks
 **Scope:** Framework Completeness Validator, Cross-Framework Consistency Checker, Climate Scenario Analysis

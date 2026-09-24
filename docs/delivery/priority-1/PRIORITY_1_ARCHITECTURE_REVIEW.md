@@ -278,7 +278,7 @@ QA Manager
 **Sign-Off Line:**
 ```
 I confirm that this architecture is strategically aligned with platform vision.
-It positions GovernanceIQ as a regulatory-ready compliance platform and supports long-term growth.
+It positions VeritasESG as a regulatory-ready compliance platform and supports long-term growth.
 
 Signature: ________________________    Date: _____________
 Architecture Lead / Founder
@@ -337,7 +337,7 @@ Architecture Lead / Founder
 PRIORITY 1 ARCHITECTURE REVIEW & SIGN-OFF
 ═════════════════════════════════════════════════════════════════
 
-PROJECT: GovernanceIQ Priority 1 Features (Compliance Engine)
+PROJECT: VeritasESG Priority 1 Features (Compliance Engine)
   • Framework Completeness Validator
   • Cross-Framework Consistency Checker
   • Climate Scenario Analysis Module

@@ -1,8 +1,8 @@
-# GovernanceIQ Platform Workflow Guide
+# VeritasESG Platform Workflow Guide
 
 ## Overview
 
-GovernanceIQ is a sustainability and governance reporting platform that enables organizations to manage sustainability assessments, track progress, and maintain governance compliance. This document maps the complete workflow across all major features and modules.
+VeritasESG is a sustainability and governance reporting platform that enables organizations to manage sustainability assessments, track progress, and maintain governance compliance. This document maps the complete workflow across all major features and modules.
 
 ---
 

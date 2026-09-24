@@ -9,7 +9,7 @@ import { defaultSettings, makeProfile, renderAdminLayout } from './helpers/rende
 const mockLogout = vi.fn();
 const mockUseAuth = vi.fn();
 const mockSettings = vi.hoisted(() => ({
-  platformName: 'GovernanceIQ',
+  platformName: 'VeritasESG',
   platformLogoSquareUrl: '',
   platformLogoRectangleUrl: '',
   moduleProjectsEnabled: true,

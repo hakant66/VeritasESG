@@ -1,4 +1,4 @@
-# GovernanceIQ — Changes in Last 5 Days (2026-06-17 to 2026-06-22)
+# VeritasESG — Changes in Last 5 Days (2026-06-17 to 2026-06-22)
 
 ## Summary
 Over the last 5 days, the platform has been enhanced with a comprehensive materiality assessment framework, scheduled backup capabilities, improved authentication, and Turkish language documentation.
@@ -164,7 +164,7 @@ Over the last 5 days, the platform has been enhanced with a comprehensive materi
 **Commit:** `217df5d`
 
 **What Changed:**
-- Created comprehensive Turkish user guide for GovernanceIQ platform
+- Created comprehensive Turkish user guide for VeritasESG platform
 - Documented all six user roles with workflows and responsibilities
 - Step-by-step feature guides and troubleshooting
 - Exported to Word (.docx) format for easy distribution

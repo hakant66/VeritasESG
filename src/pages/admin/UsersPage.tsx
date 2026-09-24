@@ -1328,7 +1328,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{t.users.emailAddress}</label>
-                  <input name="email" type="email" required className="minimal-input" placeholder="sarah@governanceiq.com" />
+                  <input name="email" type="email" required className="minimal-input" placeholder="sarah@veritasesg.com" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

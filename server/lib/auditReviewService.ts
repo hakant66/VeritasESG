@@ -129,7 +129,7 @@ export async function submitAuditReviewDecision(
     '',
     `Projeyi açın: ${projectUrl}`,
     '',
-    'Impact AI GovernanceIQ',
+    'Impact AI VeritasESG',
   ].filter(Boolean);
 
   const html = `
@@ -142,7 +142,7 @@ export async function submitAuditReviewDecision(
       <div style="margin: 24px 0;">
         <a href="${projectUrl}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Projeyi aç</a>
       </div>
-      <p>Impact AI GovernanceIQ</p>
+      <p>Impact AI VeritasESG</p>
     </div>
   `.trim();
 
@@ -153,7 +153,7 @@ export async function submitAuditReviewDecision(
       subject,
       text: textLines.join('\n'),
       html,
-      tags: ['governanceiq-audit-review'],
+      tags: ['veritasesg-audit-review'],
       audit: {
         emailType: 'assignment',
         projectId: answerProjectId,

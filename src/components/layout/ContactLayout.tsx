@@ -26,7 +26,7 @@ export default function ContactLayout() {
         <Outlet />
       </main>
       <footer className="border-t border-gray-200 bg-white p-6 text-center text-xs text-gray-400">
-        Consultancy Governance Intelligence Platform • {settings.platformName || 'GovernanceIQ'}
+        Consultancy Governance Intelligence Platform • {settings.platformName || 'VeritasESG'}
       </footer>
     </div>
   );

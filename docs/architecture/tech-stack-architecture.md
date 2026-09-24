@@ -1,10 +1,10 @@
-# GovernanceIQ Tech Stack and Architecture
+# VeritasESG Tech Stack and Architecture
 
 Last updated: 2026-07-01
 
 ## 1. Executive Summary
 
-GovernanceIQ is a React/Vite single-page application served by a Node.js Express backend. The application was migrated away from Firebase Auth and Firestore toward a local-first backend architecture based on Express, MongoDB, Mongoose, JWT authentication, and browser LocalStorage for session persistence.
+VeritasESG is a React/Vite single-page application served by a Node.js Express backend. The application was migrated away from Firebase Auth and Firestore toward a local-first backend architecture based on Express, MongoDB, Mongoose, JWT authentication, and browser LocalStorage for session persistence.
 
 Beyond the core reporting workflow (customers, projects, questionnaires, assignments), the platform now includes several **server-side** subsystems that did not exist in the original Firebase build:
 

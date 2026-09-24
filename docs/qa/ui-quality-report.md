@@ -1,4 +1,4 @@
-# GovernanceIQ — UI Quality Report
+# VeritasESG — UI Quality Report
 
 **Generated:** 2026-05-30  
 **Scope:** React 19 + Tailwind CSS 4 SPA (HashRouter). Routing, role-based access, form validation, error/empty/loading states, accessibility, and responsive design.

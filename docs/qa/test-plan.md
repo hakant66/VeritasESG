@@ -1,4 +1,4 @@
-# GovernanceIQ Test Plan
+# VeritasESG Test Plan
 
 **Generated:** 2026-05-30  
 **Status:** Proposed — no tests currently exist. Zero `*.test.*`/`*.spec.*` files; no test tooling in package.json.

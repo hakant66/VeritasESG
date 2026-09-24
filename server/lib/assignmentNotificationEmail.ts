@@ -159,7 +159,7 @@ export async function buildAssignmentNotificationEmail(
     `Görevlerinize buradan ulaşabilirsiniz:`,
     magicLink,
     '',
-    'Impact AI GovernanceIQ',
+    'Impact AI VeritasESG',
   ]
     .filter(Boolean)
     .join('\n');
@@ -174,7 +174,7 @@ export async function buildAssignmentNotificationEmail(
       <div style="margin: 24px 0;">
         <a href="${magicLink}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Görevlerim</a>
       </div>
-      <p>Impact AI GovernanceIQ</p>
+      <p>Impact AI VeritasESG</p>
     </div>
   `.trim();
 
@@ -214,7 +214,7 @@ export async function sendAssignmentNotificationEmail(
     text: payload.text,
     html: payload.html,
     cc: options?.cc,
-    tags: ['governanceiq-assignment'],
+    tags: ['veritasesg-assignment'],
     audit: {
       emailType: options?.emailType || 'assignment',
       projectId,
@@ -247,7 +247,7 @@ export async function sendAssignmentEmailPayload(payload: {
     text: payload.text,
     html: payload.html,
     cc: payload.cc,
-    tags: ['governanceiq-assignment'],
+    tags: ['veritasesg-assignment'],
     audit: {
       emailType: 'assignment',
       projectId: payload.projectId,
@@ -308,7 +308,7 @@ export async function sendAssignmentApprovalRequestEmail(
     'Görevi incelemek ve onaylamak için:',
     tasksLink,
     '',
-    'Impact AI GovernanceIQ',
+    'Impact AI VeritasESG',
   ].join('\n');
 
   const html = `
@@ -318,7 +318,7 @@ export async function sendAssignmentApprovalRequestEmail(
       <div style="margin: 24px 0;">
         <a href="${tasksLink}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Görevler</a>
       </div>
-      <p>Impact AI GovernanceIQ</p>
+      <p>Impact AI VeritasESG</p>
     </div>
   `.trim();
 
@@ -328,7 +328,7 @@ export async function sendAssignmentApprovalRequestEmail(
     subject,
     text,
     html,
-    tags: ['governanceiq-assignment-approval'],
+    tags: ['veritasesg-assignment-approval'],
     audit: {
       emailType: 'assignment',
       projectId,
@@ -386,7 +386,7 @@ export async function sendAssignmentReminderEmail(
     `Görevlerinize buradan ulaşabilirsiniz:`,
     magicLink,
     '',
-    'Impact AI GovernanceIQ',
+    'Impact AI VeritasESG',
   ].join('\n');
 
   const html = `
@@ -399,7 +399,7 @@ export async function sendAssignmentReminderEmail(
       <div style="margin: 24px 0;">
         <a href="${magicLink}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Görevlerim</a>
       </div>
-      <p>Impact AI GovernanceIQ</p>
+      <p>Impact AI VeritasESG</p>
     </div>
   `.trim();
 
@@ -409,7 +409,7 @@ export async function sendAssignmentReminderEmail(
     subject,
     text,
     html,
-    tags: ['governanceiq-assignment-reminder', reminderKey],
+    tags: ['veritasesg-assignment-reminder', reminderKey],
     audit: {
       emailType: 'assignment_reminder',
       projectId,

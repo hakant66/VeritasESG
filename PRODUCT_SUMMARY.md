@@ -1,10 +1,10 @@
-# GovernanceIQ — Ürün Tanıtım Dokümanı
+# VeritasESG — Ürün Tanıtım Dokümanı
 
 ---
 
 ## 1. Tek Cümlelik Konumlandırma
 
-**GovernanceIQ**, sürdürülebilirlik ve kurumsal yönetişim (ESG) raporlamasını uçtan uca yöneten; danışmanlık firmalarının birden çok müşterisini tek bir platformda yönetmesini sağlayan bir raporlama ve uyum çözümüdür.
+**VeritasESG**, sürdürülebilirlik ve kurumsal yönetişim (ESG) raporlamasını uçtan uca yöneten; danışmanlık firmalarının birden çok müşterisini tek bir platformda yönetmesini sağlayan bir raporlama ve uyum çözümüdür.
 
 **Slogan adayları:**
 - "Sürdürülebilirlik raporlamasının uçtan uca merkezi."
@@ -22,7 +22,7 @@ Sürdürülebilirlik danışmanlıkları aynı anda **birçok müşteri firma** 
 - **İzlenebilirlik eksikliği** (kim, ne zaman, hangi veriyi girdi?)
   yaratır.
 
-**GovernanceIQ bu karmaşayı tek bir dijital iş akışına dönüştürür:** müşteri dizini → anketler → veri toplama → önemlilik analizi → emisyon → uyum kontrolü → rapor çıktısı.
+**VeritasESG bu karmaşayı tek bir dijital iş akışına dönüştürür:** müşteri dizini → anketler → veri toplama → önemlilik analizi → emisyon → uyum kontrolü → rapor çıktısı.
 
 ---
 
@@ -87,7 +87,7 @@ Platform, danışmanlık dünyasının diline göre tasarlanmıştır:
 
 ## 6. Desteklenen Standart ve Çerçeveler
 
-GovernanceIQ, güncel sürdürülebilirlik raporlama çerçevelerini kapsar:
+VeritasESG, güncel sürdürülebilirlik raporlama çerçevelerini kapsar:
 
 - **GRI** — Global Reporting Initiative
 - **ESRS / CSRD** — Avrupa Sürdürülebilirlik Raporlama Standartları
@@ -100,7 +100,7 @@ GovernanceIQ, güncel sürdürülebilirlik raporlama çerçevelerini kapsar:
 
 ---
 
-## 7. Neden GovernanceIQ? (Farklılaştırıcılar)
+## 7. Neden VeritasESG? (Farklılaştırıcılar)
 
 1. **Danışmanlık için tasarlandı.** Tek bir kuruma değil, çok müşterili bir **portföye** göre kurgulandı — rol tabanlı erişim ve delege edilebilir iş akışıyla.
 2. **Türkiye gücü (TSRS).** TSRS 1 ve 2'yi doğrudan uyum motoruna işleyen az sayıda platformdan biri; yerel mevzuata hazır.
@@ -144,6 +144,6 @@ Görsel açıdan en etkili ekranlar (deck için):
 
 ## 10. Kapanış Mesajı
 
-> **GovernanceIQ**, sürdürülebilirlik danışmanlıklarının dağınık, manuel ve riskli raporlama süreçlerini; hızlı, izlenebilir ve yapay zeka destekli tek bir platforma taşır. GRI'den TSRS'ye kadar tüm önemli çerçeveleri tek çatı altında toplar, paydaşları sürece dâhil eder ve verinin kontrolünü size bırakır.
+> **VeritasESG**, sürdürülebilirlik danışmanlıklarının dağınık, manuel ve riskli raporlama süreçlerini; hızlı, izlenebilir ve yapay zeka destekli tek bir platforma taşır. GRI'den TSRS'ye kadar tüm önemli çerçeveleri tek çatı altında toplar, paydaşları sürece dâhil eder ve verinin kontrolünü size bırakır.
 
 **Öne çıkan mesaj:** *Tüm müşterileriniz, tüm çerçeveleriniz, tek platform.*

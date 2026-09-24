@@ -1,6 +1,6 @@
-# GovernanceIQ User Guide
+# VeritasESG User Guide
 
-A complete, plain-language guide to using GovernanceIQ, the sustainability and governance (ESG) reporting platform for consultancy firms.
+A complete, plain-language guide to using VeritasESG, the sustainability and governance (ESG) reporting platform for consultancy firms.
 
 > **Feature catalog:** For a concise module-by-module reference (including **Emission Data**, **Emission Calculation**, **Materiality surveys**, and **Organizational boundary**), see [`application-features-guide.md`](application-features-guide.md).
 
@@ -24,7 +24,7 @@ A complete, plain-language guide to using GovernanceIQ, the sustainability and g
 
 ## 1. Introduction
 
-GovernanceIQ helps consultancy firms run sustainability and governance reporting engagements for their clients from one place. Instead of juggling spreadsheets and email threads, your firm can keep a directory of client organisations, launch reporting projects from reusable templates, collect structured answers from the right people, track progress, and export finished reports.
+VeritasESG helps consultancy firms run sustainability and governance reporting engagements for their clients from one place. Instead of juggling spreadsheets and email threads, your firm can keep a directory of client organisations, launch reporting projects from reusable templates, collect structured answers from the right people, track progress, and export finished reports.
 
 **Who uses the platform.** There are two main groups:
 
@@ -51,7 +51,7 @@ GovernanceIQ helps consultancy firms run sustainability and governance reporting
 
 ### First login
 
-1. Open the GovernanceIQ web address provided by your firm. You will land on the **Login** page.
+1. Open the VeritasESG web address provided by your firm. You will land on the **Login** page.
 2. Enter your **Email** and **Password** and select **Sign In**.
 
 If you do not have a password yet, use the one-time code (OTP) method instead.
@@ -66,7 +66,7 @@ If you do not have a password yet, use the one-time code (OTP) method instead.
 
 ### Switching language (English / Turkish)
 
-GovernanceIQ supports **English (EN)** and **Turkish (TR)**. The login screen language can be set by your firm, and you can override it by adding `?lang=tr` (or `?lang=en`) to the login link, for example `…/#/login?lang=tr`. Question text and several other fields are stored in both languages so the interface can display whichever you prefer.
+VeritasESG supports **English (EN)** and **Turkish (TR)**. The login screen language can be set by your firm, and you can override it by adding `?lang=tr` (or `?lang=en`) to the login link, for example `…/#/login?lang=tr`. Question text and several other fields are stored in both languages so the interface can display whichever you prefer.
 
 ### Resetting your password
 
@@ -175,7 +175,7 @@ Templates and sectors are managed by **platform_admin** and **consultant** users
 
 ### What a template is
 
-A **template** is a reusable blueprint for a questionnaire. It is organised into **pages**, and each page contains **questions**. When you start a project, GovernanceIQ copies the template's pages and questions into the project so the original template stays clean for reuse.
+A **template** is a reusable blueprint for a questionnaire. It is organised into **pages**, and each page contains **questions**. When you start a project, VeritasESG copies the template's pages and questions into the project so the original template stays clean for reuse.
 
 ### Sectors and service categories
 
@@ -303,7 +303,7 @@ An **assignment** connects a question (or group of questions) to the person resp
 
 ### Magic-link emails (for external contacts)
 
-When you assign questions to an external **contact**, GovernanceIQ can email them a secure **magic link**. The contact opens the link and answers directly in their browser — no account or password needed. Links expire after a set period (7 days by default), after which a new link is required. See [External Contact Response](#9-external-contact-response).
+When you assign questions to an external **contact**, VeritasESG can email them a secure **magic link**. The contact opens the link and answers directly in their browser — no account or password needed. Links expire after a set period (7 days by default), after which a new link is required. See [External Contact Response](#9-external-contact-response).
 
 ### The Tasks page (for internal users)
 
@@ -365,7 +365,7 @@ If the magic link is past its expiry date, the page shows an **expired** message
 
 ## 10. Reports and Exports
 
-GovernanceIQ can package project data for sharing and offline review. Export options are available from within a project to users with edit-level access.
+VeritasESG can package project data for sharing and offline review. Export options are available from within a project to users with edit-level access.
 
 | Export | What you get |
 | --- | --- |
@@ -414,7 +414,7 @@ Open **Users** to manage internal accounts.
 
 ### Audit log
 
-GovernanceIQ keeps an **audit log** of important actions and answer submissions, including who submitted each answer and when. Administrators use this to review activity and confirm accountability, which is especially useful for on-behalf responses.
+VeritasESG keeps an **audit log** of important actions and answer submissions, including who submitted each answer and when. Administrators use this to review activity and confirm accountability, which is especially useful for on-behalf responses.
 
 ### Translations
 
@@ -426,7 +426,7 @@ App-wide **settings** (such as email configuration and platform defaults) are ma
 
 ### Platform API key
 
-A **platform API key** can be configured for trusted integrations that talk to GovernanceIQ programmatically. Treat this key as a secret and share it only with systems that need it.
+A **platform API key** can be configured for trusted integrations that talk to VeritasESG programmatically. Treat this key as a secret and share it only with systems that need it.
 
 ---
 

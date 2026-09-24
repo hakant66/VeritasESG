@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * Platform Sunumu — GovernanceIQ ürün sunumu (PDF gömülü görünüm).
+ * Platform Sunumu — VeritasESG ürün sunumu (PDF gömülü görünüm).
  * Route: #/platform-sunumu
  */
 
@@ -12,8 +12,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 /** Bump when replacing files under public/presentations/ so browsers/iframes skip stale cache. */
 const DECK_VERSION = '20260724b';
-const PDF_URL = `/presentations/GovernanceIQ_Sunumu.pdf?v=${DECK_VERSION}`;
-const PPTX_URL = `/presentations/GovernanceIQ_Sunumu.pptx?v=${DECK_VERSION}`;
+const PDF_URL = `/presentations/VeritasESG_Sunumu.pdf?v=${DECK_VERSION}`;
+const PPTX_URL = `/presentations/VeritasESG_Sunumu.pptx?v=${DECK_VERSION}`;
 
 export default function PlatformPresentationPage() {
   const { t, lang } = useTranslation();
@@ -29,8 +29,8 @@ export default function PlatformPresentationPage() {
           </div>
           <p className="mt-1 text-sm text-slate-600">
             {isTr
-              ? 'GovernanceIQ ürün sunumu. PDF’i burada görüntüleyebilir veya indirerek paylaşabilirsiniz.'
-              : 'GovernanceIQ product deck. View the PDF here or download to share.'}
+              ? 'VeritasESG ürün sunumu. PDF’i burada görüntüleyebilir veya indirerek paylaşabilirsiniz.'
+              : 'VeritasESG product deck. View the PDF here or download to share.'}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             <Link to="/platform" className="font-medium text-slate-700 underline-offset-2 hover:underline">
@@ -52,7 +52,7 @@ export default function PlatformPresentationPage() {
           </a>
           <a
             href={PDF_URL}
-            download="GovernanceIQ_Sunumu.pdf"
+            download="VeritasESG_Sunumu.pdf"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
           >
             <Download className="h-4 w-4" aria-hidden />
@@ -60,7 +60,7 @@ export default function PlatformPresentationPage() {
           </a>
           <a
             href={PPTX_URL}
-            download="GovernanceIQ_Sunumu.pptx"
+            download="VeritasESG_Sunumu.pptx"
             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
           >
             <Download className="h-4 w-4" aria-hidden />

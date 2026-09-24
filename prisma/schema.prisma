@@ -1,4 +1,4 @@
-// GovernanceIQ relational core schema (MongoDB -> SQL migration).
+// VeritasESG relational core schema (MongoDB -> SQL migration).
 //
 // Provider-neutral: the same models generate on PostgreSQL and MySQL. The
 // datasource `provider` and `url` are chosen per deployment via env at

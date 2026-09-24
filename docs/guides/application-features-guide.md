@@ -1,6 +1,6 @@
-# GovernanceIQ — Application Features Guide
+# VeritasESG — Application Features Guide
 
-Practical guide to every major feature in the GovernanceIQ web application. For narrative walkthroughs and troubleshooting, see also [`user-guide.md`](user-guide.md) (English) and [`user-guide-tr.md`](user-guide-tr.md) (Turkish).
+Practical guide to every major feature in the VeritasESG web application. For narrative walkthroughs and troubleshooting, see also [`user-guide.md`](user-guide.md) (English) and [`user-guide-tr.md`](user-guide-tr.md) (Turkish).
 
 **Audience:** consultants, engagement managers, platform administrators, and customer contacts.
 

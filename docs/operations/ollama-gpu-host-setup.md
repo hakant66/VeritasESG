@@ -1,11 +1,11 @@
 # GPU Host + Ollama LLM — Kurulum Rehberi (Senaryo B)
 
-GovernanceIQ uygulama sunucusu **CPU** üzerinde çalışır; LLM istekleri **GPU host** üzerindeki Ollama’ya HTTP ile gider. Embedding ve rerank için ayrı seçenekler aşağıda.
+VeritasESG uygulama sunucusu **CPU** üzerinde çalışır; LLM istekleri **GPU host** üzerindeki Ollama’ya HTTP ile gider. Embedding ve rerank için ayrı seçenekler aşağıda.
 
 ## Mimari
 
 ```
-┌─ App sunucusu (GovernanceIQ) ─────────────────────────┐
+┌─ App sunucusu (VeritasESG) ─────────────────────────┐
 │  Mongo · Qdrant · Redis                               │
 │  Ayarlar → LLM: activeProvider = ollama              │
 │  Rerank: Cohere API (opsiyonel, GPU gerekmez)         │
@@ -36,7 +36,7 @@ nvidia-smi   # GPU görünüyor olmalı
 
 curl -fsSL https://ollama.com/install.sh | sh
 
-# Uzak erişim (GovernanceIQ app’ten HTTP)
+# Uzak erişim (VeritasESG app’ten HTTP)
 sudo systemctl edit ollama
 ```
 
@@ -75,7 +75,7 @@ App sunucusundan:
 curl http://GPU_HOST_IP:11434/api/version
 ```
 
-## 2. GovernanceIQ yapılandırması
+## 2. VeritasESG yapılandırması
 
 ### Seçenek A — Ayarlar UI (önerilen)
 

@@ -1330,7 +1330,7 @@ async function startServer() {
           text,
           html,
           cc: ccList.length ? ccList : undefined,
-          tags: ['governanceiq-assignment'],
+          tags: ['veritasesg-assignment'],
           audit: {
             emailType: 'assignment',
             projectId: typeof bodyProjectId === 'string' ? bodyProjectId : undefined,
@@ -1360,7 +1360,7 @@ async function startServer() {
         subject: `Reporting Assignment: ${projectName || 'New Project'}`,
         text: `Hello ${name},\n\nYou have been assigned to the project "${projectName || 'New Project'}".\n\nYou can access your workspace here:\n${magicLink}\n\nRegards,\nThe Impact AI Governance Team`,
         html: htmlContent,
-        tags: ['governanceiq-assignment'],
+        tags: ['veritasesg-assignment'],
         audit: {
           emailType: 'assignment',
           projectId: typeof bodyProjectId === 'string' ? bodyProjectId : undefined,
