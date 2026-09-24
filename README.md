@@ -1,4 +1,4 @@
-# GovernanceIQ
+# VeritasESG
 
 Consultancy platform for **sustainability and governance reporting**: customer directory (Firma), reporting projects, structured questionnaires, assignments, knowledge-base RAG, emissions ledger, double materiality (DMA), materiality surveys, and compliance tooling (TSRS, IFRS S2, GRI, ESRS, TCFD).
 

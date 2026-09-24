@@ -51,7 +51,7 @@ export function resolveLoginBranding(
     url('title'),
     env.VITE_LOGIN_TITLE,
     settings.platformName,
-    'GovernanceIQ',
+    'VeritasESG',
   );
 
   const tagline = firstNonEmpty(
