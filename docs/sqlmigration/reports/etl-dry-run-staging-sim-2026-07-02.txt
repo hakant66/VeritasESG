@@ -1,0 +1,63 @@
+
+> react-example@0.0.0 migrate:mongo-to-sql
+> tsx scripts/migrate-mongo-to-sql.ts --dry-run
+
+[MONGO] Connected to mongodb://localhost:27018/governance
+
+=== ETL: Mongo(governance) -> SQL [dry-run] ===
+
+Building legacy id map...
+  mapped 2 legacyFirebaseId values
+
+platformUsers                   12 docs  (dry-run)
+segments                        12 docs  (dry-run)
+domains                         10 docs  (dry-run)
+customers                       26 docs  (dry-run)
+branches                        60 docs  (dry-run)
+contacts                        70 docs  (dry-run)
+templates                        5 docs  (dry-run)
+templatePages                   16 docs  (dry-run)
+questions                      788 docs  (dry-run)
+projects                         3 docs  (dry-run)
+projectPages                    14 docs  (dry-run)
+projectQuestions               576 docs  (dry-run)
+projectUserAssignments           5 docs  (dry-run)
+assignments                      3 docs  (dry-run)
+answers                    0 docs (skip)
+answerVersions             0 docs (skip)
+commentMessages            0 docs (skip)
+otpCodes                   0 docs (skip)
+aiDrafts                   0 docs (skip)
+auditLogs                      210 docs  (dry-run)
+knowledgeBases                   6 docs  (dry-run)
+kbDocuments                     13 docs  (dry-run)
+kbIngestJobs                     9 docs  (dry-run)
+kbChunks                      1239 docs  (dry-run)
+translations                  1661 docs  (dry-run)
+emailSettings              0 docs (skip)
+appSettings                      3 docs  (dry-run)
+scheduledJobs                    1 docs  (dry-run)
+emissionFactors                  8 docs  (dry-run)
+emissionEntries            0 docs (skip)
+emissionIntensityInputs    0 docs (skip)
+scope2MarketData           0 docs (skip)
+metricDefinitions               13 docs  (dry-run)
+metricEntries              0 docs (skip)
+materialityTopics          0 docs (skip)
+materialityAssessments     0 docs (skip)
+griMaterialityMatrixRows       107 docs  (dry-run)
+griAssessmentScores        0 docs (skip)
+esrsAssessmentScores       0 docs (skip)
+issbAssessmentScores       0 docs (skip)
+frameworkRequirements           47 docs  (dry-run)
+complianceRuns                   2 docs  (dry-run)
+frameworkMappings                4 docs  (dry-run)
+consistencyConflicts       0 docs (skip)
+climateScenarios           0 docs (skip) (3 skipped — missing required fields)
+transitionLeverTemplates        10 docs  (dry-run)
+sectorCategories           0 docs (skip)
+
+--- Summary ---
+Documents:  4933
+Loaded:     0
+Failed:     0

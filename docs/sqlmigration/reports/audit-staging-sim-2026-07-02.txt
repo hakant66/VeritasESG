@@ -1,0 +1,70 @@
+
+> react-example@0.0.0 audit:mongo
+> tsx scripts/audit-mongo-data.ts
+
+[MONGO] Connected to mongodb://localhost:27018/governance
+
+=== Phase 0 audit: governance ===
+
+platformUsers                   12 docs  legacyId=     0
+segments                        12 docs  legacyId=     0
+domains                         10 docs  legacyId=     0
+customers                       26 docs  legacyId=     0
+branches                        60 docs  legacyId=     0  [HARD-DANGLING]
+    ! dangling customerId -> customers: 19 value(s) e.g. 6a037d073357f154693becfc, 6a037d073357f154693becfc, 6a037d073357f154693bed01, 6a037d073357f154693bed01, 6a037d083357f154693bed06
+contacts                        70 docs  legacyId=     0  [HARD-DANGLING]
+    ! dangling customerId -> customers: 19 value(s) e.g. 6a037d073357f154693becfc, 6a037d073357f154693becfc, 6a037d073357f154693bed01, 6a037d073357f154693bed01, 6a037d083357f154693bed06
+templates                        5 docs  legacyId=     0
+templatePages                   16 docs  legacyId=     0
+questions                      788 docs  legacyId=     0  [HARD-DANGLING]
+    ! dangling templateId -> templates: 80 value(s) e.g. 6a04711584504f76dff34313, 6a04711584504f76dff34313, 6a04711584504f76dff34313, 6a04711584504f76dff34313, 6a04711584504f76dff34313
+    ~ dangling pageId -> templatePages: 80 value(s) e.g. 6a04714884504f76dff34315, 6a04714884504f76dff34315, 6a04714884504f76dff34315, 6a04714884504f76dff34315, 6a04714884504f76dff34315
+projects                         3 docs  legacyId=     0
+projectPages                    14 docs  legacyId=     0
+projectQuestions               576 docs  legacyId=     0
+projectUserAssignments           5 docs  legacyId=     0
+assignments                      3 docs  legacyId=     2  [soft-dangling]
+    ~ dangling recipientId -> contacts: 3 value(s) e.g. 6a042f056403afeb9e641088, 6a313dc5bd2bff7af5b70a27, 6a325b16bd2bff7af5b7133d
+    ~ dangling questionIds -> questions: 83 value(s) e.g. 6a3258e2bd2bff7af5b711b2, 6a3258e2bd2bff7af5b711b3, 6a3258e2bd2bff7af5b711b4, 6a3258e2bd2bff7af5b711b5, 6a3258e2bd2bff7af5b711b6
+answers                          0 docs  legacyId=     0
+answerVersions                   0 docs  legacyId=     0
+commentMessages                  0 docs  legacyId=     0
+otpCodes                         0 docs  legacyId=     0
+aiDrafts                         0 docs  legacyId=     0
+auditLogs                      210 docs  legacyId=     0
+knowledgeBases                   6 docs  legacyId=     0
+kbDocuments                     13 docs  legacyId=     0
+kbIngestJobs                     9 docs  legacyId=     0
+kbChunks                      1239 docs  legacyId=     0
+translations                  1661 docs  legacyId=     0
+emailSettings                    0 docs  legacyId=     0
+appSettings                      3 docs  legacyId=     0
+scheduledJobs                    1 docs  legacyId=     0
+emissionFactors                  8 docs  legacyId=     0
+emissionEntries                  0 docs  legacyId=     0
+emissionIntensityInputs          0 docs  legacyId=     0
+scope2MarketData                 0 docs  legacyId=     0
+metricDefinitions               13 docs  legacyId=     0
+metricEntries                    0 docs  legacyId=     0
+materialityTopics                0 docs  legacyId=     0
+materialityAssessments           0 docs  legacyId=     0
+griMaterialityMatrixRows       107 docs  legacyId=     0  [HARD-DANGLING]
+    ! dangling customerId -> customers: 107 value(s) e.g. _materiality_design_esrs, _materiality_design_esrs, _materiality_design_esrs, _materiality_design_esrs, _materiality_design_esrs
+griAssessmentScores              0 docs  legacyId=     0
+esrsAssessmentScores             0 docs  legacyId=     0
+issbAssessmentScores             0 docs  legacyId=     0
+frameworkRequirements           47 docs  legacyId=     0
+complianceRuns                   2 docs  legacyId=     0
+frameworkMappings                4 docs  legacyId=     0
+consistencyConflicts             0 docs  legacyId=     0
+climateScenarios                 3 docs  legacyId=     0
+transitionLeverTemplates        10 docs  legacyId=     0
+sectorCategories                 0 docs  legacyId=     0
+
+--- Summary ---
+Collections:            47
+Total documents:        4936
+Duplicate unique keys:  0  (must resolve before adding unique constraints)
+Dangling refs (hard):   225  (must clean or keep column FK-less)
+Dangling refs (soft):   166  (tolerated; column stays indexed string)
+

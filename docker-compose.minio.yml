@@ -1,0 +1,44 @@
+# Local S3-compatible object storage for development (no AWS subscription).
+# Default credentials below match MinIO quickstart; change only for non-local use.
+#
+# For app + Postgres + MinIO together, use: docker compose up --build (see docker-compose.yml).
+#
+#   npm run docker:up:minio                              # auto-picks a free host port if 9000/9001 are busy
+#   docker compose -f docker-compose.minio.yml up -d      # plain compose; fails if a host port is already taken
+#
+# API: http://127.0.0.1:9000  |  Console: http://127.0.0.1:9001  (minioadmin / minioadmin)
+# Ports are overridable via MINIO_API_PORT / MINIO_CONSOLE_PORT (see scripts/docker-up.sh).
+#
+# The `minio-init` one-shot service creates bucket `governance-uploads` and applies anonymous **download**
+# on that bucket so profile `avatarUrl` links work in the browser. **Local dev only** — public read is a
+# security risk; do not reuse this pattern for production or sensitive data.
+
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do
+        echo 'Waiting for MinIO...' && sleep 1;
+      done &&
+      mc mb local/governance-uploads --ignore-existing &&
+      mc anonymous set download local/governance-uploads &&
+      echo 'MinIO bucket ready (anonymous download: local dev only).'
+      "
+
+volumes:
+  minio_data:

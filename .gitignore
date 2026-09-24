@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+.cursor/
+agent-transcripts/
+mcps/
+.vitest-sql-state.json
+
+# Stray local env copy (contains secrets — never commit)
+env.txt
+
+# Scheduled-job DB backup output (docker-compose.yml bind mount; contains real data)
+/backups/

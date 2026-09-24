@@ -1,0 +1,326 @@
+{
+  "entities": {
+    "Segment": {
+      "title": "Segment",
+      "description": "Customer segments (formerly sectors)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "type", "createdAt"]
+    },
+    "Template": {
+      "title": "Template",
+      "description": "Reporting templates per sector",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "sectorId": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "sectorId", "createdAt"]
+    },
+    "TemplatePage": {
+      "title": "Template Page",
+      "description": "Pages defined within a template",
+      "type": "object",
+      "properties": {
+        "templateId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "number" },
+        "briefText": { "type": "string" },
+        "briefFileUrl": { "type": "string" }
+      },
+      "required": ["templateId", "title", "order"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Individual report questions mapped to templates",
+      "type": "object",
+      "properties": {
+        "templateId": { "type": "string" },
+        "sectorId": { "type": "string" },
+        "pageId": { "type": "string" },
+        "kod": { "type": "string" },
+        "baslik": { "type": "string" },
+        "soru": { "type": "string" },
+        "ilgiliBirim": { "type": "string" },
+        "aciklama": { "type": "string" },
+        "ornekYanit": { "type": "string" },
+        "raporYeri": { "type": "string" },
+        "thematicGroup": { "type": "string" },
+        "isMandatory": { "type": "boolean" }
+      },
+      "required": ["templateId", "soru", "kod"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Client companies",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "sectorIds": { "type": "array", "items": { "type": "string" } },
+        "address": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "websiteUrl": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "brandPortfolio": { "type": "string" },
+        "sectoralDefinition": { "type": "string" },
+        "headquartersCountry": { "type": "string" },
+        "operationGeographies": { "type": "string" },
+        "employeeCountTotal": { "type": "number" },
+        "employeeCountBlueCollar": { "type": "number" },
+        "employeeCountWhiteCollar": { "type": "number" },
+        "employeeCountMale": { "type": "number" },
+        "employeeCountFemale": { "type": "number" },
+        "employeeContractBreakdown": { "type": "string" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Customer personnel (Stakeholders)",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "branchId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "department": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["customerId", "name", "email"]
+    },
+    "Branch": {
+      "title": "Branch",
+      "description": "Customer branch offices",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["customerId", "name", "createdAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Active sustainability reporting projects",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "templateId": { "type": "string" },
+        "name": { "type": "string" },
+        "domainIds": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "Selected domains for this project"
+        },
+        "status": { "type": "string", "enum": ["active", "completed", "archived"] },
+        "createdAt": { "type": "number" },
+        "helpVideoUrl": { 
+          "type": "string", 
+          "description": "Optional video tutorial URL for this project" 
+        }
+      },
+      "required": ["customerId", "templateId", "name", "status"]
+    },
+    "ProjectPage": {
+      "title": "Project Page",
+      "description": "Instance of a page within a project",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "sourceTemplatePageId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "number" },
+        "briefText": { "type": "string" },
+        "draftContent": { "type": "string" },
+        "draftStatus": { "type": "string", "enum": ["pending", "drafted", "approved"] },
+        "answerUpdatedFlag": { "type": "boolean" }
+      },
+      "required": ["projectId", "title", "order", "draftStatus"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Questions assigned to a specific contact",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "contactId": { "type": "string" },
+        "questionIds": { "type": "array", "items": { "type": "string" } },
+        "token": { "type": "string" },
+        "tokenExpiry": { "type": "number" },
+        "beginDate": { "type": "number" },
+        "deadline": { "type": "number" },
+        "message": { "type": "string" },
+        "sentAt": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "completed"] }
+      },
+      "required": ["projectId", "contactId", "token", "tokenExpiry"]
+    },
+    "Answer": {
+      "title": "Answer",
+      "description": "Collected response for a question",
+      "type": "object",
+      "properties": {
+        "assignmentId": { "type": "string" },
+        "questionId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "contactId": { "type": "string" },
+        "latestAnswer": { "type": "string" },
+        "latestFileUrl": { "type": "string" },
+        "submittedAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["questionId", "projectId"]
+    },
+    "ProjectUserAssignment": {
+      "title": "Project User Assignment",
+      "description": "Internal team member assigned to a project",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "editor", "viewer"] },
+        "assignedAt": { "type": "number" }
+      },
+      "required": ["projectId", "userId", "assignedAt", "role"]
+    },
+    "PlatformUser": {
+      "title": "Platform User",
+      "description": "Internal team members and consultants",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "consultant", "viewer"] },
+        "language": { "type": "string", "enum": ["en", "tr"] },
+        "department": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Domain": {
+      "title": "Domain",
+      "description": "Global list of reporting domains/categories",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Record of user activity for administrative tracking",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string", "enum": ["create", "update", "delete"] },
+        "collection": { "type": "string" },
+        "recordId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["userId", "userName", "userEmail", "action", "collection", "recordId", "details", "timestamp"]
+    },
+    "AppSetting": {
+      "title": "App Setting",
+      "description": "Global application configurations",
+      "type": "object",
+      "properties": {
+        "platformName": { "type": "string" },
+        "platformLogoSquareUrl": { "type": "string" },
+        "platformLogoRectangleUrl": { "type": "string" },
+        "helpDashboardUrl": { "type": "string" },
+        "helpDashboardMd": { "type": "string" },
+        "helpCustomersUrl": { "type": "string" },
+        "helpCustomersMd": { "type": "string" },
+        "helpCustomerDirectoryUrl": { "type": "string" },
+        "helpCustomerDirectoryMd": { "type": "string" },
+        "helpProjectsUrl": { "type": "string" },
+        "helpProjectsMd": { "type": "string" },
+        "helpAssignmentsUrl": { "type": "string" },
+        "helpAssignmentsMd": { "type": "string" },
+        "helpUsersUrl": { "type": "string" },
+        "helpUsersMd": { "type": "string" },
+        "helpActivitiesUrl": { "type": "string" },
+        "helpActivitiesMd": { "type": "string" },
+        "updatedAt": { "type": "number" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["platformName"]
+    },
+    "KnowledgeBase": {
+      "title": "Knowledge Base",
+      "description": "Collection of documents for RAG",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "domainId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "KBDocument": {
+      "title": "Knowledge Base Document",
+      "description": "Individual files within a knowledge base",
+      "type": "object",
+      "properties": {
+        "kbId": { "type": "string" },
+        "name": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileType": { "type": "string" },
+        "size": { "type": "number" },
+        "text": { "type": "string" },
+        "processed": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["kbId", "name", "fileUrl", "createdAt"]
+    },
+    "OTPCode": {
+      "title": "OTP Code",
+      "description": "One-time passwords for email login",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "expiresAt": { "type": "object" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["code", "expiresAt", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/appSettings/{settingId}": { "schema": "AppSetting", "description": "Global config" },
+    "/segments/{segmentId}": { "schema": "Segment", "description": "Customer segments" },
+    "/templates/{templateId}": { "schema": "Template", "description": "Project templates" },
+    "/templatePages/{pageId}": { "schema": "TemplatePage", "description": "Template structure (flat)" },
+    "/questions/{questionId}": { "schema": "Question", "description": "Master questions" },
+    "/customers/{customerId}": { "schema": "Customer", "description": "Clients" },
+    "/customers/{customerId}/contacts/{contactId}": { "schema": "Contact", "description": "Client staff" },
+    "/customers/{customerId}/branches/{branchId}": { "schema": "Branch", "description": "Customer branches" },
+    "/projects/{projectId}": { "schema": "Project", "description": "Reporting initiatives" },
+    "/projects/{projectId}/pages/{pageId}": { "schema": "ProjectPage", "description": "Report sections" },
+    "/projects/{projectId}/assignments/{assignmentId}": { "schema": "Assignment", "description": "Task assignments" },
+    "/projects/{projectId}/answers/{answerId}": { "schema": "Answer", "description": "Client data inputs" },
+    "/projectUserAssignments/{assignmentId}": { "schema": "ProjectUserAssignment", "description": "Team project access mapping" },
+    "/platformUsers/{userId}": { "schema": "PlatformUser", "description": "Team access control" },
+    "/domains/{domainId}": { "schema": "Domain", "description": "Global domain options" },
+    "/auditLogs/{logId}": { "schema": "AuditLog", "description": "Activity history tracking" },
+    "/knowledgeBases/{kbId}": { "schema": "KnowledgeBase", "description": "RAG storage" },
+    "/knowledgeBases/{kbId}/documents/{docId}": { "schema": "KBDocument", "description": "Source files" },
+    "/otpCodes/{email}": { "schema": "OTPCode", "description": "Temporary login codes" }
+  }
+}

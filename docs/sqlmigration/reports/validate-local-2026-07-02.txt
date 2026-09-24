@@ -1,0 +1,62 @@
+
+> react-example@0.0.0 sql:validate
+> npm run migrate:validate-sql
+
+
+> react-example@0.0.0 migrate:validate-sql
+> tsx scripts/validate-sql-migration.ts
+
+[MONGO] Connected to mongodb://localhost:27018/governance
+
+=== Cross-DB validation (Mongo vs SQL) ===
+
+resource                      mongo      sql  status
+platformUsers                    12       12  ok
+segments                         12       12  ok
+domains                          10       10  ok
+customers                        26       26  ok
+branches                         60       60  ok
+contacts                         70       70  ok
+templates                         5        5  ok
+templatePages                    16       16  ok
+questions                       788      788  ok
+projects                          3        3  ok
+projectPages                     14       14  ok
+projectQuestions                576      576  ok
+projectUserAssignments            5        5  ok
+assignments                       3        3  ok
+answers                           0        0  ok
+answerVersions                    0        0  ok
+commentMessages                   0        0  ok
+otpCodes                          0        0  ok
+aiDrafts                          0        0  ok
+auditLogs                       210      210  ok
+knowledgeBases                    6        6  ok
+kbDocuments                      13       13  ok
+kbIngestJobs                      9        9  ok
+kbChunks                       1239     1239  ok
+translations                   1661     1661  ok
+emailSettings                     0        0  ok
+appSettings                       3        3  ok
+scheduledJobs                     1        1  ok
+emissionFactors                   8        8  ok
+emissionEntries                   0        0  ok
+emissionIntensityInputs           0        0  ok
+scope2MarketData                  0        0  ok
+metricDefinitions                13       13  ok
+metricEntries                     0        0  ok
+materialityTopics                 0        0  ok
+materialityAssessments            0        0  ok
+griMaterialityMatrixRows        107      107  ok
+griAssessmentScores               0        0  ok
+esrsAssessmentScores              0        0  ok
+issbAssessmentScores              0        0  ok
+frameworkRequirements            47       47  ok
+complianceRuns                    2        2  ok
+frameworkMappings                 4        4  ok
+consistencyConflicts              0        0  ok
+climateScenarios                  0        0  ok (no project scenarios)
+transitionLeverTemplates         10       10  ok
+sectorCategories                  0        0  ok
+
+All collections match.

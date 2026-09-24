@@ -1,0 +1,675 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #0f172a; /* slate-900 */
+  --color-brand-accent: #334155;  /* slate-700 */
+  --color-surface-bg: #f8fafc;    /* slate-50 */
+  --color-border-subtle: #e2e8f0; /* slate-200 */
+}
+
+@layer base {
+  body {
+    @apply bg-surface-bg text-brand-primary antialiased selection:bg-slate-200;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight text-slate-900;
+  }
+}
+
+.minimal-card {
+  @apply bg-white border border-slate-200 rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] transition-all;
+}
+
+.minimal-input {
+  @apply block w-full rounded-md border border-slate-200 shadow-sm focus:border-slate-900 focus:ring-1 focus:ring-slate-900 sm:text-sm p-2 bg-white transition-all outline-none;
+}
+
+.minimal-button-primary {
+  @apply bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50;
+}
+
+.minimal-button-secondary {
+  @apply bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-50 transition-colors;
+}
+
+@layer components {
+/**
+ * Inline / modal help markdown. Preflight removes list markers; we do not use @tailwindcss/typography.
+ */
+.help-markdown {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: rgb(51 65 85);
+}
+
+.help-markdown > :first-child {
+  margin-top: 0;
+}
+
+.help-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.help-markdown p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.help-markdown h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+  color: rgb(15 23 42);
+}
+
+/* Onboarding modal — title lives in header; avoid duplicate h1 in body */
+.onboarding-help-markdown > h1:first-child {
+  display: none;
+}
+
+.onboarding-help-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: rgb(51 65 85);
+}
+
+.onboarding-help-markdown h2 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: rgb(15 23 42);
+}
+
+.onboarding-help-markdown ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.onboarding-help-markdown li {
+  margin-bottom: 0.35rem;
+}
+
+.onboarding-help-markdown li::marker {
+  color: rgb(148 163 184);
+}
+
+.onboarding-help-markdown strong {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+/** Görevler (#/tasks) soru metni — proje formlarıyla aynı hiyerarşi */
+.tasks-question-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgb(30 41 59);
+}
+
+.tasks-question-markdown h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: 0.625rem;
+  letter-spacing: -0.02em;
+  color: rgb(15 23 42);
+}
+
+.tasks-question-markdown h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: rgb(15 23 42);
+}
+
+.tasks-question-markdown p {
+  margin-top: 0;
+  margin-bottom: 0.625rem;
+  color: rgb(100 116 139);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.tasks-question-markdown h1 + p {
+  margin-bottom: 0.75rem;
+}
+
+.tasks-question-markdown ul,
+.tasks-question-markdown ol {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.tasks-question-card .tasks-question-markdown h1:first-child {
+  margin-top: 0;
+}
+
+.tasks-question-card .tasks-question-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.help-markdown h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: rgb(15 23 42);
+}
+
+.help-markdown h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0.875rem;
+  margin-bottom: 0.375rem;
+  color: rgb(15 23 42);
+}
+
+.help-markdown ul,
+.help-markdown ol {
+  margin: 0.5rem 0 0.875rem;
+  padding-left: 1.35rem;
+}
+
+.help-markdown ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.help-markdown ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.help-markdown li {
+  margin: 0.35rem 0;
+  display: list-item;
+}
+
+.help-markdown li > p {
+  margin-bottom: 0.35rem;
+}
+
+.help-markdown ul ul {
+  list-style-type: circle;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.help-markdown blockquote {
+  margin: 0.875rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid rgb(59 130 246);
+  background-color: rgb(248 250 252);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: rgb(71 85 105);
+}
+
+.help-markdown blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.help-markdown strong {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.help-markdown a {
+  color: rgb(37 99 235);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.help-markdown hr {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid rgb(226 232 240);
+}
+
+.help-markdown code {
+  font-size: 0.8125rem;
+  background: rgb(241 245 249);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+
+.help-markdown pre {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: rgb(15 23 42);
+  color: rgb(241 245 249);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.help-markdown .markdown-table-wrap,
+.chat-markdown .markdown-table-wrap {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.help-markdown table,
+.chat-markdown table {
+  width: 100%;
+  min-width: 280px;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.help-markdown th,
+.help-markdown td,
+.chat-markdown th,
+.chat-markdown td {
+  border: 1px solid rgb(226 232 240);
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.help-markdown th,
+.chat-markdown th {
+  background: rgb(248 250 252);
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.help-markdown tr:nth-child(even) td,
+.chat-markdown tr:nth-child(even) td {
+  background: rgb(248 250 252 / 0.55);
+}
+
+.help-mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.help-mermaid--error {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(253 230 138);
+  background: rgb(255 251 235);
+}
+
+/** Help markdown on dark / selected backgrounds (e.g. assign-question picker). */
+.help-markdown--inverse {
+  color: rgb(241 245 249);
+}
+
+.help-markdown--inverse h1,
+.help-markdown--inverse h2,
+.help-markdown--inverse h3,
+.help-markdown--inverse strong {
+  color: rgb(255 255 255);
+}
+
+.help-markdown--inverse a {
+  color: rgb(191 219 254);
+}
+
+.help-markdown--inverse blockquote {
+  background-color: rgb(30 41 59);
+  border-left-color: rgb(96 165 250);
+  color: rgb(203 213 225);
+}
+
+/**
+ * Knowledge base chat assistant / user message markdown.
+ */
+.chat-markdown {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgb(51 65 85);
+}
+
+.chat-markdown > :first-child {
+  margin-top: 0;
+}
+
+.chat-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.chat-markdown p + p {
+  margin-top: 0.25rem;
+}
+
+.chat-markdown h1 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.625rem;
+  letter-spacing: -0.02em;
+  color: rgb(15 23 42);
+}
+
+.chat-markdown h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: rgb(15 23 42);
+}
+
+.chat-markdown h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.375rem;
+  color: rgb(15 23 42);
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.35rem;
+}
+
+.chat-markdown ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.chat-markdown ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.chat-markdown li {
+  margin: 0.4rem 0;
+  display: list-item;
+}
+
+.chat-markdown li > p {
+  margin-bottom: 0.4rem;
+}
+
+.chat-markdown ul ul {
+  list-style-type: circle;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.chat-markdown blockquote {
+  margin: 0.875rem 0 1rem;
+  padding: 0.625rem 0.875rem;
+  border-left: 3px solid rgb(59 130 246);
+  background-color: rgb(248 250 252);
+  border-radius: 0 0.375rem 0.375rem 0;
+  color: rgb(71 85 105);
+}
+
+.chat-markdown blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown strong {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.chat-markdown a {
+  color: rgb(37 99 235);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chat-markdown hr {
+  margin: 1.125rem 0;
+  border: 0;
+  border-top: 1px solid rgb(226 232 240);
+}
+
+.chat-markdown code {
+  font-size: 0.75rem;
+  background: rgb(241 245 249);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+
+.chat-markdown pre {
+  margin: 0.75rem 0 1rem;
+  padding: 0.625rem 0.75rem;
+  background: rgb(15 23 42);
+  color: rgb(241 245 249);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.bg-slate-900 .chat-markdown {
+  color: rgb(226 232 240);
+}
+
+.bg-slate-900 .chat-markdown h1,
+.bg-slate-900 .chat-markdown h2,
+.bg-slate-900 .chat-markdown h3,
+.bg-slate-900 .chat-markdown strong {
+  color: rgb(248 250 252);
+}
+
+.bg-slate-900 .chat-markdown a {
+  color: rgb(147 197 253);
+}
+
+.bg-slate-900 .chat-markdown code {
+  background: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+.bg-slate-900 .chat-markdown blockquote {
+  background-color: rgb(30 41 59);
+  border-left-color: rgb(96 165 250);
+  color: rgb(203 213 225);
+}
+
+/**
+ * Project page AI summary modal — readable headings, lists, spacing.
+ */
+.page-summary-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: rgb(51 65 85);
+}
+
+.page-summary-markdown > :first-child {
+  margin-top: 0;
+}
+
+.page-summary-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.page-summary-markdown p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.page-summary-markdown h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  color: rgb(15 23 42);
+}
+
+.page-summary-markdown h2:first-child {
+  margin-top: 0;
+}
+
+.page-summary-markdown h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: rgb(15 23 42);
+}
+
+.page-summary-markdown ul,
+.page-summary-markdown ol {
+  margin: 0.625rem 0 1.125rem;
+  padding-left: 1.5rem;
+}
+
+.page-summary-markdown ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.page-summary-markdown ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.page-summary-markdown li {
+  margin: 0.5rem 0;
+  display: list-item;
+  padding-left: 0.25rem;
+}
+
+.page-summary-markdown li > p {
+  margin-bottom: 0.5rem;
+}
+
+.page-summary-markdown ul ul {
+  list-style-type: circle;
+  margin-top: 0.375rem;
+  margin-bottom: 0.375rem;
+}
+
+.page-summary-markdown strong {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.page-summary-markdown blockquote {
+  margin: 1rem 0;
+  padding: 0.875rem 1rem;
+  border-left: 4px solid rgb(59 130 246);
+  background-color: rgb(248 250 252);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: rgb(71 85 105);
+}
+
+.page-summary-markdown hr {
+  margin: 1.25rem 0;
+  border: 0;
+  border-top: 1px solid rgb(226 232 240);
+}
+
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /** Formlar question list: reserve scrollbar gutter so content width does not shift. */
+  .forms-pane-scroll {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+
+  /** Görevler assignment forms — same scroll/sticky behavior as project forms pane */
+  .tasks-forms-scroll {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  /** Plan tab panes — always show vertical scrollbar + stable gutter for alignment. */
+  .plan-split-pane-scroll {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+
+  /** Gantt timeline — horizontal scroll only (nested inside vertical pane). */
+  .plan-gantt-x-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+
+  .plan-split-pane-scroll::-webkit-scrollbar,
+  .plan-gantt-x-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .plan-split-pane-scroll::-webkit-scrollbar-thumb,
+  .plan-gantt-x-scroll::-webkit-scrollbar-thumb {
+    background-color: rgb(203 213 225);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .plan-split-pane-scroll::-webkit-scrollbar-thumb:hover,
+  .plan-gantt-x-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(148 163 184);
+  }
+
+  .plan-split-pane-scroll::-webkit-scrollbar-track,
+  .plan-gantt-x-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /** Kontrol paneli (/#/): tablet+ always show vertical scrollbar. */
+  @media (min-width: 768px) {
+    .admin-dashboard-scroll {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(203 213 225) transparent;
+    }
+
+    .admin-dashboard-scroll::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .admin-dashboard-scroll::-webkit-scrollbar-thumb {
+      background-color: rgb(203 213 225);
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .admin-dashboard-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: rgb(148 163 184);
+    }
+
+    .admin-dashboard-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+}

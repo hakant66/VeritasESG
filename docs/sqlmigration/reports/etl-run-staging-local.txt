@@ -1,0 +1,63 @@
+
+> react-example@0.0.0 migrate:mongo-to-sql
+> tsx scripts/migrate-mongo-to-sql.ts
+
+[MONGO] Connected to mongodb://localhost:27018/governance
+
+=== ETL: Mongo(governance) -> SQL  ===
+
+Building legacy id map...
+  mapped 2 legacyFirebaseId values
+
+platformUsers                   12 docs  0 loaded, 0 failed
+segments                        12 docs  0 loaded, 0 failed
+domains                         10 docs  0 loaded, 0 failed
+customers                       26 docs  0 loaded, 0 failed
+branches                        60 docs  0 loaded, 0 failed
+contacts                        70 docs  0 loaded, 0 failed
+templates                        5 docs  0 loaded, 0 failed
+templatePages                   16 docs  0 loaded, 0 failed
+questions                      788 docs  0 loaded, 0 failed
+projects                         3 docs  0 loaded, 0 failed
+projectPages                    14 docs  0 loaded, 0 failed
+projectQuestions               576 docs  0 loaded, 0 failed
+projectUserAssignments           5 docs  0 loaded, 0 failed
+assignments                      3 docs  0 loaded, 0 failed
+answers                    0 docs (skip)
+answerVersions             0 docs (skip)
+commentMessages            0 docs (skip)
+otpCodes                   0 docs (skip)
+aiDrafts                   0 docs (skip)
+auditLogs                      210 docs  0 loaded, 0 failed
+knowledgeBases                   6 docs  0 loaded, 0 failed
+kbDocuments                     13 docs  0 loaded, 0 failed
+kbIngestJobs                     9 docs  0 loaded, 0 failed
+kbChunks                      1239 docs  0 loaded, 0 failed
+translations                  1661 docs  0 loaded, 0 failed
+emailSettings              0 docs (skip)
+appSettings                      3 docs  0 loaded, 0 failed
+scheduledJobs                    1 docs  0 loaded, 0 failed
+emissionFactors                  8 docs  0 loaded, 0 failed
+emissionEntries            0 docs (skip)
+emissionIntensityInputs    0 docs (skip)
+scope2MarketData           0 docs (skip)
+metricDefinitions               13 docs  0 loaded, 0 failed
+metricEntries              0 docs (skip)
+materialityTopics          0 docs (skip)
+materialityAssessments     0 docs (skip)
+griMaterialityMatrixRows       107 docs  0 loaded, 0 failed
+griAssessmentScores        0 docs (skip)
+esrsAssessmentScores       0 docs (skip)
+issbAssessmentScores       0 docs (skip)
+frameworkRequirements           47 docs  0 loaded, 0 failed
+complianceRuns                   2 docs  0 loaded, 0 failed
+frameworkMappings                4 docs  0 loaded, 0 failed
+consistencyConflicts       0 docs (skip)
+climateScenarios           0 docs (skip) (3 skipped — missing required fields)
+transitionLeverTemplates        10 docs  0 loaded, 0 failed
+sectorCategories           0 docs (skip)
+
+--- Summary ---
+Documents:  4933
+Loaded:     0
+Failed:     0

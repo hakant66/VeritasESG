@@ -1,0 +1,54 @@
+name: SQL integration tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  server-sql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: governance
+          POSTGRES_PASSWORD: governance
+          POSTGRES_DB: governance
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U governance -d governance"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Run SQL API tests
+        env:
+          # Prefer the Actions service DB over Testcontainers (avoids DinD hangs).
+          SQL_TEST_DATABASE_URL: postgresql://governance:governance@localhost:5432/governance
+        run: npx vitest run --project server-sql --reporter=verbose
+
+      # Advisory only: the repo carries a pre-existing tsc backlog (~74 errors in
+      # files unrelated to the SQL path). Kept visible as annotations but
+      # non-blocking so the SQL integration tests above gate this workflow.
+      # TODO: burn down the backlog and drop continue-on-error.
+      - name: Typecheck (advisory)
+        continue-on-error: true
+        run: npm run lint

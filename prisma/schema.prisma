@@ -1,0 +1,1461 @@
+// GovernanceIQ relational core schema (MongoDB -> SQL migration).
+//
+// Provider-neutral: the same models generate on PostgreSQL and MySQL. The
+// datasource `provider` and `url` are chosen per deployment via env at
+// generate/build time (see prisma/README.md). Only long text uses `@db.Text`
+// (valid on both engines); everything else avoids divergent native types.
+//
+// Design notes:
+//  - PK `id` is an opaque string carrying the original Mongo `_id` hex during
+//    ETL; new rows get a cuid. `legacyFirebaseId` is retained for one release
+//    then dropped (see migration plan section 6 / 13).
+//  - Reference fields (`customerId`, `projectId`, ...) are indexed STRING
+//    columns, not declared FK relations. This matches the current app (app-side
+//    joins) and avoids ETL failures on dirty legacy data. Real FKs can be added
+//    per-table after the Phase 0 audit.
+//  - Enum-like fields are modeled as String (app-layer validation is preserved
+//    in the routes) so the dynamic CRUD API and ETL never break on unexpected
+//    values.
+//  - Embedded objects/arrays are `Json` (jsonb on PG, json on MySQL).
+//  - createdAt/updatedAt are managed by the repository layer so the ETL can
+//    preserve original timestamps (no `@updatedAt` magic).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // swap to "mysql" per deployment; keep schema provider-neutral
+  url      = env("DATABASE_URL")
+}
+
+model Segment {
+  id                String   @id @default(cuid())
+  name              String
+  type              String
+  icon              String?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([name])
+  @@index([type])
+  @@index([legacyFirebaseId])
+  @@map("segments")
+}
+
+model Domain {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  description       String   @default("")
+  category          String   @default("esg")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("domains")
+}
+
+model Customer {
+  id                      String   @id @default(cuid())
+  name                    String
+  sectorIds               Json     @default("[]")
+  address                 String   @default("")
+  logoUrl                 String?
+  websiteUrl              String?
+  description             String   @default("") @db.Text
+  brandPortfolio          String   @default("") @db.Text
+  sectoralDefinition      String   @default("") @db.Text
+  naceCode                String   @default("")
+  naceDescription         String   @default("")
+  sasbMacroSector         String   @default("")
+  sasbSubSectorSics       String   @default("")
+  headquartersCountry     String   @default("")
+  operationGeographies    String   @default("") @db.Text
+  employeeCountTotal      Int?
+  employeeCountBlueCollar Int?
+  employeeCountWhiteCollar Int?
+  employeeCountMale       Int?
+  employeeCountFemale     Int?
+  employeeContractBreakdown String @default("") @db.Text
+  taxNumber               String   @default("")
+  reportingCurrency       String   @default("")
+  annualTurnoverMeur      Float?
+  totalAssetsMeur         Float?
+  legalName               String   @default("")
+  employeeCountPermanent  Int?
+  employeeCountTemporary  Int?
+  reportingFrameworkKeys  Json     @default("[]")
+  csrdScopeEmployeeCount  Int?
+  csrdScopeTurnoverMeur   Float?
+  csrdScopeAssetsMeur     Float?
+  isPublicInterestEntity  Boolean  @default(false)
+  esgSummary              Json     @default("{}")
+  materialityFramework    String   @default("gri")
+  materialityAssessment   Json     @default("{}")
+  legacyFirebaseId        String?
+  createdBy               String?
+  ownerId                 String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @default(now())
+
+  @@index([name])
+  @@index([legacyFirebaseId])
+  @@map("customers")
+}
+
+model Branch {
+  id                String   @id @default(cuid())
+  customerId        String
+  name              String
+  type              String   @default("")
+  address           String   @default("") @db.Text
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([customerId])
+  @@index([customerId, name])
+  @@index([legacyFirebaseId])
+  @@map("branches")
+}
+
+model Contact {
+  id                String   @id @default(cuid())
+  customerId        String
+  branchId          String?
+  name              String
+  email             String
+  role              String
+  department        String
+  linkedinUrl       String?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([customerId])
+  @@index([branchId])
+  @@index([email])
+  @@index([customerId, email])
+  @@index([legacyFirebaseId])
+  @@map("contacts")
+}
+
+model Template {
+  id                String   @id @default(cuid())
+  name              String
+  sectorId          String
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([sectorId])
+  @@index([sectorId, name])
+  @@index([legacyFirebaseId])
+  @@map("templates")
+}
+
+model TemplatePage {
+  id                String   @id @default(cuid())
+  templateId        String
+  title             String
+  order             Int      @default(0)
+  briefText         String   @default("") @db.Text
+  briefFileUrl      String?
+  pageKind          String   @default("customer_question_set")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([templateId])
+  @@index([templateId, order])
+  @@index([legacyFirebaseId])
+  @@map("templatepages")
+}
+
+model Question {
+  id                String   @id @default(cuid())
+  templateId        String
+  sectorId          String
+  pageId            String?
+  domainIds         Json     @default("[]")
+  bolum             String   @default("")
+  kod               String
+  baslik            String
+  soru              String   @db.Text
+  firmaYaniti       String   @default("") @db.Text
+  firmaYanitiYil1   String   @default("") @db.Text
+  firmaYanitiYil2   String   @default("") @db.Text
+  firmaYanitiYil3   String   @default("") @db.Text
+  firmaNot          String   @default("") @db.Text
+  ilgiliBirim       String   @default("")
+  veriDogrulugu     String   @default("")
+  aciklama          String   @default("") @db.Text
+  aciklamaVideoUrl  String   @default("")
+  ornekYanit        String   @default("") @db.Text
+  dayanak           String   @default("") @db.Text
+  onay              String   @default("")
+  raporYeri         String   @default("")
+  reportingItr      String   @default("")
+  tsrs1             String   @default("")
+  tsrs2             String   @default("")
+  sasbRtCh          String   @default("")
+  gri               String   @default("")
+  msci              String   @default("")
+  esrs              String   @default("")
+  kayit             String   @default("")
+  numara            Int?
+  thematicGroup     String   @default("")
+  isMandatory       Boolean  @default(false)
+  order             Int      @default(0)
+  answerFormat      String   @default("textarea")
+  soruCogaltma      String   @default("yok")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([templateId])
+  @@index([sectorId])
+  @@index([pageId])
+  @@index([templateId, pageId, order])
+  @@index([templateId, thematicGroup, numara])
+  @@index([legacyFirebaseId])
+  @@map("questions")
+}
+
+model ProjectQuestion {
+  id                String   @id @default(cuid())
+  projectId         String
+  sourceQuestionId  String
+  sourceTemplateId  String
+  sectorId          String
+  pageId            String?
+  domainIds         Json     @default("[]")
+  bolum             String   @default("")
+  kod               String
+  baslik            String
+  soru              String   @db.Text
+  firmaYaniti       String   @default("") @db.Text
+  firmaYanitiYil1   String   @default("") @db.Text
+  firmaYanitiYil2   String   @default("") @db.Text
+  firmaYanitiYil3   String   @default("") @db.Text
+  firmaNot          String   @default("") @db.Text
+  ilgiliBirim       String   @default("")
+  veriDogrulugu     String   @default("")
+  aciklama          String   @default("") @db.Text
+  aciklamaVideoUrl  String   @default("")
+  ornekYanit        String   @default("") @db.Text
+  dayanak           String   @default("") @db.Text
+  onay              String   @default("")
+  raporYeri         String   @default("")
+  reportingItr      String   @default("")
+  tsrs1             String   @default("")
+  tsrs2             String   @default("")
+  sasbRtCh          String   @default("")
+  gri               String   @default("")
+  msci              String   @default("")
+  esrs              String   @default("")
+  kayit             String   @default("")
+  numara            Int?
+  thematicGroup     String   @default("")
+  isMandatory       Boolean  @default(false)
+  order             Int      @default(0)
+  answerFormat      String   @default("textarea")
+  soruCogaltma      String   @default("yok")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([projectId])
+  @@index([sourceQuestionId])
+  @@index([sourceTemplateId])
+  @@index([sectorId])
+  @@index([pageId])
+  @@index([projectId, pageId, order])
+  @@index([projectId, sourceQuestionId])
+  @@index([legacyFirebaseId])
+  @@map("projectquestions")
+}
+
+model Project {
+  id                       String   @id @default(cuid())
+  customerId               String
+  templateId               String?
+  name                     String
+  domainIds                Json     @default("[]")
+  category                 String   @default("Project")
+  status                   String   @default("active")
+  startDate                String?
+  endDate                  String?
+  progress                 Int?
+  helpVideoUrl             String?
+  allowMultipleAssignments Boolean  @default(false)
+  legacyFirebaseId         String?
+  createdBy                String?
+  ownerId                  String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now())
+
+  @@index([customerId])
+  @@index([templateId])
+  @@index([customerId, status])
+  @@index([legacyFirebaseId])
+  @@map("projects")
+}
+
+model ProjectPage {
+  id                   String   @id @default(cuid())
+  projectId            String
+  sourceTemplatePageId String
+  title                String
+  order                Int      @default(0)
+  briefText            String   @default("") @db.Text
+  briefFileUrl         String?
+  pageKind             String   @default("customer_question_set")
+  draftContent         String   @default("") @db.Text
+  draftStatus          String   @default("pending")
+  answerUpdatedFlag    Boolean  @default(false)
+  legacyFirebaseId     String?
+  createdBy            String?
+  ownerId              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now())
+
+  @@index([projectId])
+  @@index([sourceTemplatePageId])
+  @@index([projectId, order])
+  @@index([legacyFirebaseId])
+  @@map("projectpages")
+}
+
+model ProjectUserAssignment {
+  id                String   @id @default(cuid())
+  projectId         String
+  userId            String
+  role              String
+  assignedAt        DateTime
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([legacyFirebaseId])
+  @@map("projectuserassignments")
+}
+
+model Assignment {
+  id                          String    @id @default(cuid())
+  projectId                   String
+  recipientId                 String
+  recipientType               String
+  questionIds                 Json      @default("[]")
+  token                       String?
+  tokenExpiry                 DateTime?
+  beginDate                   DateTime?
+  deadline                    DateTime?
+  /** User-selected: urgent | normal (default normal). */
+  urgency                     String    @default("normal")
+  message                     String    @default("") @db.Text
+  sentAt                      DateTime?
+  completedAt                 DateTime?
+  assignedBy                  String?
+  assignedByName              String?
+  /** Approver (platform user or contact) for assignment-level approval. */
+  approverId                  String?
+  approverType                String?
+  approvedAt                  DateTime?
+  approvedBy                  String?
+  submittedForApprovalAt      DateTime?
+  status                      String    @default("pending")
+  assigneeNoticeSentAt        DateTime?
+  assigneeNoticeSentByUserId  String?
+  assigneeNoticeSentByName    String?
+  assigneeNoticeSummary       String?   @db.Text
+  assigneeNoticeHasNotes      Boolean   @default(false)
+  assigneeNoticeHasEvidence   Boolean   @default(false)
+  assigneeNoticeItems         Json?
+  /** Automated deadline reminder keys already sent (before_3d, on_due, overdue_1..3). */
+  remindersSent               Json      @default("[]")
+  lastReminderAt              DateTime?
+  reminderCount               Int       @default(0)
+  legacyFirebaseId            String?
+  createdBy                   String?
+  ownerId                     String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([recipientId])
+  @@index([token])
+  @@index([assignedBy])
+  @@index([approverId])
+  @@index([projectId, recipientId])
+  @@index([projectId, status])
+  @@index([deadline, status])
+  @@index([legacyFirebaseId])
+  @@map("assignments")
+}
+
+/** Durable log of automated assignment deadline reminder emails. */
+model AssignmentReminderLog {
+  id              String   @id @default(cuid())
+  assignmentId    String
+  projectId       String
+  reminderKey     String
+  recipientEmail  String?
+  daysBefore      Int?
+  daysAfter       Int?
+  sentAt          DateTime @default(now())
+  legacyFirebaseId String?
+  createdBy       String?
+  ownerId         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  @@unique([assignmentId, reminderKey])
+  @@index([assignmentId])
+  @@index([projectId])
+  @@index([sentAt])
+  @@index([legacyFirebaseId])
+  @@map("assignmentreminderlogs")
+}
+
+model Answer {
+  id                 String   @id @default(cuid())
+  assignmentId       String
+  questionId         String
+  projectId          String
+  contactId          String
+  latestAnswer       String   @default("") @db.Text
+  latestFileUrl      String?
+  submittedAt        DateTime
+  comment            String   @default("") @db.Text
+  answerNotes        Json?
+  evidenceName       String?
+  submittedByUserId  String?
+  onBehalfOfUserId   String?
+  workflowStatus     String?
+  workflowStatusLog  Json?
+  reviewComments     Json?
+  adminReviewStatus  String?
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@unique([projectId, questionId, contactId])
+  @@index([assignmentId])
+  @@index([questionId])
+  @@index([projectId])
+  @@index([contactId])
+  @@index([submittedByUserId])
+  @@index([onBehalfOfUserId])
+  @@index([workflowStatus])
+  @@index([projectId, assignmentId, questionId])
+  @@index([legacyFirebaseId])
+  @@map("answers")
+}
+
+model AnswerVersion {
+  id                String   @id @default(cuid())
+  answerId          String
+  questionId        String
+  answerText        String   @db.Text
+  fileUrl           String?
+  changedAt         DateTime
+  changeNote        String   @default("")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([answerId])
+  @@index([questionId])
+  @@index([answerId, changedAt])
+  @@index([legacyFirebaseId])
+  @@map("answerversions")
+}
+
+model CommentMessage {
+  id                String   @id @default(cuid())
+  authorType        String
+  authorId          String
+  text              String   @db.Text
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([authorId])
+  @@index([authorType, authorId])
+  @@index([legacyFirebaseId])
+  @@map("commentmessages")
+}
+
+model PlatformUser {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  passwordHash       String?
+  avatarUrl          String?   @db.Text
+  role               String    @default("customer")
+  department         String
+  isConfirmed        Boolean   @default(false)
+  contactId          String?
+  customerId         String?
+  language           String    @default("tr")
+  autoShowHelpOnOpen Boolean   @default(false)
+  lastLoginAt        DateTime?
+  passwordUpdatedAt  DateTime?
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now())
+
+  @@index([role])
+  @@index([contactId])
+  @@index([customerId])
+  @@index([customerId, role])
+  @@index([legacyFirebaseId])
+  @@map("platformusers")
+}
+
+model OtpCode {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  code              String
+  expiresAt         DateTime
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([email, code])
+  @@index([expiresAt])
+  @@map("otpcodes")
+}
+
+model AIDraft {
+  id                String    @id @default(cuid())
+  projectPageId     String
+  promptUsed        String    @db.Text
+  draftContent      String    @db.Text
+  generatedAt       DateTime
+  approvedAt        DateTime?
+  approvedBy        String?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
+
+  @@index([projectPageId])
+  @@index([approvedBy])
+  @@index([projectPageId, generatedAt])
+  @@index([legacyFirebaseId])
+  @@map("aidrafts")
+}
+
+model AuditLog {
+  id                  String    @id @default(cuid())
+  userId              String
+  userName            String
+  userEmail           String
+  action              String
+  collection          String
+  recordId            String
+  projectId           String?
+  details             String    @db.Text
+  timestamp           DateTime
+  emailMessageId      String?
+  emailRecipientEmail String?
+  emailDeliveryStatus String?
+  emailDeliveryDetail String?   @db.Text
+  emailDeliveryAt     DateTime?
+  legacyFirebaseId    String?
+  createdBy           String?
+  ownerId             String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+
+  @@index([userId])
+  @@index([collection])
+  @@index([recordId])
+  @@index([projectId])
+  @@index([emailMessageId])
+  @@index([emailRecipientEmail])
+  @@index([projectId, timestamp])
+  @@index([collection, recordId])
+  @@index([collection, emailMessageId])
+  @@index([legacyFirebaseId])
+  @@map("auditlogs")
+}
+
+model KnowledgeBase {
+  id                String   @id @default(cuid())
+  name              String
+  description       String   @db.Text
+  domainIds         Json     @default("[]")
+  domainId          String?
+  projectId         String?
+  customerId        String?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([domainId])
+  @@index([projectId])
+  @@index([customerId])
+  @@index([legacyFirebaseId])
+  @@map("knowledgebases")
+}
+
+model KBDocument {
+  id                String   @id @default(cuid())
+  kbId              String
+  name              String
+  fileUrl           String   @db.Text
+  fileType          String
+  size              Int
+  text              String?  @db.Text
+  processed         Boolean  @default(false)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([kbId])
+  @@index([kbId, createdAt])
+  @@index([legacyFirebaseId])
+  @@map("kbdocuments")
+}
+
+model KbIngestJob {
+  id                String    @id @default(cuid())
+  documentId        String
+  kbId              String
+  status            String    @default("queued")
+  chunkCount        Int?
+  error             String?   @db.Text
+  startedAt         DateTime?
+  completedAt       DateTime?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
+
+  @@index([documentId])
+  @@index([kbId])
+  @@index([documentId, createdAt])
+  @@index([legacyFirebaseId])
+  @@map("kbingestjobs")
+}
+
+// NOTE: `kb_chunks` is the RAG search payload. On a PostgreSQL core it lives
+// here with an added `embedding vector(768)` column + `tsvector` index managed
+// by the vector provider via raw SQL (Prisma has no native vector type). On a
+// MySQL core these rows live in a Postgres SIDECAR instead and this table is
+// unused. See server/data/vector/*.
+model KbChunk {
+  id                String   @id @default(cuid())
+  kbId              String
+  documentId        String
+  customerId        String?
+  projectId         String?
+  chunkIndex        Int
+  text              String   @db.Text
+  qdrantPointId     String
+  embeddingModel    String
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([kbId])
+  @@index([documentId])
+  @@index([customerId])
+  @@index([projectId])
+  @@index([qdrantPointId])
+  @@index([legacyFirebaseId])
+  @@map("kbchunks")
+}
+
+model Translation {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  en                String   @db.Text
+  tr                String   @db.Text
+  group             String?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([group])
+  @@index([group, key])
+  @@index([legacyFirebaseId])
+  @@map("translations")
+}
+
+model EmailSettings {
+  id                   String   @id @default(cuid())
+  fromName             String
+  fromEmail            String
+  provider             String   @default("smtp")
+  apiKey               String?
+  smtpHost             String?
+  smtpPort             Int?
+  smtpUser             String?
+  smtpPass             String?
+  smtpSecure           Boolean  @default(false)
+  passwordResetSubject String
+  passwordResetBody    String   @db.Text
+  legacyFirebaseId     String?
+  createdBy            String?
+  ownerId              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("emailsettings")
+}
+
+model AppSetting {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  data              Json     @default("{}")
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("appsettings")
+}
+
+model ScheduledJob {
+  id                String    @id @default(cuid())
+  name              String
+  command           String    @db.Text
+  cronExpression    String
+  enabled           Boolean   @default(false)
+  lastRunAt         DateTime?
+  lastRunStatus     String    @default("never")
+  lastRunOutput     String    @default("") @db.Text
+  nextRunAt         DateTime?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("scheduledjobs")
+}
+
+model EmissionFactor {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  scope             String
+  category          String
+  activityUnit      String
+  factorValue       Float
+  factorUnit        String
+  source            String
+  versionYear       Int
+  country           String   @default("Global")
+  isActive          Boolean  @default(true)
+  notes             String   @default("") @db.Text
+  userOverridable   Boolean  @default(false)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([scope, isActive])
+  @@index([legacyFirebaseId])
+  @@map("emissionfactors")
+}
+
+model EmissionEntry {
+  id                 String   @id @default(cuid())
+  customerId         String
+  year               Int
+  scope              String
+  category           String
+  activityValue      Float
+  activityUnit       String
+  emissionFactorId   String
+  factorValue        Float
+  facilityId         String?
+  facilityName       String   @default("")
+  resultTCO2e        Float
+  calculationFormula String   @default("") @db.Text
+  notes              String   @default("") @db.Text
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@index([customerId])
+  @@index([year])
+  @@index([emissionFactorId])
+  @@index([facilityId])
+  @@index([customerId, year, scope])
+  @@index([legacyFirebaseId])
+  @@map("emissionentries")
+}
+
+model EmissionIntensityInput {
+  id                String   @id @default(cuid())
+  customerId        String
+  year              Int
+  revenueMillionTRY Float?
+  productionTons    Float?
+  employeeCount     Float?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@unique([customerId, year])
+  @@index([customerId])
+  @@index([legacyFirebaseId])
+  @@map("emissionintensityinputs")
+}
+
+model Scope2MarketData {
+  id                            String   @id @default(cuid())
+  customerId                    String
+  year                          Int
+  certificateMWh                Float    @default(0)
+  contractualFactorKgCO2ePerKWh Float    @default(0)
+  legacyFirebaseId              String?
+  createdBy                     String?
+  ownerId                       String?
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @default(now())
+
+  @@unique([customerId, year])
+  @@index([customerId])
+  @@index([legacyFirebaseId])
+  @@map("scope2marketdatas")
+}
+
+model MetricDefinition {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  name              String
+  nameTr            String
+  category          String
+  unit              String
+  description       String   @default("") @db.Text
+  isRequired        Boolean  @default(true)
+  scope             String
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("metricdefinitions")
+}
+
+model MetricEntry {
+  id                   String   @id @default(cuid())
+  customerId           String
+  year                 Int
+  facilityId           String?
+  facilityName         String   @default("")
+  metricDefinitionId   String
+  metricDefinitionCode String
+  value                Float?
+  unit                 String
+  notes                String   @default("") @db.Text
+  approvalStage        String   @default("DATA_ENTRY")
+  approvalStatusLog    Json     @default("[]")
+  ownerUserId          String?
+  emissionEntryId      String?
+  legacyFirebaseId     String?
+  createdBy            String?
+  ownerId              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now())
+
+  // Sparse-unique in Mongo when facilityId is set (one row per facility per metric).
+  // Company-wide rows (NULL facilityId) are not DB-unique — Postgres partial index
+  // matches Mongo sparse behaviour. Writes normalize empty facilityId to NULL.
+  @@index([customerId])
+  @@index([metricDefinitionId])
+  @@index([metricDefinitionCode])
+  @@index([facilityId])
+  @@index([customerId, year])
+  @@index([customerId, year, metricDefinitionCode, facilityId])
+  @@index([legacyFirebaseId])
+  @@map("metricentries")
+}
+
+model MaterialityTopic {
+  id                 String   @id @default(cuid())
+  customerId         String
+  year               Int
+  esrsId             String
+  financialImpact    Int      @default(1)
+  impactSeverity     Int      @default(1)
+  probability        Int      @default(1)
+  stakeholderConcern Int      @default(1)
+  isMaterial         Boolean  @default(false)
+  notes              String   @default("") @db.Text
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@unique([customerId, year, esrsId])
+  @@index([customerId])
+  @@index([legacyFirebaseId])
+  @@map("materialitytopics")
+}
+
+model MaterialityAssessment {
+  id                String   @id @default(cuid())
+  customerId        String
+  year              Int
+  status            String   @default("DRAFT")
+  materialTopics    Json     @default("[]")
+  approvedBy        String?
+  approvedAt        DateTime?
+  notes             String   @default("") @db.Text
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@unique([customerId, year])
+  @@index([customerId])
+  @@index([legacyFirebaseId])
+  @@map("materialityassessments")
+}
+
+model GRIMaterialityMatrixRow {
+  id                String   @id @default(cuid())
+  customerId        String
+  order             Int      @default(0)
+  subject           String
+  griMapping        String
+  disclosures       String   @db.Text
+  notes             String   @default("") @db.Text
+  // GRI 2/3-type "always reported" rows: excluded from survey scoring + matrix.
+  isUniversalDisclosure Boolean @default(false)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([customerId])
+  @@index([customerId, order])
+  @@index([legacyFirebaseId])
+  @@map("grimaterialitymatricesrow")
+}
+
+model GRIAssessmentScore {
+  id                 String   @id @default(cuid())
+  customerId         String
+  year               Int
+  griRowId           String
+  subject            String
+  financialImpact    Int      @default(0)
+  impactSeverity     Int      @default(0)
+  probability        Int      @default(0)
+  stakeholderConcern Int      @default(0)
+  isMaterial         Boolean  @default(false)
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@unique([customerId, year, griRowId])
+  @@index([customerId])
+  @@index([year])
+  @@index([legacyFirebaseId])
+  @@map("griassessmentscores")
+}
+
+model ESRSAssessmentScore {
+  id                 String   @id @default(cuid())
+  customerId         String
+  year               Int
+  esrsRowId          String
+  subject            String
+  financialImpact    Int      @default(0)
+  impactSeverity     Int      @default(0)
+  probability        Int      @default(0)
+  stakeholderConcern Int      @default(0)
+  isMaterial         Boolean  @default(false)
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@unique([customerId, year, esrsRowId])
+  @@index([customerId])
+  @@index([year])
+  @@index([legacyFirebaseId])
+  @@map("esrsassessmentscores")
+}
+
+model ISSBAssessmentScore {
+  id                 String   @id @default(cuid())
+  customerId         String
+  year               Int
+  issbRowId          String
+  subject            String
+  financialImpact    Int      @default(0)
+  impactSeverity     Int      @default(0)
+  probability        Int      @default(0)
+  stakeholderConcern Int      @default(0)
+  isMaterial         Boolean  @default(false)
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@unique([customerId, year, issbRowId])
+  @@index([customerId])
+  @@index([year])
+  @@index([legacyFirebaseId])
+  @@map("issbassessmentscores")
+}
+
+model FrameworkRequirement {
+  id                String   @id @default(cuid())
+  frameworkId       String
+  frameworkName     String
+  version           String   @default("2023")
+  topicId           String
+  topicName         String
+  disclosureId      String   @unique
+  disclosureName    String
+  dataPointKeys     Json     @default("[]")
+  alternateDataKeys Json     @default("[]")
+  description       String   @db.Text
+  guidance          String?  @db.Text
+  materiality       Boolean  @default(false)
+  materialityTopic  String?
+  conditions        Json     @default("[]")
+  priority          String   @default("high")
+  mandatory         Boolean  @default(true)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([frameworkId])
+  @@index([topicId])
+  @@index([frameworkId, mandatory])
+  @@index([legacyFirebaseId])
+  @@map("frameworkrequirements")
+}
+
+model ComplianceRun {
+  id                    String    @id @default(cuid())
+  projectId             String
+  frameworkId           String
+  totalRequirements     Int
+  answeredRequirements  Int
+  completionPercentage  Float
+  gaps                  Json      @default("[]")
+  status                String    @default("in_progress")
+  criticalGapCount      Int       @default(0)
+  validationStartedAt   DateTime?
+  validationCompletedAt DateTime?
+  validationDurationMs  Int?
+  legacyFirebaseId      String?
+  createdBy             String?
+  ownerId               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([status])
+  @@index([projectId, frameworkId])
+  @@index([projectId, createdAt])
+  @@index([legacyFirebaseId])
+  @@map("complianceruns")
+}
+
+model FrameworkMapping {
+  id                       String   @id @default(cuid())
+  mappingId                String   @unique
+  mappingName              String
+  equivalenceLevel         String
+  varianceThresholdPercent Float
+  varianceReasonGuide      Json     @default("[]")
+  frameworks               Json     @default("[]")
+  reconciliationLogic      Json     @default("{}")
+  legacyFirebaseId         String?
+  createdBy                String?
+  ownerId                  String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now())
+
+  @@index([legacyFirebaseId])
+  @@map("frameworkmappings")
+}
+
+model ConsistencyConflict {
+  id                String   @id @default(cuid())
+  projectId         String
+  mappingId         String
+  framework1        Json
+  framework2        Json
+  variance          Json
+  likelyCauses      Json     @default("[]")
+  status            String   @default("unresolved")
+  resolution        Json?
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([projectId])
+  @@index([projectId, status])
+  @@index([projectId, mappingId])
+  @@index([legacyFirebaseId])
+  @@map("consistencyconflicts")
+}
+
+model ClimateScenario {
+  id                  String   @id @default(cuid())
+  projectId           String
+  scenarioName        String?
+  scenarioDescription String?  @db.Text
+  pathwayId           String?
+  pathwayName         String?
+  baselineEmissions   Float?
+  baselineYear        Int?
+  targetYear          Int?
+  targetEmissions     Float?
+  selectedLevers      Json     @default("[]")
+  financialImpact     Json?
+  riskAssessment      Json?
+  sbtAlignment        Json?
+  roadmap             Json     @default("[]")
+  legacyFirebaseId    String?
+  createdBy           String?
+  ownerId             String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+
+  @@index([projectId])
+  @@index([pathwayId])
+  @@index([legacyFirebaseId])
+  @@map("climatescenarios")
+}
+
+model TransitionLeverTemplate {
+  id                     String   @id @default(cuid())
+  leverId                String   @unique
+  leverName              String?
+  category               String?
+  description            String?  @db.Text
+  applicableIndustries   Json     @default("[]")
+  trl                    Int?
+  maturity               String?
+  emissionReductionRange Json?
+  capexRange             Json?
+  opexRange              Json?
+  paybackRange           Json?
+  implementationDuration Json?
+  technicalRisk          String?
+  marketRisk             String?
+  regulatoryRisk         String?
+  sbtEligible            Boolean?
+  legacyFirebaseId       String?
+  createdBy              String?
+  ownerId               String?
+  createdAt              DateTime @default(now())
+  updatedAt             DateTime @default(now())
+
+  @@index([category])
+  @@index([legacyFirebaseId])
+  @@map("transitionlevertemplates")
+}
+
+model SectorCategory {
+  id                String   @id @default(cuid())
+  questionSetType   String   @default("sozel")
+  numara            Int?
+  kod               String
+  baslik            String
+  soru              String   @db.Text
+  bolum             String   @default("")
+  firmaYaniti       String   @default("") @db.Text
+  ilgiliBirim       String   @default("")
+  veriDogrulugu     String   @default("")
+  soruAciklama      String   @default("") @db.Text
+  ornekYanit        String   @default("") @db.Text
+  dayanak           String   @default("") @db.Text
+  onay              String   @default("")
+  tesisBazinda      String   @default("")
+  ekZorunlu         String   @default("")
+  raporYeri         String   @default("")
+  reportingItr      String   @default("")
+  atananSayfa       String?
+  kayit             String   @default("")
+  metadata          Json     @default("{}")
+  order             Int      @default(0)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([kod])
+  @@index([questionSetType, order])
+  @@index([order])
+  @@index([legacyFirebaseId])
+  @@map("sectorcategories")
+}
+
+/// SASB macro sector catalog (Resource Transformation, Financials, …).
+model SasbMacroSector {
+  id                String   @id
+  labelEn           String
+  labelTr           String
+  sortOrder         Int      @default(0)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([sortOrder])
+  @@index([legacyFirebaseId])
+  @@map("sasbmacrosectors")
+}
+
+/// SASB SICS sub-sector catalog (RT-IG, TC-HW, …).
+model SasbSubSector {
+  id                String   @id
+  macroId           String
+  labelEn           String
+  labelTr           String
+  sortOrder         Int      @default(0)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([macroId])
+  @@index([sortOrder])
+  @@index([legacyFirebaseId])
+  @@map("sasbsubsectors")
+}
+
+/// NACE Rev.2 → SASB SICS mapping rows (source of truth for auto-match UI).
+model NaceCodeMapping {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  descriptionEn     String   @default("") @db.Text
+  descriptionTr     String   @default("") @db.Text
+  sasbSubSectorId   String
+  sortOrder         Int      @default(0)
+  legacyFirebaseId  String?
+  createdBy         String?
+  ownerId           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([sasbSubSectorId])
+  @@index([sortOrder])
+  @@index([legacyFirebaseId])
+  @@map("nacecodemappings")
+}
+
+// ---------------------------------------------------------------------------
+// Materiality Assessment Survey module — crowd-sourced double-materiality layer
+// on top of the existing single-scorer materiality subsystem. SQL-first (no
+// Mongoose models). See docs/features/materiality-survey-module-plan.md.
+// Foreign keys are loose indexed strings (repo convention); cascade handled in
+// server/data/materialitySurveyDataAccess.ts.
+// ---------------------------------------------------------------------------
+
+/// Survey campaign. status: draft | collecting | scoring | finalized. topicRollup: max | weighted_avg.
+model MaterialitySurvey {
+  id                 String    @id @default(cuid())
+  customerId         String
+  subeId             String?
+  title              String
+  standardRef        String    @default("ESRS") // GRI | ESRS | SASB
+  year               Int?
+  status             String    @default("draft")
+  deadline           DateTime?
+  scaleMax           Int       @default(5)
+  topicRollup        String    @default("max") // max | weighted_avg
+  materialThreshold  Float?
+  reminderCadence    Json      @default("[3, 7]") // days-after-invite for each reminder
+  reminderCutoffDays Int       @default(14)
+  maxReminders       Int       @default(3)
+  isTemplate         Boolean   @default(false)
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @default(now())
+
+  @@index([customerId])
+  @@index([customerId, status])
+  @@index([isTemplate])
+  @@index([legacyFirebaseId])
+  @@map("materialitysurveys")
+}
+
+/// Impact / Risk / Opportunity under a topic, within a survey.
+model MaterialityIro {
+  id                 String   @id @default(cuid())
+  surveyId           String
+  topicRef           String   // GRIMaterialityMatrixRow.id (longlist row)
+  description        String   @default("") @db.Text
+  iroType            String   @default("impact") // impact | risk | opportunity
+  valueChainPosition String   @default("own_operations") // own_operations | upstream | downstream
+  polarity           String   @default("negative") // positive | negative
+  sasbRef            String?
+  esrsRef            String?
+  sortOrder          Int      @default(0)
+  legacyFirebaseId   String?
+  createdBy          String?
+  ownerId            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+
+  @@index([surveyId])
+  @@index([surveyId, topicRef])
+  @@index([legacyFirebaseId])
+  @@map("materialityiros")
+}
+
+/// Weighted stakeholder group within a survey.
+model MaterialityStakeholderGroup {
+  id               String   @id @default(cuid())
+  surveyId         String
+  name             String
+  weight           Float    @default(1.0)
+  sortOrder        Int      @default(0)
+  legacyFirebaseId String?
+  createdBy        String?
+  ownerId          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+
+  @@index([surveyId])
+  @@index([legacyFirebaseId])
+  @@map("materialitystakeholdergroups")
+}
+
+/// Individual stakeholder + tokenized invite. status: invited | reminded | completed | expired.
+model MaterialityStakeholder {
+  id               String    @id @default(cuid())
+  groupId          String
+  name             String
+  email            String
+  phone            String?
+  locale           String    @default("tr") // tr | en
+  inviteToken      String    @unique
+  status           String    @default("invited")
+  invitedAt        DateTime?
+  completedAt      DateTime?
+  legacyFirebaseId String?
+  createdBy        String?
+  ownerId          String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now())
+
+  @@index([groupId])
+  @@index([status])
+  @@index([legacyFirebaseId])
+  @@map("materialitystakeholders")
+}
+
+/// One stakeholder's double-materiality scoring of one IRO. Upsert on (iroId, stakeholderId).
+model MaterialitySurveyResponse {
+  id                        String   @id @default(cuid())
+  iroId                     String
+  stakeholderId             String
+  financialMaterialityScore Int      @default(0)
+  impactSeverityScore       Int      @default(0)
+  impactScopeScore          Int      @default(0)
+  impactProbabilityScore    Int      @default(0)
+  irremediabilityScore      Int?
+  freeTextComment           String   @default("") @db.Text
+  submittedAt               DateTime @default(now())
+  legacyFirebaseId          String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @default(now())
+
+  @@unique([iroId, stakeholderId])
+  @@index([iroId])
+  @@index([stakeholderId])
+  @@map("materialitysurveyresponses")
+}
+
+/// Idempotent reminder audit; unique (stakeholderId, reminderNumber) blocks double sends.
+model MaterialitySurveyReminderLog {
+  id             String   @id @default(cuid())
+  stakeholderId  String
+  channel        String   @default("email")
+  reminderNumber Int
+  sentAt         DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@unique([stakeholderId, reminderNumber])
+  @@index([stakeholderId])
+  @@map("materialitysurveyreminderlogs")
+}
