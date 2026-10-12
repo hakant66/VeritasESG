@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="VeritasESG">
+  <rect width="64" height="64" fill="#0f172a"/>
+  <rect x="5" y="5" width="54" height="54" fill="#1e293b"/>
+  <path d="M17 17L32 49L47 17" fill="none" stroke="#f1f5f9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="12" r="3" fill="#3b82f6"/>
+</svg>

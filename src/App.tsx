@@ -45,6 +45,7 @@ import KnowledgeChatPage from './features/knowledge-base/pages/KnowledgeChatPage
 import ContactResponsePage from './pages/contact/ContactResponsePage';
 import PlatformGuidePage from './pages/admin/PlatformGuidePage';
 import PlatformPresentationPage from './pages/admin/PlatformPresentationPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -244,16 +245,12 @@ function AppRoutes() {
             path="knowledge-base/:kbId" 
             element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <KnowledgeBaseDetailPage /> : <Navigate to="/" />))} 
           />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
         <Route
           path="*"
-          element={
-            <Navigate
-              to={isTasksOnly ? '/tasks' : isAuditor ? '/projects' : '/'}
-              replace
-            />
-          }
+          element={<NotFoundPage />}
         />
       </Routes>
     </HashRouter>
