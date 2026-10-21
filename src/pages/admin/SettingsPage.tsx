@@ -56,6 +56,12 @@ interface AppSettings {
   platformName: string;
   platformLogoSquareUrl: string;
   platformLogoRectangleUrl: string;
+  legalEntityName: string;
+  legalAddress: string;
+  legalJurisdiction: string;
+  privacyEmail: string;
+  supportEmail: string;
+  websiteUrl: string;
   moduleProjectsEnabled: boolean;
   moduleTasksEnabled: boolean;
   moduleImportanceEnabled: boolean;
@@ -107,6 +113,12 @@ const defaultSettings: AppSettings = {
   platformName: 'VeritasESG',
   platformLogoSquareUrl: '',
   platformLogoRectangleUrl: '',
+  legalEntityName: '',
+  legalAddress: '',
+  legalJurisdiction: '',
+  privacyEmail: '',
+  supportEmail: '',
+  websiteUrl: '',
   moduleProjectsEnabled: true,
   moduleTasksEnabled: true,
   moduleImportanceEnabled: false,
@@ -667,6 +679,94 @@ export default function SettingsPage() {
                       )}
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed font-medium">{t.settingsPage.helpLogoRect}</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-100 pt-10">
+                  <div className="mb-6">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Legal & Privacy</h3>
+                    <p className="mt-1 text-xs text-slate-500">
+                      These values are used on the public Privacy Policy and Terms of Service pages.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Legal Entity Name
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.legalEntityName || ''}
+                        onChange={(e) => setSettings({ ...settings, legalEntityName: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="Veritas ESG Ltd"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Governing Jurisdiction
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.legalJurisdiction || ''}
+                        onChange={(e) => setSettings({ ...settings, legalJurisdiction: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="England and Wales"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 lg:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Registered Address
+                      </label>
+                      <textarea
+                        value={settings.legalAddress || ''}
+                        onChange={(e) => setSettings({ ...settings, legalAddress: e.target.value })}
+                        className="w-full min-h-[88px] px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="Registered office address"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Privacy Contact Email
+                      </label>
+                      <input
+                        type="email"
+                        value={settings.privacyEmail || ''}
+                        onChange={(e) => setSettings({ ...settings, privacyEmail: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="privacy@company.com"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Support Email
+                      </label>
+                      <input
+                        type="email"
+                        value={settings.supportEmail || ''}
+                        onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="support@company.com"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 lg:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                        Public Website URL
+                      </label>
+                      <input
+                        type="url"
+                        value={settings.websiteUrl || ''}
+                        onChange={(e) => setSettings({ ...settings, websiteUrl: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/5 text-sm"
+                        placeholder="https://www.company.com"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

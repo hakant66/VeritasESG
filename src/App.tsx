@@ -46,6 +46,8 @@ import ContactResponsePage from './pages/contact/ContactResponsePage';
 import PlatformGuidePage from './pages/admin/PlatformGuidePage';
 import PlatformPresentationPage from './pages/admin/PlatformPresentationPage';
 import NotFoundPage from './pages/NotFoundPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 
 export default function App() {
   return (
@@ -105,6 +107,8 @@ function AppRoutes() {
           }
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         
         {/* Contact responses (Token based) */}
         <Route element={<ContactLayout />}>
@@ -128,11 +132,19 @@ function AppRoutes() {
           />
           <Route 
             path="sectors" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <CustomerSectorsPage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <CustomerSectorsPage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route 
             path="service-categories" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <ServiceCategoriesPage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <ServiceCategoriesPage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route 
             path="templates/:sectorId" 
@@ -175,11 +187,19 @@ function AppRoutes() {
           />
           <Route 
             path="users" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <UsersPage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <UsersPage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route 
             path="audit" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <AuditPage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <AuditPage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route 
             path="translations" 
@@ -239,11 +259,19 @@ function AppRoutes() {
 
           <Route 
             path="knowledge-base" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <KnowledgeBasePage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <KnowledgeBasePage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route 
             path="knowledge-base/:kbId" 
-            element={auditorGuard(tasksOnlyGuard(isFullAdmin ? <KnowledgeBaseDetailPage /> : <Navigate to="/" />))} 
+            element={auditorGuard(tasksOnlyGuard(
+              isFullAdmin || profile?.role === 'consultant_manager'
+                ? <KnowledgeBaseDetailPage />
+                : <Navigate to="/" />,
+            ))} 
           />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

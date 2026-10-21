@@ -29,6 +29,8 @@ export const translations = {
       navigation: 'Navigation',
       knowledgeBase: 'Knowledge Base',
       chat: 'AI Chat',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
       signOut: 'Sign Out',
       openMenu: 'Open navigation menu',
       closeMenu: 'Close navigation menu',
@@ -1889,6 +1891,99 @@ function hello() {
       resetEmailSent: 'Password reset email sent! Please check your inbox.',
       otpSent: 'Verification code sent to {email}',
     },
+    legalPages: {
+      effectiveDateLabel: 'Effective date:',
+      backToApp: 'Back to App',
+      backToLogin: 'Back to Login',
+      privacy: {
+        title: 'Privacy Policy',
+        termsLink: 'Terms of Service',
+        legalEntityHeading: 'Legal Entity',
+        providedBy: 'This policy is provided by {legalEntityName}.',
+        registeredAddress: 'Registered address:',
+        governingJurisdiction: 'Governing jurisdiction:',
+        privacyContact: 'Privacy contact:',
+        supportContact: 'Support contact:',
+        website: 'Website:',
+        scopeTitle: '1) Scope',
+        scopeBody:
+          'This policy explains how {platformName} collects, uses, stores, and protects personal data when users access the platform, manage sustainability reporting projects, and collaborate with contacts and customers.',
+        dataProcessedTitle: '2) Data We Process',
+        dataProcessedIntro: 'Depending on your use of the platform, we may process:',
+        dataProcessedItems: [
+          'Account and identity data (name, email, role, login events).',
+          'Project and survey data (responses, comments, assignments, progress).',
+          'Operational and security data (IP address, logs, audit trails, timestamps).',
+          'Uploaded content (documents and files shared in project workflows).',
+        ],
+        dataUseTitle: '3) Why We Use Data',
+        dataUseItems: [
+          'Provide secure authentication, authorization, and account management.',
+          'Operate reporting workflows, assignments, and collaboration features.',
+          'Maintain system integrity, monitor abuse, and improve platform reliability.',
+          'Deliver support, notifications, and compliance-related communications.',
+        ],
+        sharingTitle: '4) Data Sharing',
+        sharingBody:
+          'We do not sell personal data. Data may be shared only with authorized users in your organization and trusted infrastructure/service providers used to host, secure, and operate the platform, subject to contractual and security controls.',
+        retentionTitle: '5) Retention',
+        retentionBody:
+          'Data is retained only for as long as necessary for service delivery, legal obligations, dispute resolution, and audit requirements. Retention timelines can vary by data type and customer agreement.',
+        securityTitle: '6) Security',
+        securityBody:
+          'We implement technical and organizational controls such as role-based access, authentication checks, encrypted transport, and audit logging. No online service can guarantee absolute security, but we continuously improve safeguards.',
+        rightsTitle: '7) Your Rights',
+        rightsBody:
+          'Subject to applicable law, you may have rights to access, correct, delete, restrict, or object to processing of your personal data. Requests can be made through your organization’s platform administrator.',
+        changesTitle: '8) Policy Changes',
+        changesBody:
+          'We may update this policy periodically. Material changes will be reflected on this page with an updated effective date.',
+        contactTitle: '9) Contact',
+        contactBody: 'For privacy-related requests, contact {privacyEmail}.',
+      },
+      terms: {
+        title: 'Terms of Service',
+        privacyLink: 'Privacy Policy',
+        agreementTitle: '1) Agreement',
+        agreementBody:
+          'These Terms of Service govern access to and use of {platformName}. By using the platform, you agree to these terms on behalf of yourself and, where applicable, your organization.',
+        providerTitle: '2) Service Provider',
+        providerBody: 'The service is operated by {legalEntityName}.',
+        registeredAddress: 'Registered address:',
+        governingJurisdiction: 'Governing jurisdiction:',
+        website: 'Website:',
+        accountTitle: '3) Account Responsibilities',
+        accountItems: [
+          'Keep account credentials secure and confidential.',
+          'Use the service only for lawful and authorized business purposes.',
+          'Ensure uploaded content does not violate third-party rights or applicable law.',
+        ],
+        acceptableUseTitle: '4) Acceptable Use',
+        acceptableUseIntro: 'You must not misuse the service, including attempting to:',
+        acceptableUseItems: [
+          'Bypass access controls or interfere with platform security.',
+          'Upload malicious code or perform disruptive actions.',
+          'Access data you are not authorized to access.',
+        ],
+        dataTitle: '5) Data and Privacy',
+        dataBody:
+          'Use of personal data is described in the Privacy Policy. You retain responsibility for data you submit and for complying with your own regulatory obligations.',
+        availabilityTitle: '6) Availability and Changes',
+        availabilityBody:
+          'We may update features, security controls, and service components over time. We aim for high availability but do not guarantee uninterrupted operation.',
+        liabilityTitle: '7) Limitation of Liability',
+        liabilityBody:
+          'To the maximum extent permitted by law, the service is provided on an “as is” basis and liability is limited for indirect, incidental, or consequential damages.',
+        terminationTitle: '8) Termination',
+        terminationBody:
+          'Access may be suspended or terminated if these terms are violated, required by law, or needed to protect platform integrity and security.',
+        lawTitle: '9) Governing Law',
+        lawBody:
+          'These terms are governed by the laws of {legalJurisdiction}, unless otherwise required by mandatory local law.',
+        contactTitle: '10) Contact',
+        contactBody: 'For contractual or service questions, contact {supportEmail}.',
+      },
+    },
     contactResponse: {
       subtitle: 'Thank you for your contribution. Your answers directly inform the sustainability report.',
       progressLabel: 'Questionnaire Progress',
@@ -1946,6 +2041,8 @@ function hello() {
       navigation: 'Navigasyon',
       knowledgeBase: 'Bilgi Bankası',
       chat: 'Yapay Zeka Sohbet',
+      privacyPolicy: 'Gizlilik Politikası',
+      termsOfService: 'Kullanım Şartları',
       signOut: 'Çıkış Yap',
       openMenu: 'Gezinme menüsünü aç',
       closeMenu: 'Gezinme menüsünü kapat',
@@ -3808,6 +3905,99 @@ function merhaba() {
       tryAnotherEmail: 'Başka e-posta dene',
       resetEmailSent: 'Parola sıfırlama e-postası gönderildi. Gelen kutunuzu kontrol edin.',
       otpSent: '{email} adresine doğrulama kodu gönderildi',
+    },
+    legalPages: {
+      effectiveDateLabel: 'Yürürlük tarihi:',
+      backToApp: 'Uygulamaya Dön',
+      backToLogin: 'Girişe Dön',
+      privacy: {
+        title: 'Gizlilik Politikası',
+        termsLink: 'Kullanım Şartları',
+        legalEntityHeading: 'Tüzel Kişi',
+        providedBy: 'Bu politika {legalEntityName} tarafından sunulmaktadır.',
+        registeredAddress: 'Kayıtlı adres:',
+        governingJurisdiction: 'Geçerli yargı:',
+        privacyContact: 'Gizlilik iletişimi:',
+        supportContact: 'Destek iletişimi:',
+        website: 'Web sitesi:',
+        scopeTitle: '1) Kapsam',
+        scopeBody:
+          'Bu politika, kullanıcılar platforma erişirken, sürdürülebilirlik raporlama projelerini yönetirken ve iletişim kişileri/müşterilerle iş birliği yaparken {platformName} tarafından kişisel verilerin nasıl toplandığını, kullanıldığını, saklandığını ve korunduğunu açıklar.',
+        dataProcessedTitle: '2) İşlediğimiz Veriler',
+        dataProcessedIntro: 'Platformu kullanımınıza bağlı olarak şunları işleyebiliriz:',
+        dataProcessedItems: [
+          'Hesap ve kimlik verileri (ad, e-posta, rol, giriş kayıtları).',
+          'Proje ve anket verileri (yanıtlar, yorumlar, atamalar, ilerleme).',
+          'Operasyonel ve güvenlik verileri (IP adresi, loglar, denetim izleri, zaman damgaları).',
+          'Yüklenen içerikler (proje süreçlerinde paylaşılan belge ve dosyalar).',
+        ],
+        dataUseTitle: '3) Verileri Neden Kullanıyoruz',
+        dataUseItems: [
+          'Güvenli kimlik doğrulama, yetkilendirme ve hesap yönetimi sağlamak.',
+          'Raporlama iş akışlarını, atamaları ve iş birliği özelliklerini yürütmek.',
+          'Sistem bütünlüğünü korumak, kötüye kullanımı izlemek ve güvenilirliği iyileştirmek.',
+          'Destek, bildirim ve uyum iletişimlerini sağlamak.',
+        ],
+        sharingTitle: '4) Veri Paylaşımı',
+        sharingBody:
+          'Kişisel verileri satmayız. Veriler yalnızca kuruluşunuzdaki yetkili kullanıcılarla ve platformun barındırılması, güvenliği ve işletimi için kullanılan güvenilir altyapı/hizmet sağlayıcılarıyla, sözleşmesel ve güvenlik kontrollerine tabi olarak paylaşılabilir.',
+        retentionTitle: '5) Saklama',
+        retentionBody:
+          'Veriler yalnızca hizmet sunumu, yasal yükümlülükler, uyuşmazlık çözümü ve denetim gereksinimleri için gerekli olduğu süre boyunca saklanır. Saklama süreleri veri türüne ve müşteri sözleşmesine göre değişebilir.',
+        securityTitle: '6) Güvenlik',
+        securityBody:
+          'Rol tabanlı erişim, kimlik doğrulama kontrolleri, şifreli iletişim ve denetim logları gibi teknik/organizasyonel önlemler uygularız. Hiçbir çevrimiçi hizmet mutlak güvenlik garanti edemez; korumaları sürekli geliştiririz.',
+        rightsTitle: '7) Haklarınız',
+        rightsBody:
+          'Uygulanabilir mevzuata bağlı olarak kişisel verilerinize erişme, düzeltme, silme, işlemeyi kısıtlama veya itiraz etme haklarına sahip olabilirsiniz. Talepler kuruluşunuzun platform yöneticisi üzerinden iletilebilir.',
+        changesTitle: '8) Politika Değişiklikleri',
+        changesBody:
+          'Bu politikayı dönemsel olarak güncelleyebiliriz. Önemli değişiklikler bu sayfada güncel yürürlük tarihiyle yayınlanır.',
+        contactTitle: '9) İletişim',
+        contactBody: 'Gizlilik talepleri için {privacyEmail} adresiyle iletişime geçin.',
+      },
+      terms: {
+        title: 'Kullanım Şartları',
+        privacyLink: 'Gizlilik Politikası',
+        agreementTitle: '1) Sözleşme',
+        agreementBody:
+          'Bu Kullanım Şartları, {platformName} erişimi ve kullanımını düzenler. Platformu kullanarak, uygun olduğu durumlarda kendiniz ve kuruluşunuz adına bu şartları kabul etmiş olursunuz.',
+        providerTitle: '2) Hizmet Sağlayıcı',
+        providerBody: 'Hizmet, {legalEntityName} tarafından işletilmektedir.',
+        registeredAddress: 'Kayıtlı adres:',
+        governingJurisdiction: 'Geçerli yargı:',
+        website: 'Web sitesi:',
+        accountTitle: '3) Hesap Sorumlulukları',
+        accountItems: [
+          'Hesap bilgilerinizi güvenli ve gizli tutun.',
+          'Hizmeti yalnızca yasal ve yetkili iş amaçları için kullanın.',
+          'Yüklediğiniz içeriğin üçüncü taraf haklarını veya mevzuatı ihlal etmediğinden emin olun.',
+        ],
+        acceptableUseTitle: '4) Kabul Edilebilir Kullanım',
+        acceptableUseIntro: 'Aşağıdakiler dahil olmak üzere hizmeti kötüye kullanamazsınız:',
+        acceptableUseItems: [
+          'Erişim kontrollerini aşmaya çalışmak veya platform güvenliğini bozmak.',
+          'Kötücül kod yüklemek veya sistemi bozucu eylemlerde bulunmak.',
+          'Yetkiniz olmayan verilere erişmeye çalışmak.',
+        ],
+        dataTitle: '5) Veri ve Gizlilik',
+        dataBody:
+          'Kişisel verilerin kullanımı Gizlilik Politikasında açıklanır. Gönderdiğiniz verilerden ve kendi düzenleyici yükümlülüklerinize uyumdan siz sorumlusunuz.',
+        availabilityTitle: '6) Erişilebilirlik ve Değişiklikler',
+        availabilityBody:
+          'Özellikleri, güvenlik kontrollerini ve hizmet bileşenlerini zaman içinde güncelleyebiliriz. Yüksek erişilebilirlik hedefleriz ancak kesintisiz çalışma garanti edilmez.',
+        liabilityTitle: '7) Sorumluluğun Sınırlandırılması',
+        liabilityBody:
+          'Yürürlükteki hukukun izin verdiği azami ölçüde hizmet “olduğu gibi” sunulur ve dolaylı, arızi veya sonuçsal zararlara ilişkin sorumluluk sınırlandırılır.',
+        terminationTitle: '8) Fesih',
+        terminationBody:
+          'Bu şartların ihlali, yasal zorunluluklar veya platform güvenliği/bütünlüğünü koruma ihtiyacı halinde erişim askıya alınabilir veya sonlandırılabilir.',
+        lawTitle: '9) Uygulanacak Hukuk',
+        lawBody:
+          'Bu şartlar, zorunlu yerel mevzuat aksini gerektirmedikçe {legalJurisdiction} hukukuna tabidir.',
+        contactTitle: '10) İletişim',
+        contactBody: 'Sözleşmesel veya hizmetle ilgili sorular için {supportEmail} ile iletişime geçin.',
+      },
     },
     contactResponse: {
       subtitle: 'Katkınız için teşekkür ederiz. Cevaplarınız sürdürülebilirlik raporunu doğrudan şekillendirir.',

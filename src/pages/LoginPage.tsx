@@ -4,7 +4,7 @@
  */
 
 import { cn } from '../lib/utils';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   LogIn, 
   Loader2, 
@@ -118,6 +118,10 @@ export default function LoginPage() {
     th === 'dark'
       ? 'w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest'
       : 'w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest';
+  const policyLinkClass =
+    th === 'dark'
+      ? 'block text-center text-[10px] font-semibold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-widest'
+      : 'block text-center text-[10px] font-semibold text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest';
 
   const handleAuthToken = async (token: string) => {
     setAuthToken(token);
@@ -515,7 +519,15 @@ export default function LoginPage() {
           )}
         </AnimatePresence>
 
-        {/* Footer hidden per request */}
+        <div className="pt-2 flex items-center justify-center gap-3">
+          <Link to="/privacy-policy" className={policyLinkClass}>
+            Privacy Policy
+          </Link>
+          <span className={cn('text-[10px]', th === 'dark' ? 'text-slate-600' : 'text-slate-300')}>•</span>
+          <Link to="/terms-of-service" className={policyLinkClass}>
+            Terms of Service
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

@@ -5,6 +5,12 @@ interface AppSettings {
   platformName: string;
   platformLogoSquareUrl: string;
   platformLogoRectangleUrl: string;
+  legalEntityName: string;
+  legalAddress: string;
+  legalJurisdiction: string;
+  privacyEmail: string;
+  supportEmail: string;
+  websiteUrl: string;
   moduleProjectsEnabled: boolean;
   helpDashboardUrl: string;
   helpDashboardMd: string;
@@ -48,6 +54,12 @@ const defaultSettings: AppSettings = {
   platformName: 'VeritasESG',
   platformLogoSquareUrl: '',
   platformLogoRectangleUrl: '',
+  legalEntityName: '',
+  legalAddress: '',
+  legalJurisdiction: '',
+  privacyEmail: '',
+  supportEmail: '',
+  websiteUrl: '',
   moduleProjectsEnabled: true,
   helpDashboardUrl: '',
   helpDashboardMd: '',

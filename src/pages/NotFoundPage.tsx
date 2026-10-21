@@ -41,6 +41,8 @@ export default function NotFoundPage() {
     : [
         { to: '/login', label: 'Sign In' },
         { to: '/reset-password', label: 'Reset Password' },
+        { to: '/privacy-policy', label: 'Privacy Policy' },
+        { to: '/terms-of-service', label: 'Terms of Service' },
       ];
 
   const seen = new Set<string>();

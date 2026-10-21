@@ -159,19 +159,29 @@ export default function AdminLayout() {
     if (isTasksOnlyUser || isAuditorUser) return false;
     const role = profile?.role;
     const isPlatformAdmin = role === 'platform_admin';
+    const isConsultantManager = role === 'consultant_manager';
     
-    // Items that ONLY platform admins and admins can see
-    const platformAdminOnly = ['/sectors', '/service-categories', '/users', '/audit', '/settings', '/translations', '/knowledge-base'];
+    // Items that only platform admins can see
+    const platformAdminOnly = ['/settings', '/translations'];
     if (platformAdminOnly.includes(item.path)) {
       return isPlatformAdmin;
     }
 
-    // Customer management (admin view)
-    if (item.path === '/customers') {
-      return isPlatformAdmin || role === 'consultant_manager'; 
+    // Consultant manager + platform admin can access full management subset.
+    const managerAllowed = [
+      '/customers',
+      '/users',
+      '/sectors',
+      '/service-categories',
+      '/knowledge-base',
+      '/materiality_design',
+      '/audit',
+    ];
+    if (managerAllowed.includes(item.path)) {
+      return isPlatformAdmin || isConsultantManager;
     }
 
-    // Default to hide for restricted items, show for others
+    // Default to hide for restricted items, show for others.
     return true;
   });
 
@@ -648,6 +658,24 @@ export default function AdminLayout() {
               </div>
             )}
           </button>
+
+          {!isCollapsed && (
+            <div className="mt-3 flex items-center justify-center gap-2 text-[11px]">
+              <Link
+                to="/privacy-policy"
+                className="text-slate-500 hover:text-slate-900 transition-colors"
+              >
+                {t.nav.privacyPolicy}
+              </Link>
+              <span className="text-slate-300">•</span>
+              <Link
+                to="/terms-of-service"
+                className="text-slate-500 hover:text-slate-900 transition-colors"
+              >
+                {t.nav.termsOfService}
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Resize Handle */}
