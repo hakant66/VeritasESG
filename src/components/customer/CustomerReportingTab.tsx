@@ -6,6 +6,7 @@
 import { Customer } from '../../types';
 import { ReportingFrameworksPicker } from './ReportingFrameworksPicker';
 import { GriStandardsPicker } from './GriStandardsPicker';
+import { EsrsStandardsPicker } from './EsrsStandardsPicker';
 import { CsrdScopeCard } from './CsrdScopeCard';
 
 export type CustomerReportingTabProps = {
@@ -17,6 +18,7 @@ export function CustomerReportingTab({ customer }: CustomerReportingTabProps) {
     <div className="space-y-5">
       <ReportingFrameworksPicker initialKeys={customer?.reportingFrameworkKeys} />
       <GriStandardsPicker initialCodes={customer?.griStandardCodes} />
+      <EsrsStandardsPicker initialCodes={customer?.esrsStandardCodes} />
       <CsrdScopeCard initial={customer ?? undefined} />
     </div>
   );

@@ -309,6 +309,12 @@ export const translations = {
       griCategoryEconomic: 'Economic Standards',
       griCategoryEnvironmental: 'Environmental Standards',
       griCategorySocial: 'Social Standards',
+      esrsStandardsTitle: 'ESRS Standards',
+      esrsStandardsHint: 'Select the specific ESRS Standards that apply to this company, by code.',
+      esrsCategoryGeneral: 'General Standards',
+      esrsCategoryEnvironmental: 'Environmental Standards',
+      esrsCategorySocial: 'Social Standards',
+      esrsCategoryGovernance: 'Governance Standards',
       csrdScopeTitle: 'CSRD scope check',
       csrdScopeHint:
         'EU CSRD scope: considered a large company if 2 criteria are met (>250 employees, >40M€ turnover, >20M€ assets).',
@@ -1200,6 +1206,9 @@ function hello() {
       moduleEmissionData: 'Emission Data',
       moduleEmissionCalculation: 'Emission Calculation',
       moduleAIChat: 'AI Chat',
+      esrsStandardsAdminTitle: 'ESRS Standards visibility',
+      esrsStandardsAdminHint:
+        'Uncheck a standard to hide it from the customer profile picker. Standards already recorded on a customer stay visible there.',
       assignmentRemindersTitle: 'Task deadline reminders',
       assignmentRemindersHint:
         'Assignees are emailed before the deadline, on the due date, and daily after overdue. Delivery is stored in the database.',
@@ -2341,6 +2350,12 @@ function hello() {
       griCategoryEconomic: 'Ekonomik Standartlar',
       griCategoryEnvironmental: 'Çevresel Standartlar',
       griCategorySocial: 'Sosyal Standartlar',
+      esrsStandardsTitle: 'ESRS Standartları',
+      esrsStandardsHint: 'Bu firma için geçerli olan ESRS Standartlarını, koduna göre seçin.',
+      esrsCategoryGeneral: 'Genel Standartlar',
+      esrsCategoryEnvironmental: 'Çevresel Standartlar',
+      esrsCategorySocial: 'Sosyal Standartlar',
+      esrsCategoryGovernance: 'Yönetişim Standartları',
       csrdScopeTitle: 'CSRD kapsam kontrolü',
       csrdScopeHint:
         'AB CSRD kapsamı: 3 kriterden 2’si sağlanıyorsa (>250 çalışan, >40M€ ciro, >20M€ varlık) büyük işletme sayılır.',
@@ -3235,6 +3250,9 @@ function merhaba() {
       moduleEmissionData: 'Emisyon Verileri',
       moduleEmissionCalculation: 'Emisyon Hesaplama',
       moduleAIChat: 'Yapay Zeka Sohbet',
+      esrsStandardsAdminTitle: 'ESRS Standartları görünürlüğü',
+      esrsStandardsAdminHint:
+        'Bir standardın işaretini kaldırırsanız firma profilindeki seçim listesinden gizlenir. Bir firmada zaten kayıtlı olan standartlar orada görünmeye devam eder.',
       assignmentRemindersTitle: 'Görev son tarih hatırlatmaları',
       assignmentRemindersHint:
         'Atanan kişilere son tarihten önce, son günde ve gecikmeden sonra günlük e-posta gider. Gönderimler veritabanına kaydedilir.',

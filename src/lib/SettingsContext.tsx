@@ -12,6 +12,7 @@ interface AppSettings {
   supportEmail: string;
   websiteUrl: string;
   moduleProjectsEnabled: boolean;
+  disabledEsrsStandardIds: string[];
   helpDashboardUrl: string;
   helpDashboardMd: string;
   helpDashboardTitle: string;
@@ -61,6 +62,7 @@ const defaultSettings: AppSettings = {
   supportEmail: '',
   websiteUrl: '',
   moduleProjectsEnabled: true,
+  disabledEsrsStandardIds: [],
   helpDashboardUrl: '',
   helpDashboardMd: '',
   helpDashboardTitle: '',

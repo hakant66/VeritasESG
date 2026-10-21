@@ -51,6 +51,7 @@ import DemoManagement from '../../components/admin/DemoManagement';
 import LlmSettingsPanel from '../../components/admin/LlmSettingsPanel';
 import { apiRequest } from '../../lib/apiClient';
 import { HELP_TOUR_CONFIG, type HelpTourKey } from '../../lib/helpTour';
+import { ESRS_STANDARDS } from '../../lib/esrsStandards';
 
 interface AppSettings {
   platformName: string;
@@ -71,6 +72,7 @@ interface AppSettings {
   assignmentRemindersEnabled: boolean;
   assignmentReminderDaysBefore: number;
   assignmentReminderDaysAfter: number;
+  disabledEsrsStandardIds: string[];
   helpDashboardUrl: string;
   helpDashboardMd: string;
   helpDashboardTitle: string;
@@ -128,6 +130,7 @@ const defaultSettings: AppSettings = {
   assignmentRemindersEnabled: true,
   assignmentReminderDaysBefore: 3,
   assignmentReminderDaysAfter: 3,
+  disabledEsrsStandardIds: [],
   helpDashboardUrl: '',
   helpDashboardMd: '',
   helpDashboardTitle: '',
@@ -168,7 +171,7 @@ const defaultSettings: AppSettings = {
 
 export default function SettingsPage() {
   const { profile, loading: authLoading, clearTestRoleOverride } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -1210,6 +1213,44 @@ export default function SettingsPage() {
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                       />
                     </label>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">{t.settingsPage.esrsStandardsAdminTitle}</h3>
+                    <p className="mt-1 text-xs text-slate-500">{t.settingsPage.esrsStandardsAdminHint}</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {ESRS_STANDARDS.map((standard) => {
+                      const disabledIds = settings.disabledEsrsStandardIds || [];
+                      const checked = !disabledIds.includes(standard.id);
+                      const name = lang === 'tr' ? standard.nameTr : standard.nameEn;
+                      return (
+                        <label
+                          key={standard.id}
+                          className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) =>
+                              setSettings((prev) => {
+                                const current = prev.disabledEsrsStandardIds || [];
+                                const next = e.target.checked
+                                  ? current.filter((id) => id !== standard.id)
+                                  : [...current, standard.id];
+                                return { ...prev, disabledEsrsStandardIds: next };
+                              })
+                            }
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                          />
+                          <span className="text-xs font-semibold text-slate-700">
+                            {standard.code} — {name}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

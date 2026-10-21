@@ -74,6 +74,13 @@ export function griStandardCodesFromFormData(formData: FormData): string[] {
     .filter(Boolean);
 }
 
+export function esrsStandardCodesFromFormData(formData: FormData): string[] {
+  return formData
+    .getAll('esrsStandardCodes')
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+}
+
 export function csrdScopeFromFormData(formData: FormData) {
   return {
     csrdScopeEmployeeCount: parseOptionalNumber(formData.get('csrdScopeEmployeeCount')),
@@ -160,6 +167,7 @@ export function customerPayloadFromFormData(
     ...financialDataFromFormData(formData),
     reportingFrameworkKeys: reportingFrameworksFromFormData(formData),
     griStandardCodes: griStandardCodesFromFormData(formData),
+    esrsStandardCodes: esrsStandardCodesFromFormData(formData),
     ...csrdScopeFromFormData(formData),
     esgSummary: esgSummaryFromFormData(formData),
     materialityAssessment: materialityAssessmentFromFormData(formData),
