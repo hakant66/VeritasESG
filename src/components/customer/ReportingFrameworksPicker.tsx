@@ -12,8 +12,7 @@ type ReportingFrameworksPickerProps = {
 };
 
 export function ReportingFrameworksPicker({ initialKeys = [] }: ReportingFrameworksPickerProps) {
-  const { t, language } = useTranslation();
-  const lang = language === 'tr' ? 'tr' : 'en';
+  const { t, lang } = useTranslation();
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initialKeys));
 
   const toggle = (key: string) => {

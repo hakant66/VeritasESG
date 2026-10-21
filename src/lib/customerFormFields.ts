@@ -5,7 +5,7 @@
 
 import { sectorClassificationFromFormData } from '../data/sectorClassification';
 import { materialityAssessmentFromFormData } from './materialityAssessment';
-import type { Customer, EsgPolicyStatus, EsgSummary } from '../types';
+import type { Customer, EsgPolicyStatus, EsgSummary, SubsidiaryEntry } from '../types';
 import type { ReportingFrameworkKey } from './reportingFrameworks';
 
 function parseOptionalNumber(value: FormDataEntryValue | null): number | undefined {
@@ -19,6 +19,29 @@ function parsePolicyStatus(value: FormDataEntryValue | null): EsgPolicyStatus {
   const v = String(value ?? '').trim();
   if (v === 'yes' || v === 'no' || v === 'unknown') return v;
   return '';
+}
+
+function parseSubsidiariesJson(value: FormDataEntryValue | null): SubsidiaryEntry[] {
+  const raw = String(value ?? '').trim();
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((row): row is Record<string, unknown> => !!row && typeof row === 'object')
+      .map((row) => ({
+        legalName: String(row.legalName ?? '').trim(),
+        sasbSubSectorSics: String(row.sasbSubSectorSics ?? '').trim() || undefined,
+        address: String(row.address ?? '').trim() || undefined,
+        employeeCount: parseOptionalNumber(
+          typeof row.employeeCount === 'number' ? String(row.employeeCount) : (row.employeeCount as string),
+        ),
+        includedInConsolidatedReporting: Boolean(row.includedInConsolidatedReporting),
+      }))
+      .filter((row) => row.legalName.length > 0);
+  } catch {
+    return [];
+  }
 }
 
 export function taxAndCurrencyFromFormData(formData: FormData) {
@@ -82,6 +105,12 @@ export function esgSummaryFromFormData(formData: FormData): EsgSummary {
     femaleManagerPercent: parseOptionalNumber(formData.get('esg_femaleManagerPercent')),
     turnoverPercent: parseOptionalNumber(formData.get('esg_turnoverPercent')),
     supplierSocialAuditStatus: parsePolicyStatus(formData.get('esg_supplierSocialAuditStatus')),
+    isPubliclyListed: formData.get('esg_isPubliclyListed') === 'yes',
+    isSubjectToIndependentAudit: formData.get('esg_isSubjectToIndependentAudit') === 'yes',
+    isResponsibleProgramMember: formData.get('esg_isResponsibleProgramMember') === 'yes',
+    isTurqualityMember: formData.get('esg_isTurqualityMember') === 'yes',
+    isTrEtsInScope: formData.get('esg_isTrEtsInScope') === 'yes',
+    subsidiaries: parseSubsidiariesJson(formData.get('esg_subsidiariesJson')),
   };
 }
 

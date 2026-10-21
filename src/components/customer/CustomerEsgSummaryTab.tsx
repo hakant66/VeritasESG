@@ -7,7 +7,8 @@ import { Customer } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { buildSectoralDefinitionLegacy } from '../../data/sectorClassification';
 import { EsgSectionCard } from './EsgSectionCard';
-import { FormField, PolicyStatusSelect } from './FormField';
+import { FormField, PolicyStatusSelect, YesNoSelect } from './FormField';
+import { SubsidiariesField } from './SubsidiariesField';
 
 type CustomerEsgSummaryTabProps = {
   customer?: Customer | null;
@@ -358,6 +359,27 @@ export function CustomerEsgSummaryTab({ customer }: CustomerEsgSummaryTabProps) 
         </FormField>
         <FormField label={t.customers.esgSupplierAudit}>
           <PolicyStatusSelect name="esg_supplierSocialAuditStatus" defaultValue={esg.supplierSocialAuditStatus} />
+        </FormField>
+      </EsgSectionCard>
+
+      <EsgSectionCard sectionNumber={6} title={t.customers.esgSection6Title}>
+        <FormField label={t.customers.esgIsPubliclyListed}>
+          <YesNoSelect name="esg_isPubliclyListed" defaultValue={esg.isPubliclyListed} />
+        </FormField>
+        <FormField label={t.customers.esgIsSubjectToIndependentAudit}>
+          <YesNoSelect name="esg_isSubjectToIndependentAudit" defaultValue={esg.isSubjectToIndependentAudit} />
+        </FormField>
+        <FormField label={t.customers.esgIsResponsibleProgramMember}>
+          <YesNoSelect name="esg_isResponsibleProgramMember" defaultValue={esg.isResponsibleProgramMember} />
+        </FormField>
+        <FormField label={t.customers.esgIsTurqualityMember}>
+          <YesNoSelect name="esg_isTurqualityMember" defaultValue={esg.isTurqualityMember} />
+        </FormField>
+        <FormField label={t.customers.esgIsTrEtsInScope} fullWidth>
+          <YesNoSelect name="esg_isTrEtsInScope" defaultValue={esg.isTrEtsInScope} />
+        </FormField>
+        <FormField label={t.customers.esgSubsidiariesTitle} fullWidth>
+          <SubsidiariesField initial={esg.subsidiaries} />
         </FormField>
       </EsgSectionCard>
     </div>

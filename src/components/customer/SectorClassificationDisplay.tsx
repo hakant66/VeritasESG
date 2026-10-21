@@ -37,8 +37,7 @@ function Field({ label, value, notProvidedLabel }: { label: string; value?: stri
 }
 
 export function SectorClassificationDisplay({ customer, notProvidedLabel }: SectorClassificationDisplayProps) {
-  const { t, language } = useTranslation();
-  const lang = language === 'tr' ? 'tr' : 'en';
+  const { t, lang } = useTranslation();
   const [catalog, setCatalog] = useState<SectorClassificationCatalog>(
     BUILTIN_SECTOR_CLASSIFICATION_CATALOG,
   );

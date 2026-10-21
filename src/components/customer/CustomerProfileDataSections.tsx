@@ -24,7 +24,7 @@ import { Customer, Branch, Contact, Segment, EsgPolicyStatus, Project, PlatformU
 import { useTranslation } from '../../hooks/useTranslation';
 import { SectorClassificationDisplay } from './SectorClassificationDisplay';
 import { EsgSectionCard } from './EsgSectionCard';
-import { buildSectoralDefinitionLegacy } from '../../data/sectorClassification';
+import { buildSectoralDefinitionLegacy, getSubSectorById } from '../../data/sectorClassification';
 import { formatMeurValue } from '../../lib/customerFormFields';
 import {
   computeCsrdScopeStatus,
@@ -530,6 +530,52 @@ export function CustomerProfileDataSections({
             <ProfileField label={t.customers.esgFemaleManagers} value={formatNum(esg.femaleManagerPercent)} notProvided={notProvided} />
             <ProfileField label={t.customers.esgTurnover} value={formatNum(esg.turnoverPercent)} notProvided={notProvided} />
             <ProfileField label={t.customers.esgSupplierAudit} value={formatPolicy(esg.supplierSocialAuditStatus)} notProvided={notProvided} />
+          </EsgSectionCard>
+
+          <EsgSectionCard sectionNumber={6} title={t.customers.esgSection6Title}>
+            <ProfileField label={t.customers.esgIsPubliclyListed} value={formatPolicy(esg.isPubliclyListed ? 'yes' : 'no')} notProvided={notProvided} />
+            <ProfileField label={t.customers.esgIsSubjectToIndependentAudit} value={formatPolicy(esg.isSubjectToIndependentAudit ? 'yes' : 'no')} notProvided={notProvided} />
+            <ProfileField label={t.customers.esgIsResponsibleProgramMember} value={formatPolicy(esg.isResponsibleProgramMember ? 'yes' : 'no')} notProvided={notProvided} />
+            <ProfileField label={t.customers.esgIsTurqualityMember} value={formatPolicy(esg.isTurqualityMember ? 'yes' : 'no')} notProvided={notProvided} />
+            <ProfileField label={t.customers.esgIsTrEtsInScope} value={formatPolicy(esg.isTrEtsInScope ? 'yes' : 'no')} notProvided={notProvided} long />
+            <div className="space-y-2 md:col-span-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                {t.customers.esgSubsidiariesTitle}
+              </p>
+              {(esg.subsidiaries ?? []).length === 0 ? (
+                <p className="text-sm italic text-slate-300">{notProvided}</p>
+              ) : (
+                <div className="space-y-2">
+                  {(esg.subsidiaries ?? []).map((sub, idx) => {
+                    const sicsEntry = sub.sasbSubSectorSics ? getSubSectorById(sub.sasbSubSectorSics) : undefined;
+                    const sicsLabel = sicsEntry ? (lang === 'tr' ? sicsEntry.labelTr : sicsEntry.labelEn) : sub.sasbSubSectorSics;
+                    return (
+                      <div key={idx} className="rounded-lg border border-slate-100 bg-white p-3 text-sm">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-slate-900">{sub.legalName}</span>
+                          {sicsLabel ? (
+                            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                              {sicsLabel}
+                            </span>
+                          ) : null}
+                          {sub.includedInConsolidatedReporting ? (
+                            <span className="rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                              {t.customers.subsidiaryIncludedInConsolidation}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                          {sub.address ? <span>{sub.address}</span> : null}
+                          {sub.employeeCount !== undefined ? (
+                            <span>{sub.employeeCount.toLocaleString(dateLocale)} {t.customers.subsidiaryEmployeeCountPlaceholder}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </EsgSectionCard>
         </div>
       </ProfileCategoryCard>

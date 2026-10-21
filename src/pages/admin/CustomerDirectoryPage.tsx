@@ -15,7 +15,6 @@ import {
   Plus,
   Edit2,
   FolderPlus,
-  Network,
 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { Customer, Segment, Project, Contact, Branch, PlatformUser, ProjectUserAssignment } from '../../types';
@@ -369,15 +368,6 @@ export default function CustomerDirectoryPage() {
                 {t.customers.createNewCustomer}
               </span>
             </button>
-            <Link
-              to="/organizational-boundary-onboarding"
-              className="group relative flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-left shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
-            >
-              <Network size={16} strokeWidth={2.5} className="shrink-0 text-slate-600" aria-hidden />
-              <span className="min-w-0 text-sm font-semibold leading-relaxed tracking-tight text-slate-800">
-                Organizasyonel sınır
-              </span>
-            </Link>
           </div>
         )}
       </div>

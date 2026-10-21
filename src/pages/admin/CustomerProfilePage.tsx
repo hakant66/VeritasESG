@@ -5,11 +5,12 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ChevronLeft, 
-  Building, 
+import {
+  ChevronLeft,
+  Building,
   Loader2,
-  Edit2
+  Edit2,
+  Network,
 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { Customer, Contact, Branch, Project, PlatformUser, ProjectUserAssignment, Segment } from '../../types';
@@ -22,7 +23,7 @@ import { CustomerProfileDataSections } from '../../components/customer/CustomerP
 export default function CustomerProfilePage() {
   const { customerId } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, profile } = useAuth();
+  const { isAdmin, profile, canCreateCustomersAndProjects } = useAuth();
   const { t } = useTranslation();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -186,6 +187,15 @@ export default function CustomerProfilePage() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          {canCreateCustomersAndProjects && (
+            <Link
+              to="/organizational-boundary-onboarding"
+              className="group relative flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-800 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+            >
+              <Network size={16} strokeWidth={2.5} className="shrink-0 text-slate-600" aria-hidden />
+              Organizasyonel sınır
+            </Link>
+          )}
           {canEditCustomerInModal && (
             <button
               type="button"

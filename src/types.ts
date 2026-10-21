@@ -193,8 +193,22 @@ export interface MaterialityAssessment {
   updatedAt?: number;
 }
 
+export interface SubsidiaryEntry {
+  legalName: string;
+  sasbSubSectorSics?: string;
+  address?: string;
+  employeeCount?: number;
+  includedInConsolidatedReporting?: boolean;
+}
+
 export interface EsgSummary {
   reportingBoundaryNote?: string;
+  isPubliclyListed?: boolean;
+  isSubjectToIndependentAudit?: boolean;
+  isResponsibleProgramMember?: boolean;
+  isTurqualityMember?: boolean;
+  isTrEtsInScope?: boolean;
+  subsidiaries?: SubsidiaryEntry[];
   financialYearStart?: string;
   financialYearEnd?: string;
   ebitdaMeur?: number;

@@ -27,6 +27,31 @@ export function FormField({
   );
 }
 
+export function YesNoSelect({
+  name,
+  defaultValue,
+}: {
+  name: string;
+  defaultValue?: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="relative">
+      <select
+        name={name}
+        className="minimal-input h-10 cursor-pointer appearance-none pr-10"
+        defaultValue={defaultValue ? 'yes' : 'no'}
+      >
+        <option value="no">{t.customers.policyStatusNo}</option>
+        <option value="yes">{t.customers.policyStatusYes}</option>
+      </select>
+      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <ChevronDown size={14} />
+      </div>
+    </div>
+  );
+}
+
 export function PolicyStatusSelect({
   name,
   defaultValue,
