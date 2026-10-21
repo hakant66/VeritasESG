@@ -30,6 +30,7 @@ import {
   computeCsrdScopeStatus,
   getReportingFrameworkLabel,
 } from '../../lib/reportingFrameworks';
+import { getGriStandardLabel } from '../../lib/griStandards';
 import { formatBranchLocation } from '../../lib/branchUtils';
 import { cn } from '../../lib/utils';
 
@@ -417,6 +418,26 @@ export function CustomerProfileDataSections({
                     className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
                   >
                     {getReportingFrameworkLabel(key, lang)}
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              {t.customers.griStandardsTitle}
+            </h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(customer.griStandardCodes || []).length === 0 ? (
+                <span className="text-sm italic text-slate-400">{notProvided}</span>
+              ) : (
+                (customer.griStandardCodes || []).map((code) => (
+                  <span
+                    key={code}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
+                  >
+                    {getGriStandardLabel(code, lang)}
                   </span>
                 ))
               )}

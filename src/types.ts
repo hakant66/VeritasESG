@@ -269,6 +269,7 @@ export interface Customer {
   annualTurnoverMeur?: number;
   totalAssetsMeur?: number;
   reportingFrameworkKeys?: string[];
+  griStandardCodes?: string[];
   csrdScopeEmployeeCount?: number;
   csrdScopeTurnoverMeur?: number;
   csrdScopeAssetsMeur?: number;

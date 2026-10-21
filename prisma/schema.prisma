@@ -91,6 +91,7 @@ model Customer {
   employeeCountPermanent  Int?
   employeeCountTemporary  Int?
   reportingFrameworkKeys  Json     @default("[]")
+  griStandardCodes        Json     @default("[]")
   csrdScopeEmployeeCount  Int?
   csrdScopeTurnoverMeur   Float?
   csrdScopeAssetsMeur     Float?

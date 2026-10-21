@@ -302,6 +302,13 @@ export const translations = {
       reportingFrameworksTitle: 'Reporting frameworks',
       reportingFrameworksHint:
         'Select all standards to apply. Selected frameworks determine report templates and mandatory disclosure topics.',
+      griStandardsTitle: 'GRI Standards',
+      griStandardsHint: 'Select the specific GRI Standards that apply to this company, by code.',
+      griCategoryUniversal: 'Universal Standards',
+      griCategoryTopic2024: 'New-generation Topic Standards (2024–2025)',
+      griCategoryEconomic: 'Economic Standards',
+      griCategoryEnvironmental: 'Environmental Standards',
+      griCategorySocial: 'Social Standards',
       csrdScopeTitle: 'CSRD scope check',
       csrdScopeHint:
         'EU CSRD scope: considered a large company if 2 criteria are met (>250 employees, >40M€ turnover, >20M€ assets).',
@@ -2327,6 +2334,13 @@ function hello() {
       reportingFrameworksTitle: 'Raporlama çerçeveleri',
       reportingFrameworksHint:
         'Uygulanacak tüm standartları seçin. Seçilen çerçeveler rapor şablonlarını ve zorunlu açıklama konularını belirler.',
+      griStandardsTitle: 'GRI Standartları',
+      griStandardsHint: 'Bu firma için geçerli olan GRI Standartlarını, koduna göre seçin.',
+      griCategoryUniversal: 'Evrensel Standartlar',
+      griCategoryTopic2024: 'Yeni Nesil Konu Standartları (2024–2025)',
+      griCategoryEconomic: 'Ekonomik Standartlar',
+      griCategoryEnvironmental: 'Çevresel Standartlar',
+      griCategorySocial: 'Sosyal Standartlar',
       csrdScopeTitle: 'CSRD kapsam kontrolü',
       csrdScopeHint:
         'AB CSRD kapsamı: 3 kriterden 2’si sağlanıyorsa (>250 çalışan, >40M€ ciro, >20M€ varlık) büyük işletme sayılır.',
