@@ -7,7 +7,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   lookupNaceCode,
-  getDefaultNaceForSasbSubSector,
   getSubSectorsForMacro,
   getSubSectorById,
   getMacroSectorById,
@@ -18,6 +17,8 @@ import {
 } from '../../data/sectorClassification';
 import { loadSectorClassificationCatalog } from '../../lib/sectorClassificationCatalog';
 import { useTranslation } from '../../hooks/useTranslation';
+import { resolvePlatformSectorIds } from '../../lib/resolvePlatformSectorIds';
+import type { Segment } from '../../types';
 
 export type SectorClassificationValues = {
   naceCode: string;
@@ -28,11 +29,12 @@ export type SectorClassificationValues = {
 
 type SectorClassificationFieldsProps = {
   initial?: Partial<SectorClassificationValues> & { sectoralDefinition?: string };
+  /** Platform sectors (Segments); used to derive the hidden `sectorIds` from the NACE/SASB selection. */
+  sectors: Segment[];
 };
 
-export function SectorClassificationFields({ initial }: SectorClassificationFieldsProps) {
-  const { t, language } = useTranslation();
-  const lang = language === 'tr' ? 'tr' : 'en';
+export function SectorClassificationFields({ initial, sectors }: SectorClassificationFieldsProps) {
+  const { t, lang } = useTranslation();
   const [catalog, setCatalog] = useState<SectorClassificationCatalog>(
     BUILTIN_SECTOR_CLASSIFICATION_CATALOG,
   );
@@ -73,7 +75,6 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
   const [sasbMacroSector, setSasbMacroSector] = useState(resolvedInitial.sasbMacroSector);
   const [sasbSubSectorSics, setSasbSubSectorSics] = useState(resolvedInitial.sasbSubSectorSics);
   const [autoMatchedSubId, setAutoMatchedSubId] = useState<string | null>(null);
-  const [naceSuggestedFromSasb, setNaceSuggestedFromSasb] = useState(false);
 
   useEffect(() => {
     setNaceCode(resolvedInitial.naceCode);
@@ -81,34 +82,37 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
     setSasbMacroSector(resolvedInitial.sasbMacroSector);
     setSasbSubSectorSics(resolvedInitial.sasbSubSectorSics);
     setAutoMatchedSubId(null);
-    setNaceSuggestedFromSasb(false);
   }, [resolvedInitial]);
 
+  // Sub-sector list: narrowed to the chosen macro once one is picked, otherwise the full
+  // catalog so a sub-sector can be selected directly (see handleSubSectorChange below).
   const subSectorOptions = useMemo(() => {
-    if (!sasbMacroSector) return [];
-    return getSubSectorsForMacro(sasbMacroSector as SasbMacroSectorId, catalog);
+    const list = sasbMacroSector
+      ? getSubSectorsForMacro(sasbMacroSector as SasbMacroSectorId, catalog)
+      : catalog.subSectors;
+    return [...list].sort(
+      (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.id.localeCompare(b.id),
+    );
   }, [sasbMacroSector, catalog]);
 
   const selectedSubSector = sasbSubSectorSics
     ? getSubSectorById(sasbSubSectorSics, catalog)
     : undefined;
 
-  const applyNaceFromSasbSubSector = (subId: string) => {
-    const entry = getDefaultNaceForSasbSubSector(subId, catalog);
-    if (!entry) {
-      setNaceSuggestedFromSasb(false);
-      return;
-    }
-    setNaceCode(entry.code);
-    setNaceDescription(lang === 'tr' ? entry.descriptionTr : entry.descriptionEn);
-    setAutoMatchedSubId(null);
-    setNaceSuggestedFromSasb(true);
-  };
+  const derivedSectorIds = useMemo(
+    () =>
+      resolvePlatformSectorIds(sectors, {
+        naceCode,
+        naceDescription,
+        sasbSubSectorSics,
+      }),
+    [sectors, naceCode, naceDescription, sasbSubSectorSics],
+  );
 
+  /** NACE code entry is the source of truth: on blur, match its description and SASB classification. */
   const applyNaceLookup = (raw: string) => {
     const normalized = raw.trim().toUpperCase();
     setNaceCode(normalized);
-    setNaceSuggestedFromSasb(false);
 
     const result = lookupNaceCode(normalized, catalog);
     if (!result) {
@@ -125,25 +129,18 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
   const handleMacroChange = (macroId: string) => {
     setSasbMacroSector(macroId);
     const subs = macroId ? getSubSectorsForMacro(macroId as SasbMacroSectorId, catalog) : [];
-    const nextSubId = subs.some((s) => s.id === sasbSubSectorSics)
-      ? sasbSubSectorSics
-      : (subs[0]?.id ?? '');
-    setSasbSubSectorSics(nextSubId);
+    // Keep the current sub-sector only if it still belongs to the newly chosen macro.
+    setSasbSubSectorSics((current) => (subs.some((s) => s.id === current) ? current : ''));
     setAutoMatchedSubId(null);
-    if (nextSubId) {
-      applyNaceFromSasbSubSector(nextSubId);
-    } else {
-      setNaceSuggestedFromSasb(false);
-    }
   };
 
+  /** Selecting a sub-sector directly (no macro required first) matches its macro sector. */
   const handleSubSectorChange = (subId: string) => {
     setSasbSubSectorSics(subId);
     setAutoMatchedSubId(null);
     if (subId) {
-      applyNaceFromSasbSubSector(subId);
-    } else {
-      setNaceSuggestedFromSasb(false);
+      const sub = getSubSectorById(subId, catalog);
+      if (sub) setSasbMacroSector(sub.macroId);
     }
   };
 
@@ -174,6 +171,9 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
       <input type="hidden" name="naceDescription" value={naceDescription} />
       <input type="hidden" name="sasbMacroSector" value={sasbMacroSector} />
       <input type="hidden" name="sasbSubSectorSics" value={sasbSubSectorSics} />
+      {derivedSectorIds.map((id) => (
+        <input key={id} type="hidden" name="sectorIds" value={id} />
+      ))}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
@@ -186,17 +186,12 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
             value={naceCode}
             onChange={(e) => {
               setNaceCode(e.target.value.toUpperCase());
-              setNaceSuggestedFromSasb(false);
               setAutoMatchedSubId(null);
             }}
             onBlur={(e) => applyNaceLookup(e.target.value)}
             placeholder={t.customers.naceCodePlaceholder}
           />
-          {naceSuggestedFromSasb && naceCode ? (
-            <p className="text-[10px] font-semibold text-emerald-600">
-              {t.customers.naceSuggestedFromSasb.replace('{code}', naceCode)}
-            </p>
-          ) : autoMatchedSubId && sasbSubSectorSics === autoMatchedSubId ? (
+          {autoMatchedSubId && sasbSubSectorSics === autoMatchedSubId ? (
             <p className="text-[10px] font-semibold text-emerald-600">
               {t.customers.naceAutoMatched.replace('{code}', sasbSubSectorSics)}
             </p>
@@ -248,7 +243,6 @@ export function SectorClassificationFields({ initial }: SectorClassificationFiel
               className="minimal-input h-10 cursor-pointer appearance-none pr-10"
               value={sasbSubSectorSics}
               onChange={(e) => handleSubSectorChange(e.target.value)}
-              disabled={!sasbMacroSector}
             >
               <option value="">{t.customers.sasbSubSectorPlaceholder}</option>
               {subSectorOptions.map((sub) => (

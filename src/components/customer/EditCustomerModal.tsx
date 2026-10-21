@@ -156,7 +156,8 @@ export function EditCustomerModal({
 
   const validateForTab = (formData: FormData, tab: CustomerFormTabId): boolean => {
     const name = String(formData.get('name') ?? '').trim();
-    const sectorIds = formData.getAll('sectorIds') as string[];
+    const naceCode = String(formData.get('naceCode') ?? '').trim();
+    const sasbSubSectorSics = String(formData.get('sasbSubSectorSics') ?? '').trim();
     const logoUrl = tempLogo || customer.logoUrl || '';
 
     if (
@@ -174,7 +175,7 @@ export function EditCustomerModal({
       }
     }
     if (tab === 'sector' || tab === 'reporting' || tab === 'priorities' || tab === 'esg') {
-      if (sectorIds.length === 0) {
+      if (!naceCode && !sasbSubSectorSics) {
         alert(t.customers.newCustomerValidationSectorRequired);
         return false;
       }

@@ -64,14 +64,15 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const logoUrl = logoDraft || '';
-    const sectorIds = formData.getAll('sectorIds') as string[];
+    const naceCode = String(formData.get('naceCode') ?? '').trim();
+    const sasbSubSectorSics = String(formData.get('sasbSubSectorSics') ?? '').trim();
     const name = String(formData.get('name') ?? '').trim();
 
     if (!name) {
       alert(t.customers.newCustomerValidationNameRequired);
       return;
     }
-    if (sectorIds.length === 0) {
+    if (!naceCode && !sasbSubSectorSics) {
       alert(t.customers.newCustomerValidationSectorRequired);
       return;
     }

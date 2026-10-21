@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { lookupNaceCode, normalizeNaceCode } from '../data/sectorClassification';
+import { lookupNaceCode, normalizeNaceCode, getSubSectorById } from '../data/sectorClassification';
 import {
   DEMO_SECTOR_ROWS,
   legacyCustomerSectorNameToKey,
@@ -46,6 +46,12 @@ export type SectorResolutionHints = {
 export function inferSectorKeyFromHints(hints: SectorResolutionHints): SectorKey {
   const naceCode = hints.naceCode?.trim() ? normalizeNaceCode(hints.naceCode) : '';
   const lookup = naceCode ? lookupNaceCode(naceCode) : null;
+  // A sub-sector can now be chosen directly, with no NACE code entered at all, so resolve
+  // it from the raw SASB hint too, not only from a NACE-derived lookup.
+  const subSectorFromHint = hints.sasbSubSectorSics?.trim()
+    ? getSubSectorById(hints.sasbSubSectorSics.trim())
+    : undefined;
+  const subSectorId = lookup?.subSector.id ?? subSectorFromHint?.id;
 
   const textParts = [
     hints.naceDescription,
@@ -54,7 +60,8 @@ export function inferSectorKeyFromHints(hints: SectorResolutionHints): SectorKey
     lookup?.entry.descriptionEn,
     lookup?.subSector.labelTr,
     lookup?.subSector.labelEn,
-    hints.sasbSubSectorSics,
+    subSectorFromHint?.labelTr,
+    subSectorFromHint?.labelEn,
   ].filter(Boolean) as string[];
 
   for (const part of textParts) {
@@ -62,11 +69,11 @@ export function inferSectorKeyFromHints(hints: SectorResolutionHints): SectorKey
     if (key !== 'other') return key;
   }
 
-  if (lookup?.subSector.id === 'RT-CH') return 'chem';
-  if (lookup?.subSector.id === 'RT-AV' || lookup?.subSector.id === 'RT-AP') return 'auto';
-  if (lookup?.subSector.id === 'TC-HW' || lookup?.subSector.id === 'TC-SI') return 'elec';
-  if (lookup?.subSector.id === 'RT-IG') return 'machine';
-  if (lookup?.subSector.id === 'EM-MM') return 'steel';
+  if (subSectorId === 'RT-CH') return 'chem';
+  if (subSectorId === 'RT-AV' || subSectorId === 'RT-AP') return 'auto';
+  if (subSectorId === 'TC-HW' || subSectorId === 'TC-SI') return 'elec';
+  if (subSectorId === 'RT-IG') return 'machine';
+  if (subSectorId === 'EM-MM') return 'steel';
 
   return 'other';
 }
