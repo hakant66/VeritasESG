@@ -36,6 +36,17 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 
 ---
 
+## Recent changes (October 2026)
+
+| Area | What shipped |
+|------|----------------|
+| **Customer sector classification simplified** | The "Yeni Firma Kaydı" Sektör tab's manual platform-sector checklist was removed; `sectorIds` is now derived automatically from the NACE code / SASB sub-sector (`resolvePlatformSectorIds`). Picking a SASB sub-sector auto-fills its macro sector (and can be picked directly, without choosing a macro first); SASB selection no longer pushes an unreliable NACE code; NACE entry still auto-fills its description and SASB classification. |
+| **GRI & ESRS Standards catalogs** | New per-company multi-selects, by code and name, distinct from the coarser `reportingFrameworkKeys` umbrella picker: `griStandardCodes` (~40 GRI Standards) and `esrsStandardCodes` (12 ESRS Standards, including the general/cross-cutting ESRS 1 and ESRS 2 — deliberately kept separate from `server/lib/domainEnums.ts`'s `ESRS_TOPICS`, which only covers the 10 scored materiality topics). Which ESRS Standards are selectable is admin-configurable at **Settings → Modules**. |
+| **Customer profile governance fields** | New "Governance programs & group structure" section on the ESG Özet tab: publicly listed, subject to independent audit, Responsible / Turquality program membership, TR ETS scope, and a repeatable Subsidiaries & Affiliates list. Stored in the existing `esgSummary` JSON column. |
+| **Organizational boundary entry point moved** | The "Organizasyonel sınır" button moved from the Firmalar list toolbar to the individual Customer Profile page header. |
+| **`consultant_manager` admin access widened** | Can now access Kullanıcılar / Sektörler / Kategoriler / Bilgi Bankası / Önemlilik Yönetimi / Denetim (previously `platform_admin`-only), matching that role's documented scope ("manage customers, all projects"). Settings and Translations stay `platform_admin`-only. |
+| **Public legal pages** | Privacy Policy and Terms of Service pages, sourced from new Settings fields (legal entity, address, jurisdiction, contact emails), linked from the login footer, sidebar footer, and 404 page. |
+
 ## Recent changes (September 2026)
 
 | Area | What shipped |
@@ -53,7 +64,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 
 | Area | Description |
 |------|-------------|
-| **Customers & projects** | Firma directory, branches, contacts, sector/NACE, ESG summary, reporting frameworks |
+| **Customers & projects** | Firma directory, branches, contacts, sector/NACE auto-classification, ESG summary (incl. governance programs & subsidiaries), GRI/ESRS/TSRS reporting frameworks |
 | **Templates & questionnaires** | Bilingual questions, branch expansion (`soruCogaltma`), question codes in form titles, TSRS/GRI/ESRS mappings |
 | **Assignments & contacts** | Magic-link responses, on-behalf submission, quick assign, merge assignments, audit trail |
 | **Tasks (Görevlerim)** | Assignment workflow, **Lokal AI** / **Genel AI** answer autofill from KB or general LLM |
@@ -78,7 +89,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **Backup** | Scheduled database backup (engine-aware `pg_dump`) via Docker; create/toggle/run jobs |
 | **Demo** | Restore frozen demo snapshot (`POST /api/demo/seed`) |
 | **API** | Customer API v1 documentation (`x-api-key` auth) |
-| Platform / modules / domains / content | Branding, module toggles, help markdown & video URLs |
+| Platform / modules / domains / content | Branding, module toggles, ESRS Standards visibility, help markdown & video URLs |
 
 ### LLM (multi-provider)
 

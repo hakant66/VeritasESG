@@ -67,7 +67,7 @@ Some menu items are hidden when modules are turned off in **Settings** (platform
 
 ### Create a customer (admin / consultant manager)
 1. **Administration → Customers** → add customer.
-2. Fill organisation details: name, sector, NACE/SASB classification, workforce, turnover, reporting frameworks.
+2. Fill organisation details: name, sector classification, workforce, turnover, reporting frameworks. Sector classification is NACE-code-or-SASB-sub-sector driven: picking a SASB sub-sector auto-fills its macro sector, and entering a NACE code auto-fills its description and SASB classification (SASB selection no longer pushes a NACE code — that produced unreliable matches). There's no separate "platform sectors" checklist to fill in; it's derived automatically from the classification.
 3. Save.
 
 ### Branches
@@ -77,13 +77,17 @@ Open the customer → **Branches** tab. Add sites or business units. Branch-base
 Add people with name, email, role, and optional branch. Contacts receive **assignment magic links** and do not need platform accounts.
 
 ### Customer profile & ESG summary
-The customer record holds ESG context, framework keys, CSRD scope indicators, and materiality settings used across projects and emissions.
+The customer record holds ESG context, framework keys, CSRD scope indicators, and materiality settings used across projects and emissions. The **ESG Özet** tab's "Governance programs & group structure" section also tracks: publicly listed, subject to independent audit, Responsible / Turquality program membership, TR ETS scope, and a repeatable **Subsidiaries & Affiliates** list (legal name, SASB sub-sector, address, employee count, consolidated-reporting flag).
+
+The **Raporlama Çerçeveleri** tab records which standards the company reports against at two levels of detail:
+- Umbrella frameworks (IFRS S1/S2, TSRS 1/2, ESRS/CSRD, GRI, CDP, TCFD) — `reportingFrameworkKeys`.
+- The specific standards within GRI and ESRS, by code and name — `griStandardCodes` (~40 GRI Standards, grouped Universal/2024–25 topic/Economic/Environmental/Social) and `esrsStandardCodes` (12 ESRS Standards, grouped General/Environmental/Social/Governance). Which ESRS Standards are offered for selection is admin-configurable at **Settings → Modules → ESRS Standards visibility**; hiding a standard there doesn't remove it from a customer that already has it selected.
 
 ### Customer directory
 Read-only searchable view for consultants who cannot edit the master customer list.
 
 ### Organizational boundary onboarding
-Use when setting up **emissions** reporting scope: define which entities and facilities belong in the inventory before entering emission data.
+Use when setting up **emissions** reporting scope: define which entities and facilities belong in the inventory before entering emission data. Entry point: the **Organizasyonel sınır** button on an individual customer's **Profile** page header (not the Firmalar list).
 
 ---
 
