@@ -104,6 +104,7 @@ model Customer {
   esgSummary              Json     @default("{}")
   materialityFramework    String   @default("gri")
   materialityAssessment   Json     @default("{}")
+  companyDetailsConfirmed Boolean  @default(false)
   legacyFirebaseId        String?
   createdBy               String?
   ownerId                 String?

@@ -282,6 +282,8 @@ export interface Customer {
   esgSummary?: EsgSummary;
   materialityFramework?: 'gri' | 'esrs' | 'issb';
   materialityAssessment?: MaterialityAssessment;
+  /** Set once the "Şirket Detay Bilgileri" gate (shown before a project can be started) has been completed. */
+  companyDetailsConfirmed?: boolean;
 }
 
 export interface Branch {

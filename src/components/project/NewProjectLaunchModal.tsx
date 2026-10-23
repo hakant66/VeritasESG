@@ -10,6 +10,14 @@ import type { Customer, Project, Template } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import Modal from '../ui/Modal';
+import { ProjectCompanyDetailsGate } from './ProjectCompanyDetailsGate';
+
+type PendingLaunch = {
+  customerId: string;
+  name: string;
+  templateId?: string;
+  category: Project['category'];
+};
 
 export type NewProjectLaunchModalProps = {
   isOpen: boolean;
@@ -37,10 +45,13 @@ export function NewProjectLaunchModal({
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  /** Set when the selected customer hasn't confirmed its company details yet; the gate renders instead of the form. */
+  const [pendingLaunch, setPendingLaunch] = useState<PendingLaunch | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     setSelectedCustomerId(presetCustomerId || '');
+    setPendingLaunch(null);
     let cancelled = false;
 
     (async () => {
@@ -70,20 +81,11 @@ export function NewProjectLaunchModal({
   }, [isOpen, presetCustomerId]);
 
   const handleClose = () => {
+    setPendingLaunch(null);
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const customerId = (lockCustomer ? presetCustomerId : formData.get('customerId')) as string;
-    const rawTemplateId = formData.get('templateId');
-    const templateId =
-      typeof rawTemplateId === 'string' && rawTemplateId.trim() ? rawTemplateId.trim() : undefined;
-    const name = (formData.get('name') as string)?.trim();
-    const category = (formData.get('category') as Project['category']);
-    if (!customerId || !name) return;
-
+  const launchProject = async ({ customerId, name, templateId, category }: PendingLaunch) => {
     setSubmitting(true);
     try {
       const projectId = await DB.projects.createFromTemplate(
@@ -106,6 +108,7 @@ export function NewProjectLaunchModal({
           `Launched project "${name}" with category "${category}" for customer ${cust?.name || customerId}`,
         );
       }
+      setPendingLaunch(null);
       handleClose();
       await onCreated?.();
     } catch (err) {
@@ -113,6 +116,33 @@ export function NewProjectLaunchModal({
       alert('Failed to launch project. Check console for details.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const customerId = (lockCustomer ? presetCustomerId : formData.get('customerId')) as string;
+    const rawTemplateId = formData.get('templateId');
+    const templateId =
+      typeof rawTemplateId === 'string' && rawTemplateId.trim() ? rawTemplateId.trim() : undefined;
+    const name = (formData.get('name') as string)?.trim();
+    const category = (formData.get('category') as Project['category']);
+    if (!customerId || !name) return;
+
+    const customer = customersPick.find((c) => c.id === customerId);
+    if (customer && !customer.companyDetailsConfirmed) {
+      setPendingLaunch({ customerId, name, templateId, category });
+      return;
+    }
+
+    await launchProject({ customerId, name, templateId, category });
+  };
+
+  const handleGateConfirmed = async (updatedCustomer: Customer) => {
+    setCustomersPick((prev) => prev.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)));
+    if (pendingLaunch) {
+      await launchProject(pendingLaunch);
     }
   };
 
@@ -140,9 +170,16 @@ export function NewProjectLaunchModal({
     <Modal
       isOpen={isOpen}
       showFooterClose={false}
-      title={t.projects.launchModalTitle}
+      title={pendingLaunch ? t.projects.companyDetailsGateTitle : t.projects.launchModalTitle}
       onClose={handleClose}
     >
+      {pendingLaunch && selectedCustomer ? (
+        <ProjectCompanyDetailsGate
+          customer={selectedCustomer}
+          onConfirmed={(updated) => void handleGateConfirmed(updated)}
+          onCancel={() => setPendingLaunch(null)}
+        />
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
@@ -260,6 +297,7 @@ export function NewProjectLaunchModal({
           </button>
         </div>
       </form>
+      )}
     </Modal>
   );
 }

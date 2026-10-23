@@ -21,7 +21,7 @@ function parsePolicyStatus(value: FormDataEntryValue | null): EsgPolicyStatus {
   return '';
 }
 
-function parseSubsidiariesJson(value: FormDataEntryValue | null): SubsidiaryEntry[] {
+export function parseSubsidiariesJson(value: FormDataEntryValue | null): SubsidiaryEntry[] {
   const raw = String(value ?? '').trim();
   if (!raw) return [];
   try {

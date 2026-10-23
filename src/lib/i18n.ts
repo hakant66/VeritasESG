@@ -660,6 +660,16 @@ export const translations = {
       launchModalInitializeService: 'Create service',
       launchModalLaunching: 'Launching…',
       launchModalLaunchingService: 'Creating…',
+      companyDetailsGateTitle: 'Company Detail Information',
+      companyDetailsGateHint:
+        'Before Forms, Plan, Audit and Compliance become available for this project, confirm the following details about the company.',
+      companyDetailsGateStandardsRequired: 'Please select at least one standard (TSRS, GRI or ESRS).',
+      companyDetailsGateReportingPeriodTitle: 'Reporting period figures',
+      companyDetailsGateSubsidiariesTitle: 'Subsidiaries & Affiliates',
+      companyDetailsGateBack: 'Back',
+      companyDetailsGateSubmit: 'Confirm and launch project',
+      companyDetailsGateSaving: 'Saving…',
+      companyDetailsGateSaveFailed: 'Failed to save company details. Please try again.',
       openProject: 'Open project',
     },
     templates: {
@@ -2740,6 +2750,16 @@ function hello() {
       launchModalInitializeService: 'Servisi Oluştur',
       launchModalLaunching: 'Başlatılıyor…',
       launchModalLaunchingService: 'Oluşturuluyor…',
+      companyDetailsGateTitle: 'Şirket Detay Bilgileri',
+      companyDetailsGateHint:
+        'Bu proje için Formlar, Plan, Denetim ve Uyumluluk sekmeleri açılmadan önce şirketle ilgili aşağıdaki bilgileri onaylayın.',
+      companyDetailsGateStandardsRequired: 'Lütfen en az bir standart seçin (TSRS, GRI veya ESRS).',
+      companyDetailsGateReportingPeriodTitle: 'Raporlama dönemindeki rakamlar',
+      companyDetailsGateSubsidiariesTitle: 'Bağlı Ortaklık ve İştirakler',
+      companyDetailsGateBack: 'Geri',
+      companyDetailsGateSubmit: 'Onayla ve projeyi başlat',
+      companyDetailsGateSaving: 'Kaydediliyor…',
+      companyDetailsGateSaveFailed: 'Şirket bilgileri kaydedilemedi. Lütfen tekrar deneyin.',
       openProject: 'Projeyi aç',
     },
     templates: {
