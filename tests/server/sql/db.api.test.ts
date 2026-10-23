@@ -428,6 +428,19 @@ describeSql('SQL generic API (/api/db)', () => {
       expect(res.status).toBe(200);
       expect(await findCustomerById(doc.id)).toBeNull();
     });
+
+    it('blocks deleting a customer that has a project, and leaves it intact', async () => {
+      const doc = await createSqlCustomer({ name: 'Has Projects' });
+      await createSqlProject({ name: 'Active engagement', customerId: doc.id });
+
+      const res = await request(makeSqlApp())
+        .delete(`/api/db/customers/${doc.id}`)
+        .set(authHeader(authToken));
+
+      expect(res.status).toBe(409);
+      expect(res.body.code).toBe('db/customer-has-projects');
+      expect(await findCustomerById(doc.id)).not.toBeNull();
+    });
   });
 
   describe('PUT /api/db/:resource/:id (legacy upsert)', () => {

@@ -758,6 +758,9 @@ export default function CustomerDirectoryPage() {
           );
           setEditingCustomer((prev) => (prev?.id === merged.id ? merged : prev));
         }}
+        onDeleted={(deletedId) => {
+          setCustomers((prev) => prev.filter((c) => c.id !== deletedId));
+        }}
       />
 
       <NewProjectLaunchModal

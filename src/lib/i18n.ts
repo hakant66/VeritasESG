@@ -252,6 +252,11 @@ export const translations = {
       addStakeholderModalTitle: 'Add stakeholder',
       editStakeholderModalTitle: 'Edit stakeholder',
       deleteStakeholderConfirm: 'Delete stakeholder "{name}"?',
+      deleteCustomerConfirm: 'Delete customer "{name}"? This cannot be undone.',
+      deleteCustomerBlockedByProjects:
+        'This customer has projects and cannot be deleted. Remove or reassign its projects first.',
+      deleteCustomerError: 'Failed to delete customer.',
+      deleteCustomerButton: 'Delete customer',
       stakeholderNamePlaceholder: 'John Doe',
       stakeholderEmailPlaceholder: 'john@company.com',
       stakeholderDepartmentPlaceholder: 'ESG',
@@ -2293,6 +2298,11 @@ function hello() {
       addStakeholderModalTitle: 'Yeni paydaş ekle',
       editStakeholderModalTitle: 'Paydaşı düzenle',
       deleteStakeholderConfirm: '"{name}" paydaşını silmek istiyor musunuz?',
+      deleteCustomerConfirm: '"{name}" firmasını silmek istiyor musunuz? Bu işlem geri alınamaz.',
+      deleteCustomerBlockedByProjects:
+        'Bu firmaya ait projeler olduğu için silinemez. Önce projeleri kaldırın veya başka bir firmaya taşıyın.',
+      deleteCustomerError: 'Firma silinemedi.',
+      deleteCustomerButton: 'Firmayı sil',
       stakeholderNamePlaceholder: 'Ad Soyad',
       stakeholderEmailPlaceholder: 'ornek@sirket.com',
       stakeholderDepartmentPlaceholder: 'ESG',

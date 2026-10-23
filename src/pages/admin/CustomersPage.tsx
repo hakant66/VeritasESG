@@ -1313,6 +1313,12 @@ export default function CustomersPage() {
             }
             loadCustomers();
           }}
+          onDeleted={(deletedId) => {
+            if (selectedCustomer?.id === deletedId) {
+              setSelectedCustomer(null);
+            }
+            loadCustomers();
+          }}
         />
 
       </>

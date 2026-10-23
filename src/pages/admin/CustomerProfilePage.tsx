@@ -236,6 +236,7 @@ export default function CustomerProfilePage() {
         isOpen={showEditCustomerModal}
         onClose={() => setShowEditCustomerModal(false)}
         onSaved={(merged) => setCustomer(merged)}
+        onDeleted={() => navigate('/customer-directory')}
       />
     </div>
   );

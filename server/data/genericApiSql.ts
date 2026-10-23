@@ -255,6 +255,20 @@ export async function remove(req: Request, res: Response, repo: ResourceReposito
   const existing =
     resource === 'projectQuestions' ? await repo.findByExternalId(resource, req.params.id) : null;
 
+  if (resource === 'customers') {
+    const customer = await repo.findByExternalId('customers', req.params.id);
+    if (!customer) return failure(res, 404, 'Record not found', 'db/not-found');
+    const projectCount = await repo.count('projects', { equals: { customerId: String(customer.id) } });
+    if (projectCount > 0) {
+      return failure(
+        res,
+        409,
+        'Customer has projects and cannot be deleted',
+        'db/customer-has-projects',
+      );
+    }
+  }
+
   const doc = await repo.deleteByExternalId(resource, req.params.id);
   if (!doc) return failure(res, 404, 'Record not found', 'db/not-found');
 

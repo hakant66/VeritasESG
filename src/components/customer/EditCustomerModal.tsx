@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useMemo, type FormEvent } from 'react';
+import { Trash2 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { logActivity } from '../../services/db';
 import { Customer, Segment } from '../../types';
@@ -71,6 +72,8 @@ export type EditCustomerModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSaved: (merged: Customer) => void;
+  /** Called after the customer was successfully deleted (modal is closed automatically). */
+  onDeleted?: (customerId: string) => void;
 };
 
 export function EditCustomerModal({
@@ -79,6 +82,7 @@ export function EditCustomerModal({
   isOpen,
   onClose,
   onSaved,
+  onDeleted,
 }: EditCustomerModalProps) {
   const { user } = useAuth();
   const { t, lang } = useTranslation();
@@ -104,6 +108,9 @@ export function EditCustomerModal({
   const [branchReviewRows, setBranchReviewRows] = useState<BranchAutofillSuggestion[]>([]);
   const [isApplyingBranches, setIsApplyingBranches] = useState(false);
   const [branchRefreshKey, setBranchRefreshKey] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  /** null while loading; a real count once fetched. Delete stays disabled until known. */
+  const [projectCount, setProjectCount] = useState<number | null>(null);
   const formKeyRef = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -123,8 +130,39 @@ export function EditCustomerModal({
       setBranchReviewRows([]);
       setBranchRefreshKey(0);
       setActiveTab('basic');
+      setProjectCount(null);
+
+      const customerId = customer.id;
+      DB.getDocs(DB.query(DB.getCol('projects'), DB.where('customerId', '==', customerId)))
+        .then((snap) => setProjectCount(snap.docs.length))
+        .catch(() => setProjectCount(null));
     }
   }, [isOpen, customer?.id]);
+
+  const handleDelete = async () => {
+    if (!customer || isDeleting) return;
+    if (!window.confirm(t.customers.deleteCustomerConfirm.replace('{name}', customer.name))) return;
+
+    setIsDeleting(true);
+    try {
+      await DB.customers.delete(customer.id);
+      if (user) {
+        await logActivity(user, 'delete', 'customers', customer.id, `Deleted customer "${customer.name}"`);
+      }
+      onDeleted?.(customer.id);
+      onClose();
+    } catch (error: unknown) {
+      const code = (error as { code?: string } | undefined)?.code;
+      if (code === 'db/customer-has-projects') {
+        alert(t.customers.deleteCustomerBlockedByProjects);
+      } else {
+        console.error('Failed to delete customer:', error);
+        alert(t.customers.deleteCustomerError);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const displayCustomer = useMemo((): Customer => {
     if (!customer) return customer as Customer;
@@ -510,7 +548,22 @@ export function EditCustomerModal({
           />
         </div>
 
-        <div className="mt-4 flex shrink-0 flex-wrap gap-2 border-t border-slate-100 pt-4 sm:gap-3">
+        <div className="mt-4 flex shrink-0 flex-wrap items-center gap-2 border-t border-slate-100 pt-4 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            disabled={isDeleting || projectCount === null || projectCount > 0}
+            title={
+              projectCount !== null && projectCount > 0
+                ? t.customers.deleteCustomerBlockedByProjects
+                : undefined
+            }
+            className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+          >
+            <Trash2 size={14} />
+            {isDeleting ? t.common.loading : t.customers.deleteCustomerButton}
+          </button>
+          <div className="flex-1" />
           <button type="button" onClick={handleClose} className="minimal-button-secondary min-w-0 flex-1">
             {t.common.cancel}
           </button>
