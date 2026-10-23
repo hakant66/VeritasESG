@@ -255,6 +255,8 @@ export interface Customer {
   sasbMacroSector?: string;
   sasbSubSectorSics?: string;
   headquartersCountry?: string;
+  headquartersProvince?: string;
+  headquartersDistrict?: string;
   operationGeographies?: string;
   employeeCountTotal?: number;
   employeeCountBlueCollar?: number;
@@ -265,6 +267,8 @@ export interface Customer {
   employeeCountTemporary?: number;
   employeeContractBreakdown?: string;
   taxNumber?: string;
+  taxOffice?: string;
+  invoiceEmail?: string;
   reportingCurrency?: string;
   annualTurnoverMeur?: number;
   totalAssetsMeur?: number;
@@ -285,6 +289,8 @@ export interface Branch {
   customerId: string;
   name: string;
   type?: string;
+  province?: string;
+  district?: string;
   address?: string;
   createdAt: number;
 }
@@ -295,6 +301,7 @@ export interface Contact {
   branchId?: string; // Optional relationship to a branch
   name: string;
   email: string;
+  phone?: string;
   role: string;
   department: string;
   linkedinUrl?: string;

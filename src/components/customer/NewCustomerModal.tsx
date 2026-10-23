@@ -14,9 +14,6 @@ import { customerPayloadFromFormData } from '../../lib/customerFormFields';
 import { CustomerFormTabs } from './CustomerFormTabs';
 import { CustomerBasicInfoTab } from './CustomerBasicInfoTab';
 import { CustomerSectorInfoTab } from './CustomerSectorInfoTab';
-import { CustomerReportingTab } from './CustomerReportingTab';
-import { CustomerEsgSummaryTab } from './CustomerEsgSummaryTab';
-import { CustomerEsgPrioritiesTab } from './CustomerEsgPrioritiesTab';
 import { CustomerFacilitiesTab } from './CustomerFacilitiesTab';
 import { CustomerStakeholdersTab } from './CustomerStakeholdersTab';
 import type { DraftContact } from './CustomerStakeholdersSection';
@@ -110,6 +107,7 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
             await DB.contacts.create(created.id, {
               name: c.name,
               email: c.email,
+              phone: c.phone,
               role: c.role,
               department: c.department,
               linkedinUrl: c.linkedinUrl,
@@ -122,7 +120,13 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
         }
         for (const b of draftBranches) {
           try {
-            await DB.branches.create(created.id, { name: b.name, type: b.type, address: b.address });
+            await DB.branches.create(created.id, {
+              name: b.name,
+              type: b.type,
+              province: b.province,
+              district: b.district,
+              address: b.address,
+            });
           } catch (err) {
             console.error('Failed to create branch during customer creation:', err);
             failedNames.push(b.name);
@@ -166,6 +170,7 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
           <CustomerFormTabs
             basicContent={
               <CustomerBasicInfoTab
+                minimal
                 tempLogo={logoDraft}
                 onLogoFile={setLogoDraft}
                 onWebsiteBlur={(val) => {
@@ -183,9 +188,6 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
               <CustomerFacilitiesTab draftBranches={draftBranches} onDraftBranchesChange={setDraftBranches} />
             }
             sectorContent={<CustomerSectorInfoTab sectors={availableSectors} />}
-            reportingContent={<CustomerReportingTab />}
-            prioritiesContent={<CustomerEsgPrioritiesTab />}
-            esgContent={<CustomerEsgSummaryTab />}
           />
         </div>
 

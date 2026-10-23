@@ -62,7 +62,8 @@ type CustomerFormTabsProps = {
   reportingContent?: ReactNode;
   /** Omit to hide the "ESG Öncelikleri" tab (e.g. on the edit screen; collected on the profile page instead). */
   prioritiesContent?: ReactNode;
-  esgContent: ReactNode;
+  /** Omit to hide the "ESG Özet" tab (e.g. on new-customer creation; collected on the profile page instead). */
+  esgContent?: ReactNode;
   activeTab?: CustomerFormTabId;
   onActiveTabChange?: (tab: CustomerFormTabId) => void;
 };
@@ -95,7 +96,7 @@ export function CustomerFormTabs({
     { id: 'sector', label: t.customers.tabSectorInfo },
     ...(reportingContent !== undefined ? [{ id: 'reporting' as const, label: t.customers.tabReportingFrameworks }] : []),
     ...(prioritiesContent !== undefined ? [{ id: 'priorities' as const, label: t.customers.tabEsgPriorities }] : []),
-    { id: 'esg', label: t.customers.tabEsgSummary },
+    ...(esgContent !== undefined ? [{ id: 'esg' as const, label: t.customers.tabEsgSummary }] : []),
   ];
 
   return (

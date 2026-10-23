@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { AlertTriangle, Linkedin, Mail, Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Linkedin, Mail, Pencil, Phone, Plus, Trash2 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { Branch, Contact } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -77,17 +77,20 @@ export function CustomerStakeholdersSection({
   const parseContactForm = (formData: FormData) => {
     const name = String(formData.get('name') ?? '').trim();
     const email = String(formData.get('email') ?? '').trim();
+    const phone = String(formData.get('phone') ?? '').trim();
     const role = String(formData.get('role') ?? '').trim();
     const department = String(formData.get('department') ?? '').trim();
     const linkedinUrl = String(formData.get('linkedinUrl') ?? '').trim();
     const branchId = String(formData.get('branchId') ?? '').trim();
-    return { name, email, role, department, linkedinUrl, branchId };
+    return { name, email, phone, role, department, linkedinUrl, branchId };
   };
 
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
+    const { name, email, phone, role, department, linkedinUrl, branchId } = parseContactForm(
+      new FormData(e.currentTarget),
+    );
     if (!name || !email) return;
     setFormError(null);
 
@@ -97,6 +100,7 @@ export function CustomerStakeholdersSection({
         const data: Omit<Contact, 'id' | 'customerId' | 'createdAt'> = {
           name,
           email,
+          phone,
           role,
           department,
           linkedinUrl: linkedinUrl || undefined,
@@ -119,6 +123,7 @@ export function CustomerStakeholdersSection({
         id: randomDraftId(),
         name,
         email,
+        phone,
         role,
         department,
         linkedinUrl: linkedinUrl || undefined,
@@ -132,14 +137,23 @@ export function CustomerStakeholdersSection({
     e.preventDefault();
     e.stopPropagation();
     if (!editing) return;
-    const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
+    const { name, email, phone, role, department, linkedinUrl, branchId } = parseContactForm(
+      new FormData(e.currentTarget),
+    );
     if (!name || !email) return;
     setFormError(null);
 
     if (customerId) {
       setIsSubmitting(true);
       try {
-        const data: Partial<Contact> = { name, email, role, department, linkedinUrl: linkedinUrl || undefined };
+        const data: Partial<Contact> = {
+          name,
+          email,
+          phone,
+          role,
+          department,
+          linkedinUrl: linkedinUrl || undefined,
+        };
         if (branchId) data.branchId = branchId;
         else data.branchId = undefined;
         await DB.contacts.update(customerId, editing.id, data);
@@ -155,7 +169,15 @@ export function CustomerStakeholdersSection({
     }
 
     if (isDraftMode) {
-      const updated: DraftContact = { ...(editing as DraftContact), name, email, role, department, linkedinUrl: linkedinUrl || undefined };
+      const updated: DraftContact = {
+        ...(editing as DraftContact),
+        name,
+        email,
+        phone,
+        role,
+        department,
+        linkedinUrl: linkedinUrl || undefined,
+      };
       onDraftContactsChange?.((draftContacts ?? []).map((c) => (c.id === editing.id ? updated : c)));
       setEditing(null);
     }
@@ -206,6 +228,18 @@ export function CustomerStakeholdersSection({
           className="minimal-input"
           placeholder={t.customers.stakeholderEmailPlaceholder}
           defaultValue={contact?.email}
+        />
+      </div>
+      <div>
+        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+          {t.customers.stakeholderPhoneLabel}
+        </label>
+        <input
+          name="phone"
+          type="tel"
+          className="minimal-input"
+          placeholder={t.customers.stakeholderPhonePlaceholder}
+          defaultValue={contact?.phone}
         />
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -323,6 +357,12 @@ export function CustomerStakeholdersSection({
                       <Mail size={12} className="shrink-0 text-slate-400" />
                       {c.email}
                     </p>
+                    {c.phone ? (
+                      <p className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <Phone size={12} className="shrink-0 text-slate-400" />
+                        {c.phone}
+                      </p>
+                    ) : null}
                     {c.linkedinUrl ? (
                       <a
                         href={c.linkedinUrl}

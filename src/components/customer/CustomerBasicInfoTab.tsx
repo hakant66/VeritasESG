@@ -14,6 +14,8 @@ export type CustomerBasicInfoTabProps = {
   tempLogo?: string | null;
   onLogoFile: (dataUrl: string) => void;
   onWebsiteBlur?: (url: string) => void;
+  /** New-customer creation: shows only the fields needed to register a company (tax info + HQ address). */
+  minimal?: boolean;
 };
 
 export function CustomerBasicInfoTab({
@@ -21,6 +23,7 @@ export function CustomerBasicInfoTab({
   tempLogo,
   onLogoFile,
   onWebsiteBlur,
+  minimal,
 }: CustomerBasicInfoTabProps) {
   const { t } = useTranslation();
 
@@ -34,9 +37,9 @@ export function CustomerBasicInfoTab({
       />
 
       <div className="space-y-4 border-t border-slate-200/70 pt-4">
-        <CustomerTaxCurrencyFields initial={customer ?? undefined} inputClassName="bg-white" />
+        <CustomerTaxCurrencyFields initial={customer ?? undefined} inputClassName="bg-white" minimal={minimal} />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {t.customers.headquartersCountry}
@@ -61,15 +64,26 @@ export function CustomerBasicInfoTab({
           </div>
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              {t.customers.website}
+              {t.customers.headquartersProvinceLabel}
             </label>
             <input
-              name="websiteUrl"
-              type="url"
+              name="headquartersProvince"
+              type="text"
               className="minimal-input bg-white"
-              defaultValue={customer?.websiteUrl}
-              placeholder={t.customers.newCustomerModalWebsitePlaceholder}
-              onBlur={(e) => onWebsiteBlur?.(e.target.value)}
+              defaultValue={customer?.headquartersProvince}
+              placeholder={t.customers.headquartersProvincePlaceholder}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              {t.customers.headquartersDistrictLabel}
+            </label>
+            <input
+              name="headquartersDistrict"
+              type="text"
+              className="minimal-input bg-white"
+              defaultValue={customer?.headquartersDistrict}
+              placeholder={t.customers.headquartersDistrictPlaceholder}
             />
           </div>
         </div>
@@ -86,17 +100,35 @@ export function CustomerBasicInfoTab({
             placeholder={t.customers.newCustomerModalAddressPlaceholder}
           />
         </div>
-        <div className="space-y-1.5">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {t.customers.companyDescription}
-          </label>
-          <textarea
-            name="description"
-            className="minimal-input h-20 bg-white"
-            defaultValue={customer?.description}
-            placeholder={t.customers.newCustomerModalDescriptionPlaceholder}
-          />
-        </div>
+
+        {!minimal ? (
+          <>
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {t.customers.website}
+              </label>
+              <input
+                name="websiteUrl"
+                type="url"
+                className="minimal-input bg-white"
+                defaultValue={customer?.websiteUrl}
+                placeholder={t.customers.newCustomerModalWebsitePlaceholder}
+                onBlur={(e) => onWebsiteBlur?.(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {t.customers.companyDescription}
+              </label>
+              <textarea
+                name="description"
+                className="minimal-input h-20 bg-white"
+                defaultValue={customer?.description}
+                placeholder={t.customers.newCustomerModalDescriptionPlaceholder}
+              />
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

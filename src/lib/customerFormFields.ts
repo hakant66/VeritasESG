@@ -47,6 +47,8 @@ function parseSubsidiariesJson(value: FormDataEntryValue | null): SubsidiaryEntr
 export function taxAndCurrencyFromFormData(formData: FormData) {
   return {
     taxNumber: String(formData.get('taxNumber') ?? '').trim(),
+    taxOffice: String(formData.get('taxOffice') ?? '').trim(),
+    invoiceEmail: String(formData.get('invoiceEmail') ?? '').trim(),
     reportingCurrency: String(formData.get('reportingCurrency') ?? '')
       .trim()
       .toUpperCase(),
@@ -161,6 +163,8 @@ export function customerPayloadFromFormData(
     brandPortfolio: String(formData.get('brandPortfolio') ?? '').trim(),
     ...sectorClassification,
     headquartersCountry: String(formData.get('headquartersCountry') ?? '').trim(),
+    headquartersProvince: String(formData.get('headquartersProvince') ?? '').trim(),
+    headquartersDistrict: String(formData.get('headquartersDistrict') ?? '').trim(),
     operationGeographies: String(formData.get('operationGeographies') ?? '').trim(),
     ...employeeCountsFromFormData(formData),
     ...taxAndCurrencyFromFormData(formData),

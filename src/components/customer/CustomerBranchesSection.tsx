@@ -68,21 +68,23 @@ export function CustomerBranchesSection({
   const parseBranchForm = (formData: FormData) => {
     const name = String(formData.get('name') ?? '').trim();
     const branchType = String(formData.get('type') ?? '').trim();
+    const province = String(formData.get('province') ?? '').trim();
+    const district = String(formData.get('district') ?? '').trim();
     const address = String(formData.get('address') ?? '').trim();
-    return { name, branchType, address };
+    return { name, branchType, province, district, address };
   };
 
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const { name, branchType, address } = parseBranchForm(new FormData(e.currentTarget));
+    const { name, branchType, province, district, address } = parseBranchForm(new FormData(e.currentTarget));
     if (!name) return;
     setFormError(null);
 
     if (customerId) {
       setIsSubmitting(true);
       try {
-        await DB.branches.create(customerId, { name, type: branchType || undefined, address });
+        await DB.branches.create(customerId, { name, type: branchType || undefined, province, district, address });
         setShowAdd(false);
         await loadBranches();
       } catch (err) {
@@ -95,7 +97,7 @@ export function CustomerBranchesSection({
     }
 
     if (isDraftMode) {
-      const draft: DraftBranch = { id: randomDraftId(), name, type: branchType || undefined, address };
+      const draft: DraftBranch = { id: randomDraftId(), name, type: branchType || undefined, province, district, address };
       onDraftBranchesChange?.([...(draftBranches ?? []), draft]);
       setShowAdd(false);
     }
@@ -105,14 +107,20 @@ export function CustomerBranchesSection({
     e.preventDefault();
     e.stopPropagation();
     if (!editing) return;
-    const { name, branchType, address } = parseBranchForm(new FormData(e.currentTarget));
+    const { name, branchType, province, district, address } = parseBranchForm(new FormData(e.currentTarget));
     if (!name) return;
     setFormError(null);
 
     if (customerId) {
       setIsSubmitting(true);
       try {
-        await DB.branches.update(customerId, editing.id, { name, type: branchType || undefined, address });
+        await DB.branches.update(customerId, editing.id, {
+          name,
+          type: branchType || undefined,
+          province,
+          district,
+          address,
+        });
         setEditing(null);
         await loadBranches();
       } catch (err) {
@@ -125,10 +133,36 @@ export function CustomerBranchesSection({
     }
 
     if (isDraftMode) {
-      const updated: DraftBranch = { ...(editing as DraftBranch), name, type: branchType || undefined, address };
+      const updated: DraftBranch = {
+        ...(editing as DraftBranch),
+        name,
+        type: branchType || undefined,
+        province,
+        district,
+        address,
+      };
       onDraftBranchesChange?.((draftBranches ?? []).map((b) => (b.id === editing.id ? updated : b)));
       setEditing(null);
     }
+  };
+
+  // The select's value IS the display label (matches the historical free-text `type` field,
+  // so existing data and the read-only display stay consistent regardless of UI language).
+  const branchTypeOptions = [
+    t.customers.branchTypeWarehouse,
+    t.customers.branchTypeFactory,
+    t.customers.branchTypeOffice,
+    t.customers.branchTypeStore,
+    t.customers.branchTypeDealer,
+    t.customers.branchTypeBranch,
+    t.customers.branchTypeOther,
+  ];
+
+  /** Existing records may carry a free-text type from before this became a select; keep it selectable. */
+  const branchTypeOptionsFor = (currentValue?: string) => {
+    const trimmed = currentValue?.trim();
+    if (trimmed && !branchTypeOptions.includes(trimmed)) return [trimmed, ...branchTypeOptions];
+    return branchTypeOptions;
   };
 
   const handleDelete = async (branch: Branch | DraftBranch) => {
@@ -240,7 +274,28 @@ export function CustomerBranchesSection({
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
               {t.customers.branchTypeLabel}
             </label>
-            <input name="type" className="minimal-input" placeholder={t.customers.branchTypePlaceholder} />
+            <select name="type" className="minimal-input" defaultValue="">
+              <option value="">{t.customers.branchTypeSelectPlaceholder}</option>
+              {branchTypeOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                {t.customers.headquartersProvinceLabel}
+              </label>
+              <input name="province" className="minimal-input" placeholder={t.customers.headquartersProvincePlaceholder} />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                {t.customers.headquartersDistrictLabel}
+              </label>
+              <input name="district" className="minimal-input" placeholder={t.customers.headquartersDistrictPlaceholder} />
+            </div>
           </div>
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
@@ -295,12 +350,38 @@ export function CustomerBranchesSection({
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
               {t.customers.branchTypeLabel}
             </label>
-            <input
-              name="type"
-              className="minimal-input"
-              defaultValue={editing.type}
-              placeholder={t.customers.branchTypePlaceholder}
-            />
+            <select name="type" className="minimal-input" defaultValue={editing.type?.trim() ?? ''}>
+              <option value="">{t.customers.branchTypeSelectPlaceholder}</option>
+              {branchTypeOptionsFor(editing.type).map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                {t.customers.headquartersProvinceLabel}
+              </label>
+              <input
+                name="province"
+                className="minimal-input"
+                defaultValue={editing.province}
+                placeholder={t.customers.headquartersProvincePlaceholder}
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                {t.customers.headquartersDistrictLabel}
+              </label>
+              <input
+                name="district"
+                className="minimal-input"
+                defaultValue={editing.district}
+                placeholder={t.customers.headquartersDistrictPlaceholder}
+              />
+            </div>
           </div>
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">

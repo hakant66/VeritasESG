@@ -84,6 +84,10 @@ model Customer {
   employeeCountFemale     Int?
   employeeContractBreakdown String @default("") @db.Text
   taxNumber               String   @default("")
+  taxOffice               String   @default("")
+  invoiceEmail            String   @default("")
+  headquartersProvince    String   @default("")
+  headquartersDistrict    String   @default("")
   reportingCurrency       String   @default("")
   annualTurnoverMeur      Float?
   totalAssetsMeur         Float?
@@ -116,6 +120,8 @@ model Branch {
   customerId        String
   name              String
   type              String   @default("")
+  province          String   @default("")
+  district          String   @default("")
   address           String   @default("") @db.Text
   legacyFirebaseId  String?
   createdBy         String?
@@ -135,6 +141,7 @@ model Contact {
   branchId          String?
   name              String
   email             String
+  phone             String   @default("")
   role              String
   department        String
   linkedinUrl       String?
