@@ -22,7 +22,13 @@ import {
 type ProjectCompanyDetailsGateProps = {
   customer: Customer;
   onConfirmed: (updated: Customer) => void;
-  onCancel: () => void;
+  /** Omit when there's no previous step to go back to (e.g. editing from the project's own tab). */
+  onCancel?: () => void;
+  /** Override the default "confirm and launch" hint/button copy for standalone editing; pass '' to hide it. */
+  hint?: string;
+  submitLabel?: string;
+  /** Hide the built-in "Şirket Detay Bilgileri" heading when the host page already shows its own title. */
+  showTitle?: boolean;
 };
 
 function parseOptionalNumber(value: FormDataEntryValue | null): number | undefined {
@@ -36,7 +42,14 @@ function numDefault(v?: number) {
   return v === undefined || v === null ? '' : String(v);
 }
 
-export function ProjectCompanyDetailsGate({ customer, onConfirmed, onCancel }: ProjectCompanyDetailsGateProps) {
+export function ProjectCompanyDetailsGate({
+  customer,
+  onConfirmed,
+  onCancel,
+  hint,
+  submitLabel,
+  showTitle = true,
+}: ProjectCompanyDetailsGateProps) {
   const { t } = useTranslation();
   const esg = customer.esgSummary ?? {};
   const [isSaving, setIsSaving] = useState(false);
@@ -90,12 +103,18 @@ export function ProjectCompanyDetailsGate({ customer, onConfirmed, onCancel }: P
     }
   };
 
+  const resolvedHint = hint ?? t.projects.companyDetailsGateHint;
+
   return (
     <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
-      <div>
-        <h3 className="text-sm font-bold text-slate-900">{t.projects.companyDetailsGateTitle}</h3>
-        <p className="mt-1 text-xs text-slate-500 leading-relaxed">{t.projects.companyDetailsGateHint}</p>
-      </div>
+      {showTitle || resolvedHint ? (
+        <div>
+          {showTitle ? <h3 className="text-sm font-bold text-slate-900">{t.projects.companyDetailsGateTitle}</h3> : null}
+          {resolvedHint ? (
+            <p className="mt-1 text-xs text-slate-500 leading-relaxed">{resolvedHint}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <ReportingFrameworksPicker initialKeys={customer.reportingFrameworkKeys} />
       <GriStandardsPicker initialCodes={customer.griStandardCodes} />
@@ -190,11 +209,13 @@ export function ProjectCompanyDetailsGate({ customer, onConfirmed, onCancel }: P
       ) : null}
 
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="minimal-button-secondary flex-1">
-          {t.projects.companyDetailsGateBack}
-        </button>
+        {onCancel ? (
+          <button type="button" onClick={onCancel} className="minimal-button-secondary flex-1">
+            {t.projects.companyDetailsGateBack}
+          </button>
+        ) : null}
         <button type="submit" disabled={isSaving} className="minimal-button-primary flex-1">
-          {isSaving ? t.projects.companyDetailsGateSaving : t.projects.companyDetailsGateSubmit}
+          {isSaving ? t.projects.companyDetailsGateSaving : submitLabel ?? t.projects.companyDetailsGateSubmit}
         </button>
       </div>
     </form>

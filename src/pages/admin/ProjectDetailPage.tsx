@@ -105,6 +105,7 @@ import {
 } from '../../components/project/QuestionGuidanceMaterials';
 import { resolveQuestionVideoEmbed } from '../../components/project/AciklamaVideoPlayer';
 import { EditStakeholderModal } from '../../components/project/EditStakeholderModal';
+import { ProjectCompanyDetailsGate } from '../../components/project/ProjectCompanyDetailsGate';
 import { ProjectUserCardRoleWatermark } from '../../components/project/ProjectUserCardRoleWatermark';
 import { ProjectUserIdentity } from '../../components/project/ProjectUserIdentity';
 import { EditPlatformUserModal } from '../../components/users/EditPlatformUserModal';
@@ -1137,13 +1138,14 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const isServiceProject = project?.category === 'Service';
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [companyDetailsSavedAt, setCompanyDetailsSavedAt] = useState<number | null>(null);
   const [template, setTemplate] = useState<Template | null>(null);
   const [pages, setPages] = useState<ProjectPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState<ProjectPage | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'forms' | 'audit' | 'plan' | 'users' | 'activity' | 'compliance'
+    'overview' | 'companyDetails' | 'forms' | 'audit' | 'plan' | 'users' | 'activity' | 'compliance'
   >('overview');
   const [questionFormsWorkflowFilter, setQuestionFormsWorkflowFilter] =
     useState<FormsWorkflowFilterId>('all');
@@ -4606,8 +4608,20 @@ export default function ProjectDetailPage() {
             <Home size={12} />
             <span className="hidden sm:inline">{t.projectDetail.overview}</span>
           </button>
+          <button
+            key="tab-company-details"
+            onClick={() => setActiveTab('companyDetails')}
+            title={t.projectDetail.companyDetailsTab}
+            className={cn(
+              "flex flex-1 min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[10px] font-bold uppercase tracking-wide shadow-sm transition-all sm:flex-none sm:shrink-0 sm:justify-start sm:gap-1.5 sm:px-3 sm:py-1.5",
+              activeTab === 'companyDetails' ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-400 border-slate-100 hover:text-slate-600 hover:border-slate-200"
+            )}
+          >
+            <Building2 size={12} />
+            <span className="hidden sm:inline">{t.projectDetail.companyDetailsTab}</span>
+          </button>
           {!isAuditorProjectView || isServiceProject ? (
-          <button 
+          <button
             key="tab-forms"
             onClick={() => setActiveTab('forms')}
             title={t.projectDetail.questionnaires}
@@ -5225,6 +5239,34 @@ export default function ProjectDetailPage() {
                     ) : null}
                  </div>
               </div>
+            </div>
+          </div>
+        ) : activeTab === 'companyDetails' ? (
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-50/40">
+            <div className="mx-auto w-full max-w-3xl space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold text-slate-900">{t.projectDetail.companyDetailsTab}</h2>
+                {companyDetailsSavedAt ? (
+                  <span className="text-xs font-semibold text-emerald-600">
+                    {t.projectDetail.companyDetailsSaved}
+                  </span>
+                ) : null}
+              </div>
+              {customer ? (
+                <ProjectCompanyDetailsGate
+                  key={customer.id}
+                  customer={customer}
+                  showTitle={false}
+                  hint=""
+                  submitLabel={t.common.save}
+                  onConfirmed={(updated) => {
+                    setCustomer(updated);
+                    setCompanyDetailsSavedAt(Date.now());
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-slate-400">{t.common.loading}</p>
+              )}
             </div>
           </div>
         ) : activeTab === 'forms' || activeTab === 'audit' ? (

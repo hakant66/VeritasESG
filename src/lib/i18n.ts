@@ -1438,6 +1438,8 @@ function hello() {
     },
     projectDetail: {
       overview: 'Overview',
+      companyDetailsTab: 'Company Details',
+      companyDetailsSaved: 'Company details saved.',
       questionnaires: 'Forms',
       auditTab: 'Audit',
       complianceTab: 'Compliance',
@@ -3531,6 +3533,8 @@ function merhaba() {
     },
     projectDetail: {
       overview: 'Genel Bakış',
+      companyDetailsTab: 'Şirket Detay Bilgileri',
+      companyDetailsSaved: 'Şirket detay bilgileri kaydedildi.',
       questionnaires: 'Formlar',
       auditTab: 'Denetim',
       complianceTab: 'Uyumluluk',
