@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useMemo, type FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { logActivity } from '../../services/db';
-import { Customer, Segment } from '../../types';
+import { Contact, Customer, Segment } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -111,6 +111,8 @@ export function EditCustomerModal({
   const [isDeleting, setIsDeleting] = useState(false);
   /** null while loading; a real count once fetched. Delete stays disabled until known. */
   const [projectCount, setProjectCount] = useState<number | null>(null);
+  /** null until the stakeholders tab has loaded at least once; gates the "at least one" requirement. */
+  const [stakeholderCount, setStakeholderCount] = useState<number | null>(null);
   const formKeyRef = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -131,6 +133,7 @@ export function EditCustomerModal({
       setBranchRefreshKey(0);
       setActiveTab('basic');
       setProjectCount(null);
+      setStakeholderCount(null);
 
       const customerId = customer.id;
       DB.getDocs(DB.query(DB.getCol('projects'), DB.where('customerId', '==', customerId)))
@@ -215,6 +218,19 @@ export function EditCustomerModal({
     if (tab === 'sector' || tab === 'reporting' || tab === 'priorities' || tab === 'esg') {
       if (!naceCode && !sasbSubSectorSics) {
         alert(t.customers.newCustomerValidationSectorRequired);
+        return false;
+      }
+    }
+    if (
+      tab === 'stakeholders' ||
+      tab === 'facilities' ||
+      tab === 'sector' ||
+      tab === 'reporting' ||
+      tab === 'priorities' ||
+      tab === 'esg'
+    ) {
+      if (stakeholderCount === 0) {
+        alert(t.customers.newCustomerValidationStakeholderRequired);
         return false;
       }
     }
@@ -532,6 +548,7 @@ export function EditCustomerModal({
               <CustomerStakeholdersTab
                 customerId={customer.id}
                 refreshKey={stakeholderRefreshKey}
+                onContactsChange={(contacts: Contact[]) => setStakeholderCount(contacts.length)}
               />
             }
             facilitiesContent={

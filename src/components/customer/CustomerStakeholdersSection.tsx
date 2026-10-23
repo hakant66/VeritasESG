@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Linkedin, Mail, Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Linkedin, Mail, Pencil, Plus, Trash2 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { Branch, Contact } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -13,9 +13,15 @@ import Modal from '../ui/Modal';
 type CustomerStakeholdersSectionProps = {
   customerId?: string;
   refreshKey?: number;
+  /** Notified after every successful load, so a parent form can gate its own save on "at least one". */
+  onContactsChange?: (contacts: Contact[]) => void;
 };
 
-export function CustomerStakeholdersSection({ customerId, refreshKey }: CustomerStakeholdersSectionProps) {
+export function CustomerStakeholdersSection({
+  customerId,
+  refreshKey,
+  onContactsChange,
+}: CustomerStakeholdersSectionProps) {
   const { t } = useTranslation();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -23,6 +29,7 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const loadContacts = useCallback(async () => {
     if (!customerId) {
@@ -38,12 +45,13 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
       ]);
       setContacts(cList);
       setBranches(bList);
+      onContactsChange?.(cList);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [customerId]);
+  }, [customerId, onContactsChange]);
 
   useEffect(() => {
     void loadContacts();
@@ -64,6 +72,7 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
     if (!customerId) return;
     const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
     if (!name || !email) return;
+    setFormError(null);
     setIsSubmitting(true);
     try {
       const data: Omit<Contact, 'id' | 'customerId' | 'createdAt'> = {
@@ -77,6 +86,9 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
       await DB.contacts.create(customerId, data);
       setShowAdd(false);
       await loadContacts();
+    } catch (err) {
+      console.error('Failed to create stakeholder:', err);
+      setFormError(t.customers.stakeholderSaveFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,6 +99,7 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
     if (!customerId || !editing) return;
     const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
     if (!name || !email) return;
+    setFormError(null);
     setIsSubmitting(true);
     try {
       const data: Partial<Contact> = { name, email, role, department, linkedinUrl: linkedinUrl || undefined };
@@ -95,6 +108,9 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
       await DB.contacts.update(customerId, editing.id, data);
       setEditing(null);
       await loadContacts();
+    } catch (err) {
+      console.error('Failed to update stakeholder:', err);
+      setFormError(t.customers.stakeholderSaveFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,6 +124,7 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
       await loadContacts();
     } catch (err) {
       console.error(err);
+      alert(t.customers.stakeholderDeleteFailed);
     }
   };
 
@@ -205,7 +222,10 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
           {customerId ? (
             <button
               type="button"
-              onClick={() => setShowAdd(true)}
+              onClick={() => {
+                setFormError(null);
+                setShowAdd(true);
+              }}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50"
             >
               <Plus size={12} />
@@ -219,7 +239,13 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
         ) : loading ? (
           <p className="text-sm text-slate-400">{t.common.loading}</p>
         ) : contacts.length === 0 ? (
-          <p className="text-sm text-slate-500 italic">{t.customers.noStakeholdersRegistered}</p>
+          <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-500" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">{t.customers.stakeholderRequiredWarning}</p>
+              <p className="text-xs text-amber-700">{t.customers.noStakeholdersRegistered}</p>
+            </div>
+          </div>
         ) : (
           <ul className="space-y-2">
             {contacts.map((c) => (
@@ -261,7 +287,10 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
                 <div className="flex shrink-0 gap-1">
                   <button
                     type="button"
-                    onClick={() => setEditing(c)}
+                    onClick={() => {
+                      setFormError(null);
+                      setEditing(c);
+                    }}
                     className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-900"
                     title={t.customers.editStakeholderTooltip}
                   >
@@ -292,6 +321,12 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
         >
           <form onSubmit={handleCreate} className="space-y-4">
             {stakeholderFormFields()}
+            {formError ? (
+              <p className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
+                <AlertTriangle size={14} className="shrink-0" />
+                {formError}
+              </p>
+            ) : null}
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setShowAdd(false)} className="minimal-button-secondary flex-1">
                 {t.common.cancel}
@@ -314,6 +349,12 @@ export function CustomerStakeholdersSection({ customerId, refreshKey }: Customer
         >
           <form onSubmit={handleUpdate} className="space-y-4">
             {stakeholderFormFields(editing)}
+            {formError ? (
+              <p className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
+                <AlertTriangle size={14} className="shrink-0" />
+                {formError}
+              </p>
+            ) : null}
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setEditing(null)} className="minimal-button-secondary flex-1">
                 {t.common.cancel}

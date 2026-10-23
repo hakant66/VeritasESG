@@ -4,12 +4,24 @@
  */
 
 import { CustomerStakeholdersSection } from './CustomerStakeholdersSection';
+import type { Contact } from '../../types';
 
 export type CustomerStakeholdersTabProps = {
   customerId?: string;
   refreshKey?: number;
+  onContactsChange?: (contacts: Contact[]) => void;
 };
 
-export function CustomerStakeholdersTab({ customerId, refreshKey }: CustomerStakeholdersTabProps) {
-  return <CustomerStakeholdersSection customerId={customerId} refreshKey={refreshKey} />;
+export function CustomerStakeholdersTab({
+  customerId,
+  refreshKey,
+  onContactsChange,
+}: CustomerStakeholdersTabProps) {
+  return (
+    <CustomerStakeholdersSection
+      customerId={customerId}
+      refreshKey={refreshKey}
+      onContactsChange={onContactsChange}
+    />
+  );
 }
