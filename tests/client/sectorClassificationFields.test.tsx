@@ -1,13 +1,9 @@
 /**
- * UI tests for SectorClassificationFields — covers the Horizon review request:
+ * UI tests for SectorClassificationFields — covers:
  * - the manual "platform sectors" checkbox grid is gone (sectorIds is now derived)
- * - picking a SASB sub-sector auto-matches its macro sector
- * - picking a SASB sector no longer pushes a (wrong) NACE code
- * - entering a NACE code auto-matches its description and SASB classification
- *
- * The two SASB <select> elements aren't associated with their <label> via
- * htmlFor/id in the component, so tests address them by DOM order
- * (macro select first, sub-sector select second) rather than getByLabelText.
+ * - the component offers a "by SASB" vs "by NACE code" mode toggle (Horizon review request)
+ * - in "by SASB" mode, picking a sub-sector auto-matches its macro sector and suggests a NACE code
+ * - in "by NACE code" mode, entering a NACE code auto-matches its description and SASB classification
  */
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
@@ -33,17 +29,11 @@ const SECTORS: Segment[] = [
 ];
 
 function renderFields(initial?: Parameters<typeof SectorClassificationFields>[0]['initial']) {
-  const utils = render(
+  return render(
     <form>
       <SectorClassificationFields initial={initial} sectors={SECTORS} />
     </form>,
   );
-  const selects = utils.container.querySelectorAll('select');
-  return {
-    ...utils,
-    macroSelect: selects[0] as HTMLSelectElement,
-    subSectorSelect: selects[1] as HTMLSelectElement,
-  };
 }
 
 describe('SectorClassificationFields', () => {
@@ -52,43 +42,54 @@ describe('SectorClassificationFields', () => {
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
   });
 
-  it('lets a sub-sector be picked directly, without requiring a macro first', () => {
-    const { subSectorSelect } = renderFields();
-    expect(subSectorSelect).not.toBeDisabled();
-    // Full catalog available up front (not filtered down to an empty list pre-macro).
+  it('defaults to "by SASB" mode with a single sub-sector select, grouped by macro', () => {
+    const { container } = renderFields();
+    const subSectorSelect = container.querySelector('select') as HTMLSelectElement;
+    expect(subSectorSelect).toBeTruthy();
+    expect(subSectorSelect.querySelectorAll('optgroup').length).toBeGreaterThan(0);
     expect(subSectorSelect.options.length).toBeGreaterThan(1);
   });
 
-  it('auto-matches the macro sector when a SASB sub-sector is selected, without touching NACE', async () => {
+  it('auto-matches the macro sector and suggests a NACE code when a SASB sub-sector is selected', async () => {
     const user = userEvent.setup();
-    const { subSectorSelect, macroSelect, container } = renderFields();
+    const { container } = renderFields();
 
+    const subSectorSelect = container.querySelector('select') as HTMLSelectElement;
     await user.selectOptions(subSectorSelect, 'RT-CH'); // Kimyasallar (Chemicals)
 
-    expect(macroSelect.value).toBe('resource_transformation');
+    const macroHidden = container.querySelector('input[name="sasbMacroSector"]') as HTMLInputElement;
+    expect(macroHidden.value).toBe('resource_transformation');
 
     const naceHidden = container.querySelector('input[name="naceCode"]') as HTMLInputElement;
-    expect(naceHidden.value).toBe('');
+    expect(naceHidden.value).not.toBe('');
+
+    expect(screen.getByText(/önerildi/i)).toBeTruthy();
   });
 
-  it('auto-matches NACE description and SASB classification when a NACE code is entered', async () => {
+  it('switches to "by NACE code" mode and auto-matches SASB classification from a typed code', async () => {
     const user = userEvent.setup();
-    const { macroSelect, subSectorSelect } = renderFields();
+    const { container } = renderFields();
 
-    const naceInput = screen.getByPlaceholderText(/ör\. C26/i);
+    await user.click(screen.getByRole('button', { name: /nace koduna göre/i }));
+
+    const naceInput = screen.getByPlaceholderText(/kod veya açıklama/i);
     await user.type(naceInput, 'C20');
     await user.tab();
 
     const descInput = screen.getByPlaceholderText(/Sektör açıklaması/i) as HTMLInputElement;
     expect(descInput.value).toContain('Kimyasal');
-    expect(macroSelect.value).toBe('resource_transformation');
-    expect(subSectorSelect.value).toBe('RT-CH');
+
+    const macroHidden = container.querySelector('input[name="sasbMacroSector"]') as HTMLInputElement;
+    const subHidden = container.querySelector('input[name="sasbSubSectorSics"]') as HTMLInputElement;
+    expect(macroHidden.value).toBe('resource_transformation');
+    expect(subHidden.value).toBe('RT-CH');
   });
 
   it('derives hidden sectorIds inputs from the matched sector instead of a manual checkbox', async () => {
     const user = userEvent.setup();
-    const { subSectorSelect, container } = renderFields();
+    const { container } = renderFields();
 
+    const subSectorSelect = container.querySelector('select') as HTMLSelectElement;
     await user.selectOptions(subSectorSelect, 'RT-CH'); // Kimyasallar -> Kimyevi Maddeler segment
 
     const sectorIdInputs = within(container).queryAllByDisplayValue('seg-chem');
