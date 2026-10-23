@@ -35,6 +35,17 @@ export function getNextCustomerFormTab(tab: CustomerFormTabId): CustomerFormTabI
   return CUSTOMER_FORM_TAB_ORDER[index + 1];
 }
 
+/** Like getNextCustomerFormTab, but skips tabs not present in `visibleTabs` (e.g. a screen that hides some). */
+export function getNextVisibleCustomerFormTab(
+  tab: CustomerFormTabId,
+  visibleTabs: CustomerFormTabId[],
+): CustomerFormTabId | null {
+  const order = CUSTOMER_FORM_TAB_ORDER.filter((id) => visibleTabs.includes(id));
+  const index = order.indexOf(tab);
+  if (index < 0 || index >= order.length - 1) return null;
+  return order[index + 1];
+}
+
 /** @deprecated Use getNextCustomerFormTab */
 export function getNextSustainabilitySubTab(
   sub: SustainabilitySubTabId,
@@ -47,8 +58,10 @@ type CustomerFormTabsProps = {
   stakeholdersContent: ReactNode;
   facilitiesContent: ReactNode;
   sectorContent: ReactNode;
-  reportingContent: ReactNode;
-  prioritiesContent: ReactNode;
+  /** Omit to hide the "Raporlama Çerçeveleri" tab (e.g. on the edit screen; collected on the profile page instead). */
+  reportingContent?: ReactNode;
+  /** Omit to hide the "ESG Öncelikleri" tab (e.g. on the edit screen; collected on the profile page instead). */
+  prioritiesContent?: ReactNode;
   esgContent: ReactNode;
   activeTab?: CustomerFormTabId;
   onActiveTabChange?: (tab: CustomerFormTabId) => void;
@@ -80,8 +93,8 @@ export function CustomerFormTabs({
     { id: 'stakeholders', label: t.customers.tabStakeholders },
     { id: 'facilities', label: t.customers.tabFacilities },
     { id: 'sector', label: t.customers.tabSectorInfo },
-    { id: 'reporting', label: t.customers.tabReportingFrameworks },
-    { id: 'priorities', label: t.customers.tabEsgPriorities },
+    ...(reportingContent !== undefined ? [{ id: 'reporting' as const, label: t.customers.tabReportingFrameworks }] : []),
+    ...(prioritiesContent !== undefined ? [{ id: 'priorities' as const, label: t.customers.tabEsgPriorities }] : []),
     { id: 'esg', label: t.customers.tabEsgSummary },
   ];
 

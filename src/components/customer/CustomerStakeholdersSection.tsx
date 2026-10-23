@@ -10,24 +10,39 @@ import { Branch, Contact } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import Modal from '../ui/Modal';
 
+/** A stakeholder being composed before the customer exists — local-only, not yet persisted. */
+export type DraftContact = Omit<Contact, 'customerId' | 'createdAt'>;
+
+const randomDraftId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 type CustomerStakeholdersSectionProps = {
   customerId?: string;
   refreshKey?: number;
   /** Notified after every successful load, so a parent form can gate its own save on "at least one". */
   onContactsChange?: (contacts: Contact[]) => void;
+  /** Draft mode (no customerId yet): compose stakeholders locally, applied once the customer is created. */
+  draftContacts?: DraftContact[];
+  onDraftContactsChange?: (contacts: DraftContact[]) => void;
 };
 
 export function CustomerStakeholdersSection({
   customerId,
   refreshKey,
   onContactsChange,
+  draftContacts,
+  onDraftContactsChange,
 }: CustomerStakeholdersSectionProps) {
   const { t } = useTranslation();
+  const isDraftMode = !customerId && !!onDraftContactsChange;
+  const sectionActive = !!customerId || isDraftMode;
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [editing, setEditing] = useState<Contact | null>(null);
+  const [editing, setEditing] = useState<Contact | DraftContact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -57,6 +72,8 @@ export function CustomerStakeholdersSection({
     void loadContacts();
   }, [loadContacts, refreshKey]);
 
+  const displayContacts: (Contact | DraftContact)[] = customerId ? contacts : draftContacts ?? [];
+
   const parseContactForm = (formData: FormData) => {
     const name = String(formData.get('name') ?? '').trim();
     const email = String(formData.get('email') ?? '').trim();
@@ -69,66 +86,101 @@ export function CustomerStakeholdersSection({
 
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!customerId) return;
+    e.stopPropagation();
     const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
     if (!name || !email) return;
     setFormError(null);
-    setIsSubmitting(true);
-    try {
-      const data: Omit<Contact, 'id' | 'customerId' | 'createdAt'> = {
+
+    if (customerId) {
+      setIsSubmitting(true);
+      try {
+        const data: Omit<Contact, 'id' | 'customerId' | 'createdAt'> = {
+          name,
+          email,
+          role,
+          department,
+          linkedinUrl: linkedinUrl || undefined,
+        };
+        if (branchId) data.branchId = branchId;
+        await DB.contacts.create(customerId, data);
+        setShowAdd(false);
+        await loadContacts();
+      } catch (err) {
+        console.error('Failed to create stakeholder:', err);
+        setFormError(t.customers.stakeholderSaveFailed);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      const draft: DraftContact = {
+        id: randomDraftId(),
         name,
         email,
         role,
         department,
         linkedinUrl: linkedinUrl || undefined,
       };
-      if (branchId) data.branchId = branchId;
-      await DB.contacts.create(customerId, data);
+      onDraftContactsChange?.([...(draftContacts ?? []), draft]);
       setShowAdd(false);
-      await loadContacts();
-    } catch (err) {
-      console.error('Failed to create stakeholder:', err);
-      setFormError(t.customers.stakeholderSaveFailed);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!customerId || !editing) return;
+    e.stopPropagation();
+    if (!editing) return;
     const { name, email, role, department, linkedinUrl, branchId } = parseContactForm(new FormData(e.currentTarget));
     if (!name || !email) return;
     setFormError(null);
-    setIsSubmitting(true);
-    try {
-      const data: Partial<Contact> = { name, email, role, department, linkedinUrl: linkedinUrl || undefined };
-      if (branchId) data.branchId = branchId;
-      else data.branchId = undefined;
-      await DB.contacts.update(customerId, editing.id, data);
+
+    if (customerId) {
+      setIsSubmitting(true);
+      try {
+        const data: Partial<Contact> = { name, email, role, department, linkedinUrl: linkedinUrl || undefined };
+        if (branchId) data.branchId = branchId;
+        else data.branchId = undefined;
+        await DB.contacts.update(customerId, editing.id, data);
+        setEditing(null);
+        await loadContacts();
+      } catch (err) {
+        console.error('Failed to update stakeholder:', err);
+        setFormError(t.customers.stakeholderSaveFailed);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      const updated: DraftContact = { ...(editing as DraftContact), name, email, role, department, linkedinUrl: linkedinUrl || undefined };
+      onDraftContactsChange?.((draftContacts ?? []).map((c) => (c.id === editing.id ? updated : c)));
       setEditing(null);
-      await loadContacts();
-    } catch (err) {
-      console.error('Failed to update stakeholder:', err);
-      setFormError(t.customers.stakeholderSaveFailed);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (contact: Contact) => {
-    if (!customerId) return;
+  const handleDelete = async (contact: Contact | DraftContact) => {
     if (!window.confirm(t.customers.deleteStakeholderConfirm.replace('{name}', contact.name))) return;
-    try {
-      await DB.contacts.delete(customerId, contact.id);
-      await loadContacts();
-    } catch (err) {
-      console.error(err);
-      alert(t.customers.stakeholderDeleteFailed);
+
+    if (customerId) {
+      try {
+        await DB.contacts.delete(customerId, contact.id);
+        await loadContacts();
+      } catch (err) {
+        console.error(err);
+        alert(t.customers.stakeholderDeleteFailed);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      onDraftContactsChange?.((draftContacts ?? []).filter((c) => c.id !== contact.id));
     }
   };
 
-  const stakeholderFormFields = (contact?: Contact) => (
+  const stakeholderFormFields = (contact?: Contact | DraftContact) => (
     <>
       <div>
         <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-slate-400">
@@ -219,7 +271,7 @@ export function CustomerStakeholdersSection({
           <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
             {t.customers.stakeholdersSectionTitle}
           </h4>
-          {customerId ? (
+          {sectionActive ? (
             <button
               type="button"
               onClick={() => {
@@ -234,11 +286,11 @@ export function CustomerStakeholdersSection({
           ) : null}
         </div>
 
-        {!customerId ? (
+        {!sectionActive ? (
           <p className="text-sm text-slate-500 italic">{t.customers.stakeholdersSaveCustomerFirst}</p>
         ) : loading ? (
           <p className="text-sm text-slate-400">{t.common.loading}</p>
-        ) : contacts.length === 0 ? (
+        ) : displayContacts.length === 0 ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
             <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-500" />
             <div>
@@ -248,7 +300,7 @@ export function CustomerStakeholdersSection({
           </div>
         ) : (
           <ul className="space-y-2">
-            {contacts.map((c) => (
+            {displayContacts.map((c) => (
               <li
                 key={c.id}
                 className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3"
@@ -311,7 +363,7 @@ export function CustomerStakeholdersSection({
         )}
       </div>
 
-      {showAdd && customerId ? (
+      {showAdd && sectionActive ? (
         <Modal
           isOpen
           title={t.customers.addStakeholderModalTitle}
@@ -339,7 +391,7 @@ export function CustomerStakeholdersSection({
         </Modal>
       ) : null}
 
-      {editing && customerId ? (
+      {editing && sectionActive ? (
         <Modal
           isOpen
           title={t.customers.editStakeholderModalTitle}

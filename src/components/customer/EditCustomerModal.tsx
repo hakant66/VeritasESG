@@ -37,8 +37,20 @@ import { customerPayloadFromFormData } from '../../lib/customerFormFields';
 import {
   CustomerFormTabs,
   type CustomerFormTabId,
-  getNextCustomerFormTab,
+  getNextVisibleCustomerFormTab,
 } from './CustomerFormTabs';
+
+/**
+ * Raporlama Çerçeveleri ve ESG Öncelikleri bu ekrandan kaldırıldı — firma kaydedildikten
+ * sonra profil sayfasındaki "Raporlama Çerçeveleri" kartından (detaylı bilgi toplama) düzenlenir.
+ */
+const EDIT_CUSTOMER_VISIBLE_TABS: CustomerFormTabId[] = [
+  'basic',
+  'stakeholders',
+  'facilities',
+  'sector',
+  'esg',
+];
 import { CustomerBasicInfoTab } from './CustomerBasicInfoTab';
 import { CustomerSectorInfoTab } from './CustomerSectorInfoTab';
 import { CustomerReportingTab } from './CustomerReportingTab';
@@ -288,7 +300,7 @@ export function EditCustomerModal({
   const handleSaveAndNext = async () => {
     const ok = await persistCustomer(false);
     if (!ok) return;
-    const next = getNextCustomerFormTab(activeTab);
+    const next = getNextVisibleCustomerFormTab(activeTab, EDIT_CUSTOMER_VISIBLE_TABS);
     if (next) handleActiveTabChange(next);
   };
 
@@ -555,14 +567,17 @@ export function EditCustomerModal({
               <CustomerFacilitiesTab customerId={customer.id} refreshKey={branchRefreshKey} />
             }
             sectorContent={<CustomerSectorInfoTab customer={displayCustomer} sectors={sectors} />}
-            reportingContent={<CustomerReportingTab customer={displayCustomer} />}
-            prioritiesContent={
-              <CustomerEsgPrioritiesTab
-                customer={displayCustomer}
-              />
-            }
             esgContent={<CustomerEsgSummaryTab customer={displayCustomer} />}
           />
+          {/*
+            Raporlama Çerçeveleri ve ESG Öncelikleri artık bu ekranda sekme olarak gösterilmiyor
+            (firma profilindeki "Raporlama Çerçeveleri" kartından düzenleniyor). Ama bu alanların
+            gizli inputları formda kalmalı — yoksa her kayıtta mevcut değerler boş dizilerle ezilir.
+          */}
+          <div className="hidden" aria-hidden="true">
+            <CustomerReportingTab customer={displayCustomer} />
+            <CustomerEsgPrioritiesTab customer={displayCustomer} />
+          </div>
         </div>
 
         <div className="mt-4 flex shrink-0 flex-wrap items-center gap-2 border-t border-slate-100 pt-4 sm:gap-3">

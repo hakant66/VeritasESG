@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Building,
@@ -18,14 +18,24 @@ import {
   ChevronUp,
   FolderKanban,
   Briefcase,
+  Pencil,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Customer, Branch, Contact, Segment, EsgPolicyStatus, Project, PlatformUser } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import * as DB from '../../services/db';
 import { SectorClassificationDisplay } from './SectorClassificationDisplay';
 import { EsgSectionCard } from './EsgSectionCard';
+import { CustomerReportingTab } from './CustomerReportingTab';
+import { CustomerEsgPrioritiesTab } from './CustomerEsgPrioritiesTab';
 import { buildSectoralDefinitionLegacy, getSubSectorById } from '../../data/sectorClassification';
-import { formatMeurValue } from '../../lib/customerFormFields';
+import {
+  formatMeurValue,
+  reportingFrameworksFromFormData,
+  griStandardCodesFromFormData,
+  esrsStandardCodesFromFormData,
+  csrdScopeFromFormData,
+} from '../../lib/customerFormFields';
 import {
   computeCsrdScopeStatus,
   getReportingFrameworkLabel,
@@ -34,6 +44,12 @@ import { getGriStandardLabel } from '../../lib/griStandards';
 import { getEsrsStandardLabel } from '../../lib/esrsStandards';
 import { formatBranchLocation } from '../../lib/branchUtils';
 import { cn } from '../../lib/utils';
+
+const MATERIALITY_FRAMEWORK_LABEL: Record<string, string> = {
+  gri: 'GRI',
+  esrs: 'ESRS / CRDS',
+  issb: 'ISSB (IFRS S1/S2)',
+};
 
 export type CustomerProfileDataCollapseKey =
   | 'basicInfo'
@@ -54,6 +70,9 @@ type CustomerProfileDataSectionsProps = {
   availableSectors: Segment[];
   collapsed: Record<CustomerProfileDataCollapseKey, boolean>;
   onToggle: (key: CustomerProfileDataCollapseKey) => void;
+  /** Allows inline editing of Reporting Frameworks + Materiality Criterion from this page. */
+  canEditReportingPriorities?: boolean;
+  onReportingPrioritiesSaved?: (merged: Customer) => void;
 };
 
 export function CustomerProfileDataSections({
@@ -65,11 +84,39 @@ export function CustomerProfileDataSections({
   availableSectors,
   collapsed,
   onToggle,
+  canEditReportingPriorities,
+  onReportingPrioritiesSaved,
 }: CustomerProfileDataSectionsProps) {
   const { t, lang } = useTranslation();
   const dateLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
   const esg = customer.esgSummary ?? {};
   const notProvided = t.customers.notProvided;
+  const [isEditingReporting, setIsEditingReporting] = useState(false);
+  const [isSavingReporting, setIsSavingReporting] = useState(false);
+
+  const handleReportingSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const payload: Partial<Customer> = {
+      reportingFrameworkKeys: reportingFrameworksFromFormData(formData) as Customer['reportingFrameworkKeys'],
+      griStandardCodes: griStandardCodesFromFormData(formData),
+      esrsStandardCodes: esrsStandardCodesFromFormData(formData),
+      ...csrdScopeFromFormData(formData),
+      materialityFramework: (String(formData.get('materialityFramework') ?? '').trim() ||
+        undefined) as Customer['materialityFramework'],
+    };
+    setIsSavingReporting(true);
+    try {
+      await DB.customers.update(customer.id, payload);
+      onReportingPrioritiesSaved?.({ ...customer, ...payload });
+      setIsEditingReporting(false);
+    } catch (err) {
+      console.error('Failed to save reporting/materiality info:', err);
+      alert(t.customers.reportingPrioritiesSaveFailed);
+    } finally {
+      setIsSavingReporting(false);
+    }
+  };
 
   const sectoralDisplay =
     customer.sectoralDefinition?.trim() ||
@@ -404,108 +451,155 @@ export function CustomerProfileDataSections({
         collapsed={collapsed.reporting}
         onToggle={() => onToggle('reporting')}
       >
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              {t.customers.reportingFrameworksTitle}
-            </h4>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(customer.reportingFrameworkKeys || []).length === 0 ? (
-                <span className="text-sm italic text-slate-400">{notProvided}</span>
-              ) : (
-                (customer.reportingFrameworkKeys || []).map((key) => (
-                  <span
-                    key={key}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
-                  >
-                    {getReportingFrameworkLabel(key, lang)}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              {t.customers.griStandardsTitle}
-            </h4>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(customer.griStandardCodes || []).length === 0 ? (
-                <span className="text-sm italic text-slate-400">{notProvided}</span>
-              ) : (
-                (customer.griStandardCodes || []).map((code) => (
-                  <span
-                    key={code}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
-                  >
-                    {getGriStandardLabel(code, lang)}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              {t.customers.esrsStandardsTitle}
-            </h4>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(customer.esrsStandardCodes || []).length === 0 ? (
-                <span className="text-sm italic text-slate-400">{notProvided}</span>
-              ) : (
-                (customer.esrsStandardCodes || []).map((code) => (
-                  <span
-                    key={code}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
-                  >
-                    {getEsrsStandardLabel(code, lang)}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                {t.customers.csrdScopeTitle}
-              </h4>
-              <span
-                className={cn(
-                  'rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest',
-                  csrdStatus === 'in_scope' && 'border-emerald-200 bg-emerald-50 text-emerald-700',
-                  csrdStatus === 'pie' && 'border-amber-200 bg-amber-50 text-amber-800',
-                  csrdStatus === 'out_of_scope' && 'border-slate-200 bg-slate-100 text-slate-600',
-                )}
+        {isEditingReporting ? (
+          <form onSubmit={(e) => void handleReportingSubmit(e)} className="space-y-5">
+            <CustomerReportingTab customer={customer} />
+            <CustomerEsgPrioritiesTab customer={customer} />
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEditingReporting(false)}
+                className="minimal-button-secondary flex-1"
               >
-                {csrdBadgeLabel}
-              </span>
+                {t.common.cancel}
+              </button>
+              <button type="submit" disabled={isSavingReporting} className="minimal-button-primary flex-1">
+                {isSavingReporting ? t.common.saving : t.common.save}
+              </button>
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{t.customers.csrdScopeHint}</p>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          </form>
+        ) : (
+          <div className="space-y-6">
+            {canEditReportingPriorities ? (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingReporting(true)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50"
+                >
+                  <Pencil size={12} />
+                  {t.customers.editReportingPriorities}
+                </button>
+              </div>
+            ) : null}
+
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                {t.customers.reportingFrameworksTitle}
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(customer.reportingFrameworkKeys || []).length === 0 ? (
+                  <span className="text-sm italic text-slate-400">{notProvided}</span>
+                ) : (
+                  (customer.reportingFrameworkKeys || []).map((key) => (
+                    <span
+                      key={key}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
+                    >
+                      {getReportingFrameworkLabel(key, lang)}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                {t.customers.griStandardsTitle}
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(customer.griStandardCodes || []).length === 0 ? (
+                  <span className="text-sm italic text-slate-400">{notProvided}</span>
+                ) : (
+                  (customer.griStandardCodes || []).map((code) => (
+                    <span
+                      key={code}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
+                    >
+                      {getGriStandardLabel(code, lang)}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                {t.customers.esrsStandardsTitle}
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(customer.esrsStandardCodes || []).length === 0 ? (
+                  <span className="text-sm italic text-slate-400">{notProvided}</span>
+                ) : (
+                  (customer.esrsStandardCodes || []).map((code) => (
+                    <span
+                      key={code}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700"
+                    >
+                      {getEsrsStandardLabel(code, lang)}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                {t.customers.materialityFrameworkTitle}
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {customer.materialityFramework ? (
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700">
+                    {MATERIALITY_FRAMEWORK_LABEL[customer.materialityFramework] ?? customer.materialityFramework}
+                  </span>
+                ) : (
+                  <span className="text-sm italic text-slate-400">{notProvided}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  {t.customers.csrdScopeTitle}
+                </h4>
+                <span
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest',
+                    csrdStatus === 'in_scope' && 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                    csrdStatus === 'pie' && 'border-amber-200 bg-amber-50 text-amber-800',
+                    csrdStatus === 'out_of_scope' && 'border-slate-200 bg-slate-100 text-slate-600',
+                  )}
+                >
+                  {csrdBadgeLabel}
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-500">{t.customers.csrdScopeHint}</p>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <ProfileField
+                  label={t.customers.csrdScopeEmployees}
+                  value={formatNum(customer.csrdScopeEmployeeCount)}
+                  notProvided={notProvided}
+                />
+                <ProfileField
+                  label={t.customers.csrdScopeTurnover}
+                  value={formatMeurValue(customer.csrdScopeTurnoverMeur)}
+                  notProvided={notProvided}
+                />
+                <ProfileField
+                  label={t.customers.csrdScopeAssets}
+                  value={formatMeurValue(customer.csrdScopeAssetsMeur)}
+                  notProvided={notProvided}
+                />
+              </div>
               <ProfileField
-                label={t.customers.csrdScopeEmployees}
-                value={formatNum(customer.csrdScopeEmployeeCount)}
-                notProvided={notProvided}
-              />
-              <ProfileField
-                label={t.customers.csrdScopeTurnover}
-                value={formatMeurValue(customer.csrdScopeTurnoverMeur)}
-                notProvided={notProvided}
-              />
-              <ProfileField
-                label={t.customers.csrdScopeAssets}
-                value={formatMeurValue(customer.csrdScopeAssetsMeur)}
-                notProvided={notProvided}
+                label={t.customers.csrdScopePie}
+                value={customer.isPublicInterestEntity ? t.customers.policyStatusYes : t.customers.policyStatusNo}
+                className="mt-4"
               />
             </div>
-            <ProfileField
-              label={t.customers.csrdScopePie}
-              value={customer.isPublicInterestEntity ? t.customers.policyStatusYes : t.customers.policyStatusNo}
-              className="mt-4"
-            />
           </div>
-        </div>
+        )}
       </ProfileCategoryCard>
 
       <ProfileCategoryCard

@@ -4,10 +4,9 @@
  */
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { AlertTriangle } from 'lucide-react';
 import * as DB from '../../services/db';
 import { logActivity } from '../../services/db';
-import { Contact, Customer, Segment } from '../../types';
+import { Segment } from '../../types';
 import { useAuth } from '../../lib/AuthContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import Modal from '../ui/Modal';
@@ -20,6 +19,8 @@ import { CustomerEsgSummaryTab } from './CustomerEsgSummaryTab';
 import { CustomerEsgPrioritiesTab } from './CustomerEsgPrioritiesTab';
 import { CustomerFacilitiesTab } from './CustomerFacilitiesTab';
 import { CustomerStakeholdersTab } from './CustomerStakeholdersTab';
+import type { DraftContact } from './CustomerStakeholdersSection';
+import type { DraftBranch } from './CustomerBranchesSection';
 
 const getBrandLogo = (url: string) => {
   try {
@@ -46,34 +47,24 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
   const [logoDraft, setLogoDraft] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formKey, setFormKey] = useState(0);
-  /** Set once the customer record is created; switches the modal into the "add a stakeholder" step. */
-  const [createdCustomer, setCreatedCustomer] = useState<Customer | null>(null);
-  const [stakeholderCount, setStakeholderCount] = useState<number | null>(null);
+  /** Stakeholders and facilities are composed locally (no customer id exists yet) and applied on submit. */
+  const [draftContacts, setDraftContacts] = useState<DraftContact[]>([]);
+  const [draftBranches, setDraftBranches] = useState<DraftBranch[]>([]);
 
   useEffect(() => {
     if (open) {
       setLogoDraft(null);
       setFormKey((k) => k + 1);
-      setCreatedCustomer(null);
-      setStakeholderCount(null);
+      setDraftContacts([]);
+      setDraftBranches([]);
     }
   }, [open]);
 
   const handleDismiss = () => {
     setLogoDraft(null);
-    setCreatedCustomer(null);
-    setStakeholderCount(null);
+    setDraftContacts([]);
+    setDraftBranches([]);
     onClose();
-  };
-
-  const handleFinish = async () => {
-    if (!stakeholderCount) {
-      if (!window.confirm(t.customers.closeWithoutStakeholderConfirm)) return;
-    }
-    // Deferred until now: `onCreated` (list reload) flips the directory page into its
-    // loading state, which unmounts this modal and would wipe `createdCustomer` mid-flow.
-    await onCreated?.();
-    handleDismiss();
   };
 
   if (!open) return null;
@@ -94,6 +85,10 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
       alert(t.customers.newCustomerValidationSectorRequired);
       return;
     }
+    if (draftContacts.length === 0) {
+      alert(t.customers.newCustomerValidationStakeholderRequired);
+      return;
+    }
     if (logoUrl && logoUrl.startsWith('data:') && logoUrl.length > 800000) {
       alert(t.customers.newCustomerValidationLogoTooLarge);
       return;
@@ -107,10 +102,39 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
       if (user && created?.id) {
         await logActivity(user, 'create', 'customers', created.id, `Created customer "${name}"`);
       }
-      // Customer now exists, so stakeholders (tied to its id) can finally be added.
-      // Switch the modal into the "add a stakeholder" step instead of closing.
-      // `onCreated` (list reload) is deferred to handleFinish — see its comment.
-      setCreatedCustomer(created as Customer);
+
+      const failedNames: string[] = [];
+      if (created?.id) {
+        for (const c of draftContacts) {
+          try {
+            await DB.contacts.create(created.id, {
+              name: c.name,
+              email: c.email,
+              role: c.role,
+              department: c.department,
+              linkedinUrl: c.linkedinUrl,
+              ...(c.branchId ? { branchId: c.branchId } : {}),
+            });
+          } catch (err) {
+            console.error('Failed to create stakeholder during customer creation:', err);
+            failedNames.push(c.name || c.email);
+          }
+        }
+        for (const b of draftBranches) {
+          try {
+            await DB.branches.create(created.id, { name: b.name, type: b.type, address: b.address });
+          } catch (err) {
+            console.error('Failed to create branch during customer creation:', err);
+            failedNames.push(b.name);
+          }
+        }
+      }
+      if (failedNames.length > 0) {
+        alert(t.customers.newCustomerPartialSaveWarning.replace('{items}', failedNames.join(', ')));
+      }
+
+      await onCreated?.();
+      handleDismiss();
     } catch (error: unknown) {
       console.error('Creation failed:', error);
       const msg = error instanceof Error ? error.message : '';
@@ -133,65 +157,47 @@ export function NewCustomerModal({ open, onClose, availableSectors, onCreated }:
       title={t.customers.registerNewCustomer}
       onClose={handleDismiss}
     >
-      {createdCustomer ? (
-        <div className="flex min-w-0 max-h-[min(calc(90vh-8rem),780px)] flex-col">
-          <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
-            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-500" />
-            <p className="text-sm font-semibold text-amber-800">
-              {t.customers.newCustomerCreatedAddStakeholder}
-            </p>
-          </div>
-          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pr-1 custom-scrollbar">
-            <CustomerStakeholdersTab
-              customerId={createdCustomer.id}
-              onContactsChange={(contacts: Contact[]) => setStakeholderCount(contacts.length)}
-            />
-          </div>
-          <div className="mt-4 flex shrink-0 gap-3 border-t border-slate-100 pt-4">
-            <button type="button" onClick={() => void handleFinish()} className="minimal-button-primary flex-1">
-              {t.customers.finishCustomerSetup}
-            </button>
-          </div>
+      <form
+        key={formKey}
+        onSubmit={handleSubmit}
+        className="flex min-w-0 max-h-[min(calc(90vh-8rem),780px)] flex-col"
+      >
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pr-1 custom-scrollbar">
+          <CustomerFormTabs
+            basicContent={
+              <CustomerBasicInfoTab
+                tempLogo={logoDraft}
+                onLogoFile={setLogoDraft}
+                onWebsiteBlur={(val) => {
+                  if (val && !logoDraft) {
+                    const suggestedLogo = getBrandLogo(val);
+                    if (suggestedLogo) setLogoDraft(suggestedLogo);
+                  }
+                }}
+              />
+            }
+            stakeholdersContent={
+              <CustomerStakeholdersTab draftContacts={draftContacts} onDraftContactsChange={setDraftContacts} />
+            }
+            facilitiesContent={
+              <CustomerFacilitiesTab draftBranches={draftBranches} onDraftBranchesChange={setDraftBranches} />
+            }
+            sectorContent={<CustomerSectorInfoTab sectors={availableSectors} />}
+            reportingContent={<CustomerReportingTab />}
+            prioritiesContent={<CustomerEsgPrioritiesTab />}
+            esgContent={<CustomerEsgSummaryTab />}
+          />
         </div>
-      ) : (
-        <form
-          key={formKey}
-          onSubmit={handleSubmit}
-          className="flex min-w-0 max-h-[min(calc(90vh-8rem),780px)] flex-col"
-        >
-          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pr-1 custom-scrollbar">
-            <CustomerFormTabs
-              basicContent={
-                <CustomerBasicInfoTab
-                  tempLogo={logoDraft}
-                  onLogoFile={setLogoDraft}
-                  onWebsiteBlur={(val) => {
-                    if (val && !logoDraft) {
-                      const suggestedLogo = getBrandLogo(val);
-                      if (suggestedLogo) setLogoDraft(suggestedLogo);
-                    }
-                  }}
-                />
-              }
-              stakeholdersContent={<CustomerStakeholdersTab />}
-              facilitiesContent={<CustomerFacilitiesTab />}
-              sectorContent={<CustomerSectorInfoTab sectors={availableSectors} />}
-              reportingContent={<CustomerReportingTab />}
-              prioritiesContent={<CustomerEsgPrioritiesTab />}
-              esgContent={<CustomerEsgSummaryTab />}
-            />
-          </div>
 
-          <div className="mt-4 flex shrink-0 gap-3 border-t border-slate-100 pt-4">
-            <button type="button" onClick={handleDismiss} className="minimal-button-secondary flex-1">
-              {t.common.cancel}
-            </button>
-            <button type="submit" disabled={isSubmitting} className="minimal-button-primary flex-1">
-              {isSubmitting ? t.customers.creatingCustomer : t.customers.createCustomer}
-            </button>
-          </div>
-        </form>
-      )}
+        <div className="mt-4 flex shrink-0 gap-3 border-t border-slate-100 pt-4">
+          <button type="button" onClick={handleDismiss} className="minimal-button-secondary flex-1">
+            {t.common.cancel}
+          </button>
+          <button type="submit" disabled={isSubmitting} className="minimal-button-primary flex-1">
+            {isSubmitting ? t.customers.creatingCustomer : t.customers.createCustomer}
+          </button>
+        </div>
+      </form>
     </Modal>
   );
 }

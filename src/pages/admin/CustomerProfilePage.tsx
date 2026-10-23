@@ -228,6 +228,8 @@ export default function CustomerProfilePage() {
         availableSectors={availableSectors}
         collapsed={collapsed}
         onToggle={(key) => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))}
+        canEditReportingPriorities={canEditCustomerInModal}
+        onReportingPrioritiesSaved={(merged) => setCustomer(merged)}
       />
 
       <EditCustomerModal

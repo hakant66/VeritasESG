@@ -4,6 +4,7 @@
  */
 
 import { type ReactNode, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, AlertCircle, Info, HelpCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -94,7 +95,7 @@ export default function Modal({
   const backdropZ = elevated ? 'z-[10098]' : 'z-[9998]';
   const panelZ = elevated ? 'z-[10099]' : 'z-[9999]';
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -219,4 +220,9 @@ export default function Modal({
       )}
     </AnimatePresence>
   );
+
+  // Portaled to <body> so this never ends up nested inside a host page's own <form>
+  // (e.g. the "add stakeholder" modal opened from within the new-customer form) — a
+  // nested <form> is invalid HTML and can make the browser submit the wrong one natively.
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

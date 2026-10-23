@@ -260,11 +260,6 @@ export const translations = {
       stakeholderRequiredWarning: 'At least one stakeholder is required for this customer.',
       stakeholderSaveFailed: 'Failed to save the stakeholder. Please check the details and try again.',
       stakeholderDeleteFailed: 'Failed to delete the stakeholder. Please try again.',
-      newCustomerCreatedAddStakeholder:
-        'Company created. Please add at least one stakeholder to finish setup.',
-      finishCustomerSetup: 'Finish',
-      closeWithoutStakeholderConfirm:
-        'No stakeholder has been added for this company yet. Are you sure you want to close without adding one?',
       deleteCustomerConfirm: 'Delete customer "{name}"? This cannot be undone.',
       deleteCustomerBlockedByProjects:
         'This customer has projects and cannot be deleted. Remove or reassign its projects first.',
@@ -336,6 +331,9 @@ export const translations = {
       csrdScopeTitle: 'CSRD scope check',
       csrdScopeHint:
         'EU CSRD scope: considered a large company if 2 criteria are met (>250 employees, >40M€ turnover, >20M€ assets).',
+      materialityFrameworkTitle: 'Materiality Criterion',
+      editReportingPriorities: 'Edit',
+      reportingPrioritiesSaveFailed: 'Failed to save. Please try again.',
       tsrsScopeHint:
         'TSRS (Türkiye) uses different thresholds: mandatory for two consecutive periods if at least 2 of 3 criteria are met — >TRY 500M total assets, >TRY 1B net sales, >250 employees. All banks (except SDIF-covered ones) and CMB/BRSA-regulated entities are also in scope regardless of size. First reporting period: 2024. Assurance audits begin in 2026.',
       csrdScopeEmployees: 'Employee count',
@@ -489,6 +487,8 @@ export const translations = {
       defaultProjectCategory: 'Project',
       addBranchModalTitle: 'Add new branch',
       editBranchModalTitle: 'Edit branch',
+      branchSaveFailed: 'Failed to save the facility. Please check the details and try again.',
+      branchDeleteFailed: 'Failed to delete the facility. Please try again.',
       branchNameLabel: 'Branch name',
       branchNamePlaceholder: 'e.g. London office',
       branchTypeLabel: 'Type',
@@ -509,6 +509,8 @@ export const translations = {
       newCustomerValidationNameRequired: 'Company name is required.',
       newCustomerValidationSectorRequired: 'Please enter a NACE code or select a SASB sub-sector.',
       newCustomerValidationStakeholderRequired: 'Please add at least one stakeholder.',
+      newCustomerPartialSaveWarning:
+        'Company created, but the following could not be saved: {items}. You can retry from the company profile.',
       newCustomerValidationLogoTooLarge: 'The logo image is too large. Please use a smaller image.',
       newCustomerErrorQuota: 'Service quota exceeded. Please try again later.',
       newCustomerErrorCreateFailed: 'Failed to create customer.',
@@ -2320,11 +2322,6 @@ function hello() {
       stakeholderRequiredWarning: 'Bu firma için en az bir paydaş kaydı gereklidir.',
       stakeholderSaveFailed: 'Paydaş kaydedilemedi. Lütfen bilgileri kontrol edip tekrar deneyin.',
       stakeholderDeleteFailed: 'Paydaş silinemedi. Lütfen tekrar deneyin.',
-      newCustomerCreatedAddStakeholder:
-        'Firma oluşturuldu. Kurulumu tamamlamak için lütfen en az bir paydaş ekleyin.',
-      finishCustomerSetup: 'Tamamla',
-      closeWithoutStakeholderConfirm:
-        'Bu firma için henüz paydaş eklenmedi. Paydaş eklemeden kapatmak istediğinize emin misiniz?',
       deleteCustomerConfirm: '"{name}" firmasını silmek istiyor musunuz? Bu işlem geri alınamaz.',
       deleteCustomerBlockedByProjects:
         'Bu firmaya ait projeler olduğu için silinemez. Önce projeleri kaldırın veya başka bir firmaya taşıyın.',
@@ -2396,6 +2393,9 @@ function hello() {
       csrdScopeTitle: 'CSRD kapsam kontrolü',
       csrdScopeHint:
         'AB CSRD kapsamı: 3 kriterden 2’si sağlanıyorsa (>250 çalışan, >40M€ ciro, >20M€ varlık) büyük işletme sayılır.',
+      materialityFrameworkTitle: 'Önemlilik Kriteri',
+      editReportingPriorities: 'Düzenle',
+      reportingPrioritiesSaveFailed: 'Kaydedilemedi. Lütfen tekrar deneyin.',
       tsrsScopeHint:
         'TSRS (Türkiye) farklı eşikler kullanır: iki dönem üst üste 3 kriterden en az 2’si sağlanırsa zorunlu — >500 milyon TL toplam varlık, >1 milyar TL net satış, >250 çalışan. Büyüklükten bağımsız olarak tüm bankalar (TMSF kapsamındakiler hariç) ile SPK/BDDK’ya tabi kuruluşlar da kapsamdadır. İlk raporlama dönemi 2024; bağımsız denetim 2026’da başlıyor.',
       csrdScopeEmployees: 'Çalışan sayısı',
@@ -2549,6 +2549,8 @@ function hello() {
       defaultProjectCategory: 'Proje',
       addBranchModalTitle: 'Yeni şube ekle',
       editBranchModalTitle: 'Şubeyi düzenle',
+      branchSaveFailed: 'Tesis kaydedilemedi. Lütfen bilgileri kontrol edip tekrar deneyin.',
+      branchDeleteFailed: 'Tesis silinemedi. Lütfen tekrar deneyin.',
       branchNameLabel: 'Şube adı',
       branchNamePlaceholder: 'ör. İstanbul merkez',
       branchTypeLabel: 'Tip',
@@ -2569,6 +2571,8 @@ function hello() {
       newCustomerValidationNameRequired: 'Şirket adı zorunludur.',
       newCustomerValidationSectorRequired: 'Lütfen bir NACE kodu girin veya SASB alt sektörü seçin.',
       newCustomerValidationStakeholderRequired: 'Lütfen en az bir paydaş ekleyin.',
+      newCustomerPartialSaveWarning:
+        'Firma oluşturuldu ancak şu kayıtlar eklenemedi: {items}. Firma profilinden tekrar deneyebilirsiniz.',
       newCustomerValidationLogoTooLarge: 'Logo görüntüsü çok büyük. Daha küçük bir dosya kullanın.',
       newCustomerErrorQuota: 'Hizmet kotası aşıldı. Lütfen daha sonra tekrar deneyin.',
       newCustomerErrorCreateFailed: 'Firma oluşturulamadı.',

@@ -4,25 +4,44 @@
  */
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
 import * as DB from '../../services/db';
 import { Branch } from '../../types';
 import { formatBranchLocation } from '../../lib/branchUtils';
 import { useTranslation } from '../../hooks/useTranslation';
 import Modal from '../ui/Modal';
 
+/** A facility being composed before the customer exists — local-only, not yet persisted. */
+export type DraftBranch = Omit<Branch, 'customerId' | 'createdAt'>;
+
+const randomDraftId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 type CustomerBranchesSectionProps = {
   customerId?: string;
   refreshKey?: number;
+  /** Draft mode (no customerId yet): compose facilities locally, applied once the customer is created. */
+  draftBranches?: DraftBranch[];
+  onDraftBranchesChange?: (branches: DraftBranch[]) => void;
 };
 
-export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBranchesSectionProps) {
+export function CustomerBranchesSection({
+  customerId,
+  refreshKey,
+  draftBranches,
+  onDraftBranchesChange,
+}: CustomerBranchesSectionProps) {
   const { t } = useTranslation();
+  const isDraftMode = !customerId && !!onDraftBranchesChange;
+  const sectionActive = !!customerId || isDraftMode;
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [editing, setEditing] = useState<Branch | null>(null);
+  const [editing, setEditing] = useState<Branch | DraftBranch | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const loadBranches = useCallback(async () => {
     if (!customerId) {
@@ -44,50 +63,90 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
     void loadBranches();
   }, [loadBranches, refreshKey]);
 
-  const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!customerId) return;
-    const formData = new FormData(e.currentTarget);
+  const displayBranches: (Branch | DraftBranch)[] = customerId ? branches : draftBranches ?? [];
+
+  const parseBranchForm = (formData: FormData) => {
     const name = String(formData.get('name') ?? '').trim();
     const branchType = String(formData.get('type') ?? '').trim();
     const address = String(formData.get('address') ?? '').trim();
+    return { name, branchType, address };
+  };
+
+  const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const { name, branchType, address } = parseBranchForm(new FormData(e.currentTarget));
     if (!name) return;
-    setIsSubmitting(true);
-    try {
-      await DB.branches.create(customerId, { name, type: branchType || undefined, address });
+    setFormError(null);
+
+    if (customerId) {
+      setIsSubmitting(true);
+      try {
+        await DB.branches.create(customerId, { name, type: branchType || undefined, address });
+        setShowAdd(false);
+        await loadBranches();
+      } catch (err) {
+        console.error('Failed to create branch:', err);
+        setFormError(t.customers.branchSaveFailed);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      const draft: DraftBranch = { id: randomDraftId(), name, type: branchType || undefined, address };
+      onDraftBranchesChange?.([...(draftBranches ?? []), draft]);
       setShowAdd(false);
-      await loadBranches();
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!customerId || !editing) return;
-    const formData = new FormData(e.currentTarget);
-    const name = String(formData.get('name') ?? '').trim();
-    const branchType = String(formData.get('type') ?? '').trim();
-    const address = String(formData.get('address') ?? '').trim();
+    e.stopPropagation();
+    if (!editing) return;
+    const { name, branchType, address } = parseBranchForm(new FormData(e.currentTarget));
     if (!name) return;
-    setIsSubmitting(true);
-    try {
-      await DB.branches.update(customerId, editing.id, { name, type: branchType || undefined, address });
+    setFormError(null);
+
+    if (customerId) {
+      setIsSubmitting(true);
+      try {
+        await DB.branches.update(customerId, editing.id, { name, type: branchType || undefined, address });
+        setEditing(null);
+        await loadBranches();
+      } catch (err) {
+        console.error('Failed to update branch:', err);
+        setFormError(t.customers.branchSaveFailed);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      const updated: DraftBranch = { ...(editing as DraftBranch), name, type: branchType || undefined, address };
+      onDraftBranchesChange?.((draftBranches ?? []).map((b) => (b.id === editing.id ? updated : b)));
       setEditing(null);
-      await loadBranches();
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (branch: Branch) => {
-    if (!customerId) return;
+  const handleDelete = async (branch: Branch | DraftBranch) => {
     if (!window.confirm(`${branch.name}?`)) return;
-    try {
-      await DB.branches.delete(customerId, branch.id);
-      await loadBranches();
-    } catch (err) {
-      console.error(err);
+
+    if (customerId) {
+      try {
+        await DB.branches.delete(customerId, branch.id);
+        await loadBranches();
+      } catch (err) {
+        console.error(err);
+        alert(t.customers.branchDeleteFailed);
+      }
+      return;
+    }
+
+    if (isDraftMode) {
+      onDraftBranchesChange?.((draftBranches ?? []).filter((b) => b.id !== branch.id));
     }
   };
 
@@ -98,10 +157,13 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
           {t.customers.branchesSectionTitle}
         </h4>
-        {customerId ? (
+        {sectionActive ? (
           <button
             type="button"
-            onClick={() => setShowAdd(true)}
+            onClick={() => {
+              setFormError(null);
+              setShowAdd(true);
+            }}
             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50"
           >
             <Plus size={12} />
@@ -110,15 +172,15 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
         ) : null}
       </div>
 
-      {!customerId ? (
+      {!sectionActive ? (
         <p className="text-sm text-slate-500 italic">{t.customers.branchesSaveCustomerFirst}</p>
       ) : loading ? (
         <p className="text-sm text-slate-400">{t.common.loading}</p>
-      ) : branches.length === 0 ? (
+      ) : displayBranches.length === 0 ? (
         <p className="text-sm text-slate-500 italic">{t.customers.noBranchesRegistered}</p>
       ) : (
         <ul className="space-y-2">
-          {branches.map((b) => (
+          {displayBranches.map((b) => (
             <li
               key={b.id}
               className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3"
@@ -135,7 +197,10 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
               <div className="flex shrink-0 gap-1">
                 <button
                   type="button"
-                  onClick={() => setEditing(b)}
+                  onClick={() => {
+                    setFormError(null);
+                    setEditing(b);
+                  }}
                   className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-900"
                   title={t.customers.editBranchTooltip}
                 >
@@ -156,7 +221,7 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
       )}
     </div>
 
-    {showAdd && customerId ? (
+    {showAdd && sectionActive ? (
       <Modal
         isOpen
         title={t.customers.addBranchModalTitle}
@@ -187,6 +252,12 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
               placeholder={t.customers.branchAddressTextareaPlaceholder}
             />
           </div>
+          {formError ? (
+            <p className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
+              <AlertTriangle size={14} className="shrink-0" />
+              {formError}
+            </p>
+          ) : null}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setShowAdd(false)} className="minimal-button-secondary flex-1">
               {t.common.cancel}
@@ -199,7 +270,7 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
       </Modal>
     ) : null}
 
-    {editing && customerId ? (
+    {editing && sectionActive ? (
       <Modal
         isOpen
         title={t.customers.editBranchModalTitle}
@@ -242,6 +313,12 @@ export function CustomerBranchesSection({ customerId, refreshKey }: CustomerBran
               placeholder={t.customers.branchLocationSinglePlaceholder}
             />
           </div>
+          {formError ? (
+            <p className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
+              <AlertTriangle size={14} className="shrink-0" />
+              {formError}
+            </p>
+          ) : null}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setEditing(null)} className="minimal-button-secondary flex-1">
               {t.common.cancel}
