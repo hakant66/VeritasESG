@@ -116,10 +116,6 @@ export function ProjectCompanyDetailsGate({
         </div>
       ) : null}
 
-      <ReportingFrameworksPicker initialKeys={customer.reportingFrameworkKeys} />
-      <GriStandardsPicker initialCodes={customer.griStandardCodes} />
-      <EsrsStandardsPicker initialCodes={customer.esrsStandardCodes} />
-
       <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-4">
         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
           {t.projects.companyDetailsGateReportingPeriodTitle}
@@ -201,6 +197,10 @@ export function ProjectCompanyDetailsGate({
         </h4>
         <SubsidiariesField initial={esg.subsidiaries} />
       </div>
+
+      <ReportingFrameworksPicker initialKeys={customer.reportingFrameworkKeys} />
+      <GriStandardsPicker initialCodes={customer.griStandardCodes} />
+      <EsrsStandardsPicker initialCodes={customer.esrsStandardCodes} />
 
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
