@@ -26,15 +26,7 @@ export type CustomerAutofillPanelProps = {
   activeTab?: CustomerFormTabId;
 };
 
-const SCOPES: CustomerAutofillUiScope[] = [
-  'basic',
-  'workforce',
-  'sector',
-  'stakeholders',
-  'facilities',
-  'reporting',
-  'all',
-];
+const SCOPES: CustomerAutofillUiScope[] = ['basic', 'stakeholders', 'facilities', 'sector'];
 
 export function CustomerAutofillPanel({
   isAutofilling,
