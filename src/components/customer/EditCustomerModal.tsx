@@ -41,15 +41,15 @@ import {
 } from './CustomerFormTabs';
 
 /**
- * Raporlama Çerçeveleri ve ESG Öncelikleri bu ekrandan kaldırıldı — firma kaydedildikten
- * sonra profil sayfasındaki "Raporlama Çerçeveleri" kartından (detaylı bilgi toplama) düzenlenir.
+ * Raporlama Çerçeveleri, ESG Öncelikleri ve ESG Özet bu ekrandan kaldırıldı — firma
+ * kaydedildikten sonra profil sayfasındaki "Raporlama Çerçeveleri" / "ESG Özet"
+ * kartlarından (detaylı bilgi toplama) düzenlenir.
  */
 const EDIT_CUSTOMER_VISIBLE_TABS: CustomerFormTabId[] = [
   'basic',
   'stakeholders',
   'facilities',
   'sector',
-  'esg',
 ];
 import { CustomerBasicInfoTab } from './CustomerBasicInfoTab';
 import { CustomerSectorInfoTab } from './CustomerSectorInfoTab';
@@ -194,7 +194,7 @@ export function EditCustomerModal({
 
   if (!customer || !isOpen) return null;
 
-  const isLastTab = activeTab === 'esg';
+  const isLastTab = activeTab === 'sector';
 
   const handleActiveTabChange = (tab: CustomerFormTabId) => {
     setActiveTab(tab);
@@ -567,16 +567,17 @@ export function EditCustomerModal({
               <CustomerFacilitiesTab customerId={customer.id} refreshKey={branchRefreshKey} />
             }
             sectorContent={<CustomerSectorInfoTab customer={displayCustomer} sectors={sectors} />}
-            esgContent={<CustomerEsgSummaryTab customer={displayCustomer} />}
           />
           {/*
-            Raporlama Çerçeveleri ve ESG Öncelikleri artık bu ekranda sekme olarak gösterilmiyor
-            (firma profilindeki "Raporlama Çerçeveleri" kartından düzenleniyor). Ama bu alanların
-            gizli inputları formda kalmalı — yoksa her kayıtta mevcut değerler boş dizilerle ezilir.
+            Raporlama Çerçeveleri, ESG Öncelikleri ve ESG Özet artık bu ekranda sekme olarak
+            gösterilmiyor (firma profilindeki "Raporlama Çerçeveleri" / "ESG Özet" kartlarından
+            düzenleniyor). Ama bu alanların gizli inputları formda kalmalı — yoksa her kayıtta
+            mevcut değerler boş dizilerle/varsayılanlarla ezilir.
           */}
           <div className="hidden" aria-hidden="true">
             <CustomerReportingTab customer={displayCustomer} />
             <CustomerEsgPrioritiesTab customer={displayCustomer} />
+            <CustomerEsgSummaryTab customer={displayCustomer} />
           </div>
         </div>
 

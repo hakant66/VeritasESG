@@ -28,6 +28,7 @@ import { SectorClassificationDisplay } from './SectorClassificationDisplay';
 import { EsgSectionCard } from './EsgSectionCard';
 import { CustomerReportingTab } from './CustomerReportingTab';
 import { CustomerEsgPrioritiesTab } from './CustomerEsgPrioritiesTab';
+import { CustomerEsgSummaryTab } from './CustomerEsgSummaryTab';
 import { buildSectoralDefinitionLegacy, getSubSectorById } from '../../data/sectorClassification';
 import {
   formatMeurValue,
@@ -35,6 +36,9 @@ import {
   griStandardCodesFromFormData,
   esrsStandardCodesFromFormData,
   csrdScopeFromFormData,
+  employeeCountsFromFormData,
+  financialDataFromFormData,
+  esgSummaryFromFormData,
 } from '../../lib/customerFormFields';
 import {
   computeCsrdScopeStatus,
@@ -93,6 +97,8 @@ export function CustomerProfileDataSections({
   const notProvided = t.customers.notProvided;
   const [isEditingReporting, setIsEditingReporting] = useState(false);
   const [isSavingReporting, setIsSavingReporting] = useState(false);
+  const [isEditingEsgSummary, setIsEditingEsgSummary] = useState(false);
+  const [isSavingEsgSummary, setIsSavingEsgSummary] = useState(false);
 
   const handleReportingSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -115,6 +121,30 @@ export function CustomerProfileDataSections({
       alert(t.customers.reportingPrioritiesSaveFailed);
     } finally {
       setIsSavingReporting(false);
+    }
+  };
+
+  const handleEsgSummarySubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const payload: Partial<Customer> = {
+      legalName: String(formData.get('legalName') ?? '').trim(),
+      brandPortfolio: String(formData.get('brandPortfolio') ?? '').trim(),
+      operationGeographies: String(formData.get('operationGeographies') ?? '').trim(),
+      ...employeeCountsFromFormData(formData),
+      ...financialDataFromFormData(formData),
+      esgSummary: esgSummaryFromFormData(formData),
+    };
+    setIsSavingEsgSummary(true);
+    try {
+      await DB.customers.update(customer.id, payload);
+      onReportingPrioritiesSaved?.({ ...customer, ...payload });
+      setIsEditingEsgSummary(false);
+    } catch (err) {
+      console.error('Failed to save ESG summary:', err);
+      alert(t.customers.reportingPrioritiesSaveFailed);
+    } finally {
+      setIsSavingEsgSummary(false);
     }
   };
 
@@ -609,7 +639,36 @@ export function CustomerProfileDataSections({
         collapsed={collapsed.esgSummary}
         onToggle={() => onToggle('esgSummary')}
       >
+        {isEditingEsgSummary ? (
+          <form onSubmit={(e) => void handleEsgSummarySubmit(e)} className="space-y-5">
+            <CustomerEsgSummaryTab customer={customer} />
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEditingEsgSummary(false)}
+                className="minimal-button-secondary flex-1"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" disabled={isSavingEsgSummary} className="minimal-button-primary flex-1">
+                {isSavingEsgSummary ? t.common.saving : t.common.save}
+              </button>
+            </div>
+          </form>
+        ) : (
         <div className="space-y-4">
+          {canEditReportingPriorities ? (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsEditingEsgSummary(true)}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-700 hover:bg-slate-50"
+              >
+                <Pencil size={12} />
+                {t.customers.editReportingPriorities}
+              </button>
+            </div>
+          ) : null}
           <EsgSectionCard sectionNumber={1} title={t.customers.esgSection1Title}>
             <ProfileField label={t.customers.legalNameLabel} value={customer.legalName || customer.name} notProvided={notProvided} />
             <ProfileField label={t.customers.brandPortfolio} value={customer.brandPortfolio} long notProvided={notProvided} />
@@ -714,6 +773,7 @@ export function CustomerProfileDataSections({
             </div>
           </EsgSectionCard>
         </div>
+        )}
       </ProfileCategoryCard>
     </div>
   );
