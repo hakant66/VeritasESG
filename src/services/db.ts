@@ -1212,6 +1212,18 @@ export const projects = {
       return false;
     }
   },
+  deletePages: async (projectId: string, pageIds: string[]) => {
+    try {
+      await apiRequest(`/api/db/projects/${projectId}/delete-pages`, {
+        method: 'POST',
+        body: JSON.stringify({ pageIds }),
+      });
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `projects/${projectId}/deletePages`);
+      return false;
+    }
+  },
 };
 
 export const assignments = {

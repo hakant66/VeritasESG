@@ -1214,6 +1214,10 @@ export default function ProjectDetailPage() {
   const [showRebuildModal, setShowRebuildModal] = useState(false);
   const [selectedRebuildTemplateId, setSelectedRebuildTemplateId] = useState<string>('');
 
+  const [isSelectingPagesToDelete, setIsSelectingPagesToDelete] = useState(false);
+  const [pageIdsToDelete, setPageIdsToDelete] = useState<Set<string>>(new Set());
+  const [isDeletingPages, setIsDeletingPages] = useState(false);
+
   const [dmaConfig, setDmaConfig] = useState<{
     isApproved: boolean;
     materialTopics: string[];
@@ -3840,6 +3844,75 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const togglePageIdToDelete = (pageId: string) => {
+    setPageIdsToDelete((prev) => {
+      const next = new Set(prev);
+      if (next.has(pageId)) next.delete(pageId);
+      else next.add(pageId);
+      return next;
+    });
+  };
+
+  const handleDeleteSelectedPages = async () => {
+    if (!projectId || pageIdsToDelete.size === 0) return;
+    const idsToDelete = Array.from(pageIdsToDelete);
+    const deletedTitles = visiblePages
+      .filter((p) => pageIdsToDelete.has(p.id))
+      .map((p) => p.title)
+      .join(', ');
+
+    setIsDeletingPages(true);
+    try {
+      const ok = await DB.projects.deletePages(projectId, idsToDelete);
+      if (!ok) {
+        showAlert(
+          t.projectDetail.deleteSelectedPagesFailedTitle,
+          t.projectDetail.deleteSelectedPagesFailedDescription,
+          'danger',
+        );
+        return;
+      }
+
+      if (user) {
+        await logActivity(
+          user,
+          'delete',
+          'projectPages',
+          idsToDelete.join(','),
+          `Deleted forms: ${deletedTitles || idsToDelete.join(', ')}`,
+          projectId,
+        );
+      }
+
+      setPageIdsToDelete(new Set());
+      setIsSelectingPagesToDelete(false);
+      await loadProjectData();
+      showAlert(
+        t.projectDetail.deleteSelectedPagesSuccessTitle,
+        t.projectDetail.deleteSelectedPagesSuccessDescription,
+      );
+    } catch (err) {
+      console.error('Delete selected pages error:', err);
+      showAlert(
+        t.projectDetail.deleteSelectedPagesFailedTitle,
+        t.projectDetail.deleteSelectedPagesFailedDescription,
+        'danger',
+      );
+    } finally {
+      setIsDeletingPages(false);
+    }
+  };
+
+  const handleConfirmDeleteSelectedPages = () => {
+    if (pageIdsToDelete.size === 0) return;
+    showConfirm(
+      t.projectDetail.deleteSelectedPagesConfirmTitle,
+      t.projectDetail.deleteSelectedPagesConfirmDescription,
+      () => void handleDeleteSelectedPages(),
+      'danger',
+    );
+  };
+
   const [isCleaningAssignments, setIsCleaningAssignments] = useState(false);
 
   const handleCleanupContactAssignments = async () => {
@@ -5325,17 +5398,59 @@ export default function ProjectDetailPage() {
               'bg-[#F8F9FA]',
             )}
           >
+            {activeTab === 'forms' && visiblePages.length > 0 && (isProjectAdmin || canCreateCustomersAndProjects) ? (
+              <div className="flex shrink-0 items-center justify-end gap-2 bg-[#F8F9FA] px-4 pt-2 sm:px-6 lg:px-8">
+                {isSelectingPagesToDelete ? (
+                  <>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      {t.projectDetail.selectedPagesCount.replace('{count}', String(pageIdsToDelete.size))}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSelectingPagesToDelete(false);
+                        setPageIdsToDelete(new Set());
+                      }}
+                      disabled={isDeletingPages}
+                      className="rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all disabled:opacity-50"
+                    >
+                      {t.projectDetail.cancelSelectPagesToDelete}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmDeleteSelectedPages}
+                      disabled={pageIdsToDelete.size === 0 || isDeletingPages}
+                      className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm hover:bg-red-700 transition-all disabled:opacity-50"
+                    >
+                      {isDeletingPages ? <Loader2 className="animate-spin" size={12} /> : <Trash2 size={12} />}
+                      {t.projectDetail.deleteSelectedPages}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectingPagesToDelete(true)}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
+                  >
+                    <Trash2 size={12} /> {t.projectDetail.selectPagesToDelete}
+                  </button>
+                )}
+              </div>
+            ) : null}
             {/* Dataset tabs: compact row; selected tab slightly taller, title at top; bottom flush with gray (no slit) */}
             <div className="no-scrollbar flex shrink-0 items-end gap-1.5 overflow-x-auto overflow-y-hidden border-b border-slate-200/60 bg-[#F8F9FA] px-4 pb-0 pt-2 sm:px-6 lg:px-8">
               <div className="w-[30px] shrink-0 self-end" aria-hidden />
               {visiblePages.map((page, idx) => {
                 const isSelected = selectedPage?.id === page.id;
                 const color = DATASET_COLORS[idx % DATASET_COLORS.length];
-                
+                const isMarkedForDelete = pageIdsToDelete.has(page.id);
+
                 return (
                   <button
                     key={`nav-page-${page.id}-${idx}`}
-                    onClick={() => setSelectedPage(page)}
+                    onClick={() =>
+                      isSelectingPagesToDelete ? togglePageIdToDelete(page.id) : setSelectedPage(page)
+                    }
                     className={cn(
                       'group relative flex w-[min(9.5rem,32vw)] max-w-[10.5rem] flex-shrink-0 flex-col justify-start rounded-t-[14px] rounded-b-none border-t-2 border-l-2 border-r-2 border-b-0 px-3 text-left outline-none transition-all duration-200',
                       color.bg,
@@ -5343,9 +5458,19 @@ export default function ProjectDetailPage() {
                       isSelected
                         ? 'z-20 mb-[-1px] min-h-[2.65rem] border-b-2 !border-b-[#F8F9FA] pt-2 pb-1.5 shadow-sm ring-1 ring-black/[0.05]'
                         : 'z-0 min-h-[2.05rem] border-b-0 py-1.5 opacity-[0.92] hover:z-[1] hover:opacity-100',
+                      isSelectingPagesToDelete && isMarkedForDelete && '!opacity-100 ring-2 ring-red-500',
                     )}
                   >
-                    <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      {isSelectingPagesToDelete ? (
+                        <input
+                          type="checkbox"
+                          checked={isMarkedForDelete}
+                          onChange={() => togglePageIdToDelete(page.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-3.5 w-3.5 shrink-0 rounded border-slate-300 text-red-600 focus:ring-red-500"
+                        />
+                      ) : null}
                       <h3
                         className={cn(
                           'truncate text-xs font-extrabold uppercase tracking-widest sm:text-[13px]',
@@ -5359,7 +5484,7 @@ export default function ProjectDetailPage() {
                   </button>
                 );
               })}
-              {visiblePages.length > 0 ? (
+              {visiblePages.length > 0 && !isSelectingPagesToDelete ? (
                 <button
                   type="button"
                   key="nav-page-all"

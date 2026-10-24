@@ -104,6 +104,50 @@ export async function deleteProjectQuestionsByProject(projectId: string): Promis
   await getPrisma().projectQuestion.deleteMany({ where: { projectId } });
 }
 
+/**
+ * Deletes a subset of a project's pages (and their questions), leaving the
+ * rest of the project's questionnaire untouched. Returns the deleted
+ * question ids so the caller can prune/clean up assignments and answers
+ * that referenced them (see syncAssignmentsAfterQuestionDeletion).
+ */
+export async function deleteSelectedProjectPages(
+  projectId: string,
+  pageIds: string[],
+): Promise<{ deletedPageIds: string[]; deletedQuestionIds: string[] }> {
+  const { resolveProjectIdKeys } = await import('./workflowDataAccess.ts');
+  const projectKeys = await resolveProjectIdKeys(projectId);
+  if (projectKeys.length === 0 || pageIds.length === 0) {
+    return { deletedPageIds: [], deletedQuestionIds: [] };
+  }
+
+  const prisma = getPrisma();
+  const pages = await prisma.projectPage.findMany({
+    where: { projectId: { in: projectKeys }, id: { in: pageIds } },
+    select: { id: true },
+  });
+  const deletedPageIds = pages.map((p) => p.id);
+  if (deletedPageIds.length === 0) {
+    return { deletedPageIds: [], deletedQuestionIds: [] };
+  }
+
+  const questions = await prisma.projectQuestion.findMany({
+    where: { projectId: { in: projectKeys }, pageId: { in: deletedPageIds } },
+    select: { id: true },
+  });
+  const deletedQuestionIds = questions.map((q) => q.id);
+
+  await prisma.$transaction([
+    prisma.projectQuestion.deleteMany({
+      where: { projectId: { in: projectKeys }, pageId: { in: deletedPageIds } },
+    }),
+    prisma.projectPage.deleteMany({
+      where: { projectId: { in: projectKeys }, id: { in: deletedPageIds } },
+    }),
+  ]);
+
+  return { deletedPageIds, deletedQuestionIds };
+}
+
 export async function listTemplateQuestions(templateId: string): Promise<Row[]> {
   const rows = await getPrisma().question.findMany({
     where: {

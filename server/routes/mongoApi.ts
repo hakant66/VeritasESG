@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken';
 import { cloneTemplateQuestionsToProject } from '../lib/cloneTemplateQuestionsToProject.ts';
 import { expandStaleBranchQuestionsInProject } from '../lib/expandStaleBranchQuestionsInProject.ts';
 import { repairBranchQuestionTextInProject } from '../lib/repairBranchQuestionTextInProject.ts';
-import { deleteProjectQuestionnaireData, resolveProjectIdKeys } from '../lib/assignmentQuestionSync.ts';
+import {
+  deleteProjectQuestionnaireData,
+  resolveProjectIdKeys,
+  syncAssignmentsAfterQuestionDeletion,
+} from '../lib/assignmentQuestionSync.ts';
+import { deleteSelectedProjectPages } from '../data/projectLibDataAccess.ts';
 import { resolvePlatformUserFromRequest } from '../lib/requestAuth.ts';
 import { getSqlResourceRepository } from '../data/index.ts';
 import { getPrisma } from '../data/prismaClient.ts';
@@ -357,5 +362,25 @@ export function registerMongoApiRoutes(
 
     await prisma.projectUserAssignment.deleteMany({ where: { projectId: { in: keys } } });
     return success(res, { ok: true });
+  });
+
+  /** Formlar tab: delete a selected subset of a project's pages (and their questions), leaving the rest intact. */
+  app.post('/api/db/projects/:id/delete-pages', async (req, res) => {
+    const projectId = req.params.id;
+    const pageIds = Array.isArray(req.body?.pageIds)
+      ? req.body.pageIds.map(String).filter(Boolean)
+      : [];
+    if (pageIds.length === 0) {
+      return failure(res, 400, 'pageIds array required', 'projects/missing-page-ids');
+    }
+
+    const { deletedPageIds, deletedQuestionIds } = await deleteSelectedProjectPages(projectId, pageIds);
+    if (deletedPageIds.length === 0) {
+      return failure(res, 404, 'No matching pages found for this project', 'projects/pages-not-found');
+    }
+
+    await syncAssignmentsAfterQuestionDeletion(projectId, { deletedQuestionIds });
+
+    return success(res, { ok: true, deletedPageIds, deletedQuestionCount: deletedQuestionIds.length });
   });
 }
