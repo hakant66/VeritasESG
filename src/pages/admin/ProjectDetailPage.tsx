@@ -108,6 +108,7 @@ import { resolveQuestionVideoEmbed } from '../../components/project/AciklamaVide
 import { EditStakeholderModal } from '../../components/project/EditStakeholderModal';
 import { ProjectCompanyDetailsGate } from '../../components/project/ProjectCompanyDetailsGate';
 import { ProjectReportingFrameworksCard } from '../../components/project/ProjectReportingFrameworksCard';
+import { findSingleTemplateForFrameworkKeys } from '../../lib/reportingFrameworkTemplateMapping';
 import { ProjectUserCardRoleWatermark } from '../../components/project/ProjectUserCardRoleWatermark';
 import { ProjectUserIdentity } from '../../components/project/ProjectUserIdentity';
 import { EditPlatformUserModal } from '../../components/users/EditPlatformUserModal';
@@ -3844,6 +3845,57 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const handleAutoLoadFrameworkTemplate = async (templateId: string, templateName: string) => {
+    if (!projectId) return;
+    try {
+      const ok = await DB.projects.rebuildFromTemplate(projectId, templateId);
+      if (!ok) {
+        showAlert(
+          t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
+          t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
+          'danger',
+        );
+        return;
+      }
+      if (user) {
+        await logActivity(
+          user,
+          'update',
+          'projects',
+          projectId,
+          `Auto-loaded questionnaire from reporting framework selection: ${templateName}`,
+          projectId,
+        );
+      }
+      await loadProjectData();
+      showAlert(
+        t.projectDetail.rebuildQuestionnaireAlertSuccessTitle,
+        t.projectDetail.rebuildQuestionnaireAlertSuccessDescription,
+      );
+    } catch (err) {
+      console.error('Auto-load framework template error:', err);
+      showAlert(
+        t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
+        t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
+        'danger',
+      );
+    }
+  };
+
+  const handleReportingFrameworksSaved = (updated: Customer) => {
+    setCustomer(updated);
+    setReportingFrameworksSavedAt(Date.now());
+
+    const match = findSingleTemplateForFrameworkKeys(updated.reportingFrameworkKeys || [], allTemplates);
+    if (!match || match.templateId === project?.templateId) return;
+
+    showConfirm(
+      t.projectDetail.autoLoadTemplateConfirmTitle,
+      t.projectDetail.autoLoadTemplateConfirmDescription.replace('{templateName}', match.templateName),
+      () => void handleAutoLoadFrameworkTemplate(match.templateId, match.templateName),
+    );
+  };
+
   const togglePageIdToDelete = (pageId: string) => {
     setPageIdsToDelete((prev) => {
       const next = new Set(prev);
@@ -5381,10 +5433,7 @@ export default function ProjectDetailPage() {
                 <ProjectReportingFrameworksCard
                   key={customer.id}
                   customer={customer}
-                  onSaved={(updated) => {
-                    setCustomer(updated);
-                    setReportingFrameworksSavedAt(Date.now());
-                  }}
+                  onSaved={handleReportingFrameworksSaved}
                 />
               ) : (
                 <p className="text-sm text-slate-400">{t.common.loading}</p>

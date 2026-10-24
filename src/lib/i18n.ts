@@ -1442,6 +1442,9 @@ function hello() {
       companyDetailsSaved: 'Company details saved.',
       reportingFrameworksTab: 'Reporting Framework',
       reportingFrameworksSaved: 'Reporting frameworks saved.',
+      autoLoadTemplateConfirmTitle: 'Load Matching Forms?',
+      autoLoadTemplateConfirmDescription:
+        'Load the "{templateName}" form template for this project? This will replace any existing forms, questions, and answers with this template\'s questionnaire.',
       questionnaires: 'Forms',
       auditTab: 'Audit',
       complianceTab: 'Compliance',
@@ -3550,6 +3553,9 @@ function merhaba() {
       companyDetailsSaved: 'Şirket detay bilgileri kaydedildi.',
       reportingFrameworksTab: 'Raporlama Çerçevesi',
       reportingFrameworksSaved: 'Raporlama çerçeveleri kaydedildi.',
+      autoLoadTemplateConfirmTitle: 'Eşleşen Form Yüklensin mi?',
+      autoLoadTemplateConfirmDescription:
+        'Bu proje için "{templateName}" form şablonu yüklensin mi? Bu işlem mevcut formları, soruları ve yanıtları bu şablonun anketiyle değiştirecektir.',
       questionnaires: 'Formlar',
       auditTab: 'Denetim',
       complianceTab: 'Uyumluluk',
