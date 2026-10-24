@@ -65,6 +65,7 @@ import {
   Camera,
   Pencil,
   Target,
+  BookOpen,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -106,6 +107,7 @@ import {
 import { resolveQuestionVideoEmbed } from '../../components/project/AciklamaVideoPlayer';
 import { EditStakeholderModal } from '../../components/project/EditStakeholderModal';
 import { ProjectCompanyDetailsGate } from '../../components/project/ProjectCompanyDetailsGate';
+import { ProjectReportingFrameworksCard } from '../../components/project/ProjectReportingFrameworksCard';
 import { ProjectUserCardRoleWatermark } from '../../components/project/ProjectUserCardRoleWatermark';
 import { ProjectUserIdentity } from '../../components/project/ProjectUserIdentity';
 import { EditPlatformUserModal } from '../../components/users/EditPlatformUserModal';
@@ -1092,6 +1094,7 @@ export default function ProjectDetailPage() {
     isPlatformAdmin,
     isAdmin,
     canListAllProjects,
+    canCreateCustomersAndProjects,
     refreshProfile,
   } = useAuth();
   const { t, lang } = useTranslation();
@@ -1139,13 +1142,22 @@ export default function ProjectDetailPage() {
   const isServiceProject = project?.category === 'Service';
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [companyDetailsSavedAt, setCompanyDetailsSavedAt] = useState<number | null>(null);
+  const [reportingFrameworksSavedAt, setReportingFrameworksSavedAt] = useState<number | null>(null);
   const [template, setTemplate] = useState<Template | null>(null);
   const [pages, setPages] = useState<ProjectPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState<ProjectPage | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'companyDetails' | 'forms' | 'audit' | 'plan' | 'users' | 'activity' | 'compliance'
+    | 'overview'
+    | 'companyDetails'
+    | 'reportingFrameworks'
+    | 'forms'
+    | 'audit'
+    | 'plan'
+    | 'users'
+    | 'activity'
+    | 'compliance'
   >('overview');
   const [questionFormsWorkflowFilter, setQuestionFormsWorkflowFilter] =
     useState<FormsWorkflowFilterId>('all');
@@ -4620,6 +4632,18 @@ export default function ProjectDetailPage() {
             <Building2 size={12} />
             <span className="hidden sm:inline">{t.projectDetail.companyDetailsTab}</span>
           </button>
+          <button
+            key="tab-reporting-frameworks"
+            onClick={() => setActiveTab('reportingFrameworks')}
+            title={t.projectDetail.reportingFrameworksTab}
+            className={cn(
+              "flex flex-1 min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[10px] font-bold uppercase tracking-wide shadow-sm transition-all sm:flex-none sm:shrink-0 sm:justify-start sm:gap-1.5 sm:px-3 sm:py-1.5",
+              activeTab === 'reportingFrameworks' ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-400 border-slate-100 hover:text-slate-600 hover:border-slate-200"
+            )}
+          >
+            <BookOpen size={12} />
+            <span className="hidden sm:inline">{t.projectDetail.reportingFrameworksTab}</span>
+          </button>
           {!isAuditorProjectView || isServiceProject ? (
           <button
             key="tab-forms"
@@ -5269,6 +5293,31 @@ export default function ProjectDetailPage() {
               )}
             </div>
           </div>
+        ) : activeTab === 'reportingFrameworks' ? (
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-50/40">
+            <div className="mx-auto w-full max-w-3xl space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold text-slate-900">{t.projectDetail.reportingFrameworksTab}</h2>
+                {reportingFrameworksSavedAt ? (
+                  <span className="text-xs font-semibold text-emerald-600">
+                    {t.projectDetail.reportingFrameworksSaved}
+                  </span>
+                ) : null}
+              </div>
+              {customer ? (
+                <ProjectReportingFrameworksCard
+                  key={customer.id}
+                  customer={customer}
+                  onSaved={(updated) => {
+                    setCustomer(updated);
+                    setReportingFrameworksSavedAt(Date.now());
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-slate-400">{t.common.loading}</p>
+              )}
+            </div>
+          </div>
         ) : activeTab === 'forms' || activeTab === 'audit' ? (
           <div
             className={cn(
@@ -5354,7 +5403,7 @@ export default function ProjectDetailPage() {
                   <h2 className="text-xl font-bold font-display text-gray-900 mb-2">{t.projectDetail.noQuestionnaires}</h2>
                   <p className="max-w-xs text-sm mb-8">{t.projectDetail.noQuestionnairesSubtitle}</p>
                   
-                  {isProjectAdmin && (
+                  {(isProjectAdmin || canCreateCustomersAndProjects) && (
                     <button
                       onClick={() => setShowRebuildModal(true)}
                       className="minimal-button-primary flex items-center gap-2"

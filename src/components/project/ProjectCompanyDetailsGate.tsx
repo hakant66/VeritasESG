@@ -9,15 +9,7 @@ import type { Customer } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { FormField, YesNoSelect } from '../customer/FormField';
 import { SubsidiariesField } from '../customer/SubsidiariesField';
-import { ReportingFrameworksPicker } from '../customer/ReportingFrameworksPicker';
-import { GriStandardsPicker } from '../customer/GriStandardsPicker';
-import { EsrsStandardsPicker } from '../customer/EsrsStandardsPicker';
-import {
-  reportingFrameworksFromFormData,
-  griStandardCodesFromFormData,
-  esrsStandardCodesFromFormData,
-  parseSubsidiariesJson,
-} from '../../lib/customerFormFields';
+import { parseSubsidiariesJson } from '../../lib/customerFormFields';
 
 type ProjectCompanyDetailsGateProps = {
   customer: Customer;
@@ -58,22 +50,11 @@ export function ProjectCompanyDetailsGate({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-
-    const reportingFrameworkKeys = reportingFrameworksFromFormData(formData);
-    const griStandardCodes = griStandardCodesFromFormData(formData);
-    const esrsStandardCodes = esrsStandardCodesFromFormData(formData);
-    if (reportingFrameworkKeys.length + griStandardCodes.length + esrsStandardCodes.length === 0) {
-      setError(t.projects.companyDetailsGateStandardsRequired);
-      return;
-    }
     setError(null);
 
     // Only the fields this gate owns are merged in — everything else already on
     // esgSummary (filled from the customer profile) is preserved untouched.
     const payload: Partial<Customer> = {
-      reportingFrameworkKeys: reportingFrameworkKeys as Customer['reportingFrameworkKeys'],
-      griStandardCodes,
-      esrsStandardCodes,
       employeeCountTotal: parseOptionalNumber(formData.get('employeeCountTotal')),
       annualTurnoverMeur: parseOptionalNumber(formData.get('annualTurnoverMeur')),
       totalAssetsMeur: parseOptionalNumber(formData.get('totalAssetsMeur')),
@@ -197,10 +178,6 @@ export function ProjectCompanyDetailsGate({
         </h4>
         <SubsidiariesField initial={esg.subsidiaries} />
       </div>
-
-      <ReportingFrameworksPicker initialKeys={customer.reportingFrameworkKeys} />
-      <GriStandardsPicker initialCodes={customer.griStandardCodes} />
-      <EsrsStandardsPicker initialCodes={customer.esrsStandardCodes} />
 
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs font-semibold text-red-700">
