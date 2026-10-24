@@ -5354,12 +5354,12 @@ export default function ProjectDetailPage() {
                   <h2 className="text-xl font-bold font-display text-gray-900 mb-2">{t.projectDetail.noQuestionnaires}</h2>
                   <p className="max-w-xs text-sm mb-8">{t.projectDetail.noQuestionnairesSubtitle}</p>
                   
-                  {isPlatformAdmin && (
-                    <button 
+                  {isProjectAdmin && (
+                    <button
                       onClick={() => setShowRebuildModal(true)}
                       className="minimal-button-primary flex items-center gap-2"
                     >
-                      <Zap size={16} /> {t.projectDetail.rebuildQuestionnaire}
+                      <Plus size={16} /> {t.projectDetail.rebuildQuestionnaire}
                     </button>
                   )}
                 </div>
@@ -8822,13 +8822,13 @@ export default function ProjectDetailPage() {
         }
       >
         <div className="space-y-6">
-          <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3">
-            <AlertTriangle className="text-amber-600 shrink-0" size={18} />
+          <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex gap-3">
+            <AlertCircle className="text-blue-600 shrink-0" size={18} />
             <div className="space-y-1">
-              <p className="text-xs font-bold text-amber-900">
+              <p className="text-xs font-bold text-blue-900">
                 {t.projectDetail.rebuildQuestionnaireWarningTitle}
               </p>
-              <p className="text-[10px] text-amber-700 leading-relaxed">
+              <p className="text-[10px] text-blue-700 leading-relaxed">
                 {isServiceProject
                   ? t.projectDetail.rebuildQuestionnaireWarningDescriptionService
                   : t.projectDetail.rebuildQuestionnaireWarningDescription}
@@ -8865,7 +8865,7 @@ export default function ProjectDetailPage() {
               disabled={isRebuilding || !selectedRebuildTemplateId}
               className="px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-200 disabled:opacity-50 disabled:shadow-none flex items-center gap-2"
             >
-              {isRebuilding ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} />}
+              {isRebuilding ? <Loader2 className="animate-spin" size={14} /> : <Plus size={14} />}
               {t.projectDetail.rebuildQuestionnaireConfirm}
             </button>
           </div>
