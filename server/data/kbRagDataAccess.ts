@@ -96,6 +96,10 @@ export async function deleteKbChunksByDocument(documentId: string): Promise<void
 export async function insertKbChunks(
   rows: Array<Record<string, unknown>>,
 ): Promise<void> {
+  // skipDuplicates guards against a stalled/retried ingest job racing a concurrent
+  // run of the same document: both delete-then-insert, and if their inserts
+  // interleave, the loser would otherwise hit the (documentId, chunkIndex)
+  // unique constraint and fail the whole job even though the data is identical.
   await getPrisma().kbChunk.createMany({
     data: rows.map((row) => ({
       kbId: String(row.kbId),
@@ -107,6 +111,7 @@ export async function insertKbChunks(
       qdrantPointId: String(row.qdrantPointId),
       embeddingModel: String(row.embeddingModel),
     })),
+    skipDuplicates: true,
   });
 }
 
@@ -117,10 +122,16 @@ export async function deleteIngestJobsByDocument(documentId: string): Promise<vo
 export async function ingestJobToMutable(job: Row): Promise<{
   save: () => Promise<void>;
 } & Row> {
-  return {
+  // `save` must close over the RETURNED object, not the `job` parameter: callers
+  // mutate properties like `.status`/`.error` on the returned copy (it's a plain
+  // spread, not an accessor), so closing over `job` would always persist the
+  // stale pre-mutation values — status updates (processing/completed/failed)
+  // would silently never reach the database.
+  const mutable: { save: () => Promise<void> } & Row = {
     ...job,
-    save: async () => saveIngestJob(job),
+    save: async () => saveIngestJob(mutable),
   };
+  return mutable;
 }
 
 export async function kbDocumentToMutable(doc: Row): Promise<{

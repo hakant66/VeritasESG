@@ -122,7 +122,14 @@ export function startKbIngestWorker() {
   }
   if (worker) return worker;
 
-  worker = new Worker(QUEUE_NAME, handleIngestJob, { connection: conn });
+  worker = new Worker(QUEUE_NAME, handleIngestJob, {
+    connection: conn,
+    // Ingest (embedding a document's chunks) can run well past BullMQ's 30s
+    // default lock duration on a busy single-process server. A longer lock
+    // avoids the job being marked stalled and reprocessed concurrently with
+    // itself, which raced on the (documentId, chunkIndex) unique constraint.
+    lockDuration: 300_000,
+  });
   worker.on('failed', (job, err) => {
     console.error('[KB-RAG] worker job failed', job?.id, err?.message);
   });
