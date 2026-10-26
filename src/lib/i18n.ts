@@ -1444,7 +1444,7 @@ function hello() {
       reportingFrameworksSaved: 'Reporting frameworks saved.',
       autoLoadTemplateConfirmTitle: 'Load Matching Forms?',
       autoLoadTemplateConfirmDescription:
-        'Load the "{templateName}" form template for this project? This will replace any existing forms, questions, and answers with this template\'s questionnaire.',
+        'Add the "{templateName}" form template(s) to this project\'s Forms? Existing forms are kept; the new template\'s pages and questions are added alongside them.',
       questionnaires: 'Forms',
       auditTab: 'Audit',
       complianceTab: 'Compliance',
@@ -3555,7 +3555,7 @@ function merhaba() {
       reportingFrameworksSaved: 'Raporlama çerçeveleri kaydedildi.',
       autoLoadTemplateConfirmTitle: 'Eşleşen Form Yüklensin mi?',
       autoLoadTemplateConfirmDescription:
-        'Bu proje için "{templateName}" form şablonu yüklensin mi? Bu işlem mevcut formları, soruları ve yanıtları bu şablonun anketiyle değiştirecektir.',
+        '"{templateName}" form şablonu(ları) bu projenin Formlar bölümüne eklensin mi? Mevcut formlar korunur; yeni şablonun sayfaları ve soruları bunlara ek olarak eklenir.',
       questionnaires: 'Formlar',
       auditTab: 'Denetim',
       complianceTab: 'Uyumluluk',

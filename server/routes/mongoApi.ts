@@ -8,7 +8,7 @@ import {
   resolveProjectIdKeys,
   syncAssignmentsAfterQuestionDeletion,
 } from '../lib/assignmentQuestionSync.ts';
-import { deleteSelectedProjectPages } from '../data/projectLibDataAccess.ts';
+import { addTemplatePagesToProject, deleteSelectedProjectPages } from '../data/projectLibDataAccess.ts';
 import { resolvePlatformUserFromRequest } from '../lib/requestAuth.ts';
 import { getSqlResourceRepository } from '../data/index.ts';
 import { getPrisma } from '../data/prismaClient.ts';
@@ -382,5 +382,54 @@ export function registerMongoApiRoutes(
     await syncAssignmentsAfterQuestionDeletion(projectId, { deletedQuestionIds });
 
     return success(res, { ok: true, deletedPageIds, deletedQuestionCount: deletedQuestionIds.length });
+  });
+
+  /**
+   * Reporting framework auto-load: adds a template's pages/questions to a project
+   * WITHOUT wiping what's already there, so multiple matching templates (e.g.
+   * TSRS1 + TSRS2) can coexist in the same project's Formlar. No-ops if this
+   * template was already added.
+   */
+  app.post('/api/db/projects/:id/add-template-pages', async (req, res) => {
+    const projectId = req.params.id;
+    const { templateId } = req.body || {};
+    if (!templateId || typeof templateId !== 'string') {
+      return failure(res, 400, 'templateId required', 'projects/missing-template');
+    }
+
+    const prisma = getPrisma();
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ id: projectId }, { legacyFirebaseId: projectId }] },
+    });
+    if (!project) return failure(res, 404, 'Project not found', 'projects/not-found');
+    const resolvedProjectId = project.id;
+
+    const { added, pageCount } = await addTemplatePagesToProject(resolvedProjectId, templateId);
+    if (!added) {
+      return success(res, { ok: true, alreadyPresent: true, addedQuestionCount: 0 });
+    }
+
+    if (!project.templateId) {
+      await prisma.project.update({ where: { id: resolvedProjectId }, data: { templateId } });
+    }
+
+    const projectCustomerId = String(project.customerId || '').trim();
+    const { count } = await cloneTemplateQuestionsToProject(resolvedProjectId, templateId, {
+      deleteExisting: false,
+      customerId: projectCustomerId || undefined,
+    });
+    await expandStaleBranchQuestionsInProject(resolvedProjectId, {
+      customerId: projectCustomerId || undefined,
+    });
+    await repairBranchQuestionTextInProject(resolvedProjectId);
+
+    const finalCount = await prisma.projectQuestion.count({ where: { projectId: resolvedProjectId } });
+    return success(res, {
+      ok: true,
+      alreadyPresent: false,
+      pageCount,
+      addedQuestionCount: count,
+      totalQuestionCount: finalCount,
+    });
   });
 }

@@ -162,6 +162,69 @@ export async function listProjectPages(projectId: string): Promise<Row[]> {
   return withExternalIds(rows as Row[]);
 }
 
+/** Distinct source template ids already cloned into this project's questions. */
+export async function listProjectSourceTemplateIds(projectId: string): Promise<Set<string>> {
+  const { resolveProjectIdKeys } = await import('./workflowDataAccess.ts');
+  const projectKeys = await resolveProjectIdKeys(projectId);
+  if (projectKeys.length === 0) return new Set();
+
+  const rows = await getPrisma().projectQuestion.findMany({
+    where: { projectId: { in: projectKeys } },
+    select: { sourceTemplateId: true },
+    distinct: ['sourceTemplateId'],
+  });
+  return new Set(rows.map((r) => r.sourceTemplateId).filter(Boolean));
+}
+
+/**
+ * Adds a template's pages and questions to a project WITHOUT deleting what's
+ * already there (unlike rebuild-from-template, which wipes everything first).
+ * Lets a project combine multiple templates (e.g. TSRS1 + TSRS2) side by side.
+ * No-ops if this template's questions are already present (idempotent).
+ */
+export async function addTemplatePagesToProject(
+  projectId: string,
+  templateId: string,
+): Promise<{ added: boolean; pageCount: number }> {
+  const prisma = getPrisma();
+  const alreadyPresent = await listProjectSourceTemplateIds(projectId);
+  if (alreadyPresent.has(templateId)) {
+    return { added: false, pageCount: 0 };
+  }
+
+  const maxOrderRow = await prisma.projectPage.aggregate({
+    where: { projectId },
+    _max: { order: true },
+  });
+  const orderOffset = (maxOrderRow._max.order ?? 0) + 1;
+
+  const templatePages = withExternalIds(
+    (await prisma.templatePage.findMany({
+      where: { OR: [{ templateId }, { legacyFirebaseId: templateId }, { id: templateId }] },
+      orderBy: { order: 'asc' },
+    })) as Row[],
+  );
+
+  if (templatePages.length > 0) {
+    await prisma.projectPage.createMany({
+      data: templatePages.map((page, idx) => ({
+        projectId,
+        sourceTemplatePageId: String(page.id),
+        pageKind: String(page.pageKind || 'customer_question_set'),
+        title: String(page.title || ''),
+        order: orderOffset + idx,
+        briefText: String(page.briefText || ''),
+        briefFileUrl: page.briefFileUrl ? String(page.briefFileUrl) : null,
+        draftContent: '',
+        draftStatus: 'pending',
+        answerUpdatedFlag: false,
+      })),
+    });
+  }
+
+  return { added: true, pageCount: templatePages.length };
+}
+
 function projectQuestionPayload(doc: Record<string, unknown>): Prisma.ProjectQuestionCreateManyInput {
   return {
     projectId: String(doc.projectId),

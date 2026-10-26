@@ -108,7 +108,7 @@ import { resolveQuestionVideoEmbed } from '../../components/project/AciklamaVide
 import { EditStakeholderModal } from '../../components/project/EditStakeholderModal';
 import { ProjectCompanyDetailsGate } from '../../components/project/ProjectCompanyDetailsGate';
 import { ProjectReportingFrameworksCard } from '../../components/project/ProjectReportingFrameworksCard';
-import { findSingleTemplateForFrameworkKeys } from '../../lib/reportingFrameworkTemplateMapping';
+import { findTemplatesForFrameworkKeys } from '../../lib/reportingFrameworkTemplateMapping';
 import { ProjectUserCardRoleWatermark } from '../../components/project/ProjectUserCardRoleWatermark';
 import { ProjectUserIdentity } from '../../components/project/ProjectUserIdentity';
 import { EditPlatformUserModal } from '../../components/users/EditPlatformUserModal';
@@ -3845,11 +3845,37 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const handleAutoLoadFrameworkTemplate = async (templateId: string, templateName: string) => {
-    if (!projectId) return;
+  const handleAutoLoadFrameworkTemplates = async (
+    matches: Array<{ templateId: string; templateName: string }>,
+  ) => {
+    if (!projectId || matches.length === 0) return;
     try {
-      const ok = await DB.projects.rebuildFromTemplate(projectId, templateId);
-      if (!ok) {
+      // Sequential, not Promise.all: each add-template-pages call computes the next
+      // page order from what's already saved, so concurrent calls could race and
+      // assign the same order to two new pages.
+      const results: boolean[] = [];
+      for (const m of matches) {
+        results.push(await DB.projects.addTemplatePages(projectId, m.templateId));
+      }
+      const failed = matches.filter((_, idx) => !results[idx]);
+
+      if (user) {
+        const added = matches.filter((_, idx) => results[idx]);
+        if (added.length > 0) {
+          await logActivity(
+            user,
+            'update',
+            'projects',
+            projectId,
+            `Auto-loaded forms from reporting framework selection: ${added.map((m) => m.templateName).join(', ')}`,
+            projectId,
+          );
+        }
+      }
+
+      await loadProjectData();
+
+      if (failed.length > 0) {
         showAlert(
           t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
           t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
@@ -3857,23 +3883,12 @@ export default function ProjectDetailPage() {
         );
         return;
       }
-      if (user) {
-        await logActivity(
-          user,
-          'update',
-          'projects',
-          projectId,
-          `Auto-loaded questionnaire from reporting framework selection: ${templateName}`,
-          projectId,
-        );
-      }
-      await loadProjectData();
       showAlert(
         t.projectDetail.rebuildQuestionnaireAlertSuccessTitle,
         t.projectDetail.rebuildQuestionnaireAlertSuccessDescription,
       );
     } catch (err) {
-      console.error('Auto-load framework template error:', err);
+      console.error('Auto-load framework templates error:', err);
       showAlert(
         t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
         t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
@@ -3886,13 +3901,18 @@ export default function ProjectDetailPage() {
     setCustomer(updated);
     setReportingFrameworksSavedAt(Date.now());
 
-    const match = findSingleTemplateForFrameworkKeys(updated.reportingFrameworkKeys || [], allTemplates);
-    if (!match || match.templateId === project?.templateId) return;
+    const matches = findTemplatesForFrameworkKeys(updated.reportingFrameworkKeys || [], allTemplates);
+    const alreadyPresentTemplateIds = new Set((questions || []).map((q) => q.templateId).filter(Boolean));
+    const newMatches = matches.filter((m) => !alreadyPresentTemplateIds.has(m.templateId));
+    if (newMatches.length === 0) return;
 
     showConfirm(
       t.projectDetail.autoLoadTemplateConfirmTitle,
-      t.projectDetail.autoLoadTemplateConfirmDescription.replace('{templateName}', match.templateName),
-      () => void handleAutoLoadFrameworkTemplate(match.templateId, match.templateName),
+      t.projectDetail.autoLoadTemplateConfirmDescription.replace(
+        '{templateName}',
+        newMatches.map((m) => m.templateName).join(', '),
+      ),
+      () => void handleAutoLoadFrameworkTemplates(newMatches),
     );
   };
 

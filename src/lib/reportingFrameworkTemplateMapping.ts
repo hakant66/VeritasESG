@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Maps a customer's selected Raporlama Çerçevesi (reporting framework) keys to the
- * matching Template name, so a project can auto-load the right Formlar when exactly
- * one selected framework has a known template. A project can only have one active
- * template at a time (Form Ekle replaces everything), so when more than one selected
- * framework matches a template, auto-load is intentionally skipped as ambiguous.
+ * matching Template name(s), so a project's Formlar can be kept in sync with the
+ * frameworks selected for that customer. Multiple matching templates (e.g. both
+ * TSRS 1 and TSRS 2) are added side by side rather than replacing one another.
  */
 import type { ReportingFrameworkKey } from '../../lib/reportingFrameworkKeys';
 import type { Template } from '../types';
@@ -23,14 +22,11 @@ export type ReportingFrameworkTemplateMatch = {
   frameworkKey: ReportingFrameworkKey;
 };
 
-/**
- * Returns the single template implied by the given framework keys, or null when
- * zero or more than one selected framework maps to a known template.
- */
-export function findSingleTemplateForFrameworkKeys(
+/** Returns every template implied by the given (selected) framework keys. */
+export function findTemplatesForFrameworkKeys(
   frameworkKeys: string[],
   allTemplates: Pick<Template, 'id' | 'name'>[],
-): ReportingFrameworkTemplateMatch | null {
+): ReportingFrameworkTemplateMatch[] {
   const matches: ReportingFrameworkTemplateMatch[] = [];
 
   for (const key of frameworkKeys) {
@@ -44,6 +40,5 @@ export function findSingleTemplateForFrameworkKeys(
     }
   }
 
-  if (matches.length !== 1) return null;
-  return matches[0];
+  return matches;
 }

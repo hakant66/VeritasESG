@@ -1224,6 +1224,19 @@ export const projects = {
       return false;
     }
   },
+  /** Adds a template's pages/questions to a project without wiping existing ones. */
+  addTemplatePages: async (projectId: string, templateId: string) => {
+    try {
+      await apiRequest(`/api/db/projects/${projectId}/add-template-pages`, {
+        method: 'POST',
+        body: JSON.stringify({ templateId }),
+      });
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `projects/${projectId}/addTemplatePages`);
+      return false;
+    }
+  },
 };
 
 export const assignments = {
