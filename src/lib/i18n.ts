@@ -1523,17 +1523,18 @@ function hello() {
       rebuildQuestionnaireModalTitleService: 'Add Datasets',
       rebuildQuestionnaireWarningTitle: 'Choose a dataset template',
       rebuildQuestionnaireWarningDescription:
-        'This project has no forms yet. Pick a dataset template below to generate its pages and questions for this project.',
+        'Pick a dataset template below to add its pages and questions to this project. Existing forms are kept.',
       rebuildQuestionnaireWarningDescriptionService:
-        'This project has no datasets yet. Pick a template below to generate its pages for this project.',
+        'Pick a template below to add its pages to this project. Existing datasets are kept.',
       rebuildQuestionnaireSelectTemplate: 'Select Dataset Template',
       rebuildQuestionnaireSelectPlaceholder: 'Select a template...',
       rebuildQuestionnaireConfirm: 'Add Form',
       rebuildQuestionnaireAlertSuccessTitle: 'Success',
-      rebuildQuestionnaireAlertSuccessDescription:
-        'Questionnaire data has been rebuilt successfully.',
-      rebuildQuestionnaireAlertFailedTitle: 'Rebuild Failed',
-      rebuildQuestionnaireAlertFailedDescription: 'Failed to rebuild questionnaire data.',
+      rebuildQuestionnaireAlertSuccessDescription: 'The form has been added to this project.',
+      rebuildQuestionnaireAlertAlreadyPresentTitle: 'Already Added',
+      rebuildQuestionnaireAlertAlreadyPresentDescription: 'This template is already part of this project\'s forms.',
+      rebuildQuestionnaireAlertFailedTitle: 'Add Form Failed',
+      rebuildQuestionnaireAlertFailedDescription: 'Failed to add the form to this project.',
       rebuildQuestionnaireSuccess:
         'Questionnaire rebuilt. Branch-based questions were expanded per customer branch.',
       selectPagesToDelete: 'Select Forms to Delete',
@@ -3628,24 +3629,25 @@ function merhaba() {
       viewFullAudit: 'Tam denetim günlüğünü görüntüle',
       noQuestionnaires: 'Veri Seti Eklenmemiş',
       noQuestionnairesSubtitle:
-        'Bu projede şu anda veri seti bulunmamaktadır. Bir veri seti şablonu kullanarak bunları yeniden oluşturabilirsiniz.',
+        'Bu projede şu anda veri seti bulunmamaktadır. Bir veri seti şablonu seçerek ekleyebilirsiniz.',
       rebuildQuestionnaire: 'Form Ekle',
       rebuildQuestionnaireModalTitle: 'Form Ekle',
       rebuildQuestionnaireModalTitleService: 'Veri Seti Ekle',
       rebuildQuestionnaireWarningTitle: 'Bir veri seti şablonu seçin',
       rebuildQuestionnaireWarningDescription:
-        'Bu projede henüz form bulunmuyor. Aşağıdan bir veri seti şablonu seçerek bu proje için sayfaları ve soruları oluşturabilirsiniz.',
+        'Aşağıdan bir veri seti şablonu seçerek sayfalarını ve sorularını bu projeye ekleyebilirsiniz. Mevcut formlar korunur.',
       rebuildQuestionnaireWarningDescriptionService:
-        'Bu projede henüz veri seti bulunmuyor. Aşağıdan bir şablon seçerek bu proje için sayfaları oluşturabilirsiniz.',
+        'Aşağıdan bir şablon seçerek sayfalarını bu projeye ekleyebilirsiniz. Mevcut veri setleri korunur.',
       rebuildQuestionnaireSelectTemplate: 'Veri seti şablonu seçin',
       rebuildQuestionnaireSelectPlaceholder: 'Bir şablon seçin…',
       rebuildQuestionnaireConfirm: 'Form Ekle',
       rebuildQuestionnaireAlertSuccessTitle: 'Başarılı',
-      rebuildQuestionnaireAlertSuccessDescription:
-        'Veri seti başarıyla yeniden oluşturuldu.',
-      rebuildQuestionnaireAlertFailedTitle: 'Yeniden oluşturma başarısız',
+      rebuildQuestionnaireAlertSuccessDescription: 'Form bu projeye eklendi.',
+      rebuildQuestionnaireAlertAlreadyPresentTitle: 'Zaten Ekli',
+      rebuildQuestionnaireAlertAlreadyPresentDescription: 'Bu şablon zaten bu projenin formları arasında.',
+      rebuildQuestionnaireAlertFailedTitle: 'Form Eklenemedi',
       rebuildQuestionnaireAlertFailedDescription:
-        'Anket verileri yeniden oluşturulurken bir hata oluştu.',
+        'Form bu projeye eklenirken bir hata oluştu.',
       rebuildQuestionnaireSuccess:
         'Anketler yeniden oluşturuldu. Şube bazlı sorular firma şubelerine göre çoğaltıldı.',
       selectPagesToDelete: 'Silinecek Formları Seç',

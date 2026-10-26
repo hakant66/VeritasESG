@@ -3800,15 +3800,21 @@ export default function ProjectDetailPage() {
     if (!projectId || !selectedRebuildTemplateId) return;
     setIsRebuilding(true);
     try {
-      const ok = await DB.projects.rebuildFromTemplate(
-        projectId,
-        selectedRebuildTemplateId,
-      );
-      if (!ok) {
+      const result = await DB.projects.addTemplatePages(projectId, selectedRebuildTemplateId);
+      if (!result.ok) {
         showAlert(
           t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
           t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
           'danger',
+        );
+        return;
+      }
+
+      if (result.alreadyPresent) {
+        setShowRebuildModal(false);
+        showAlert(
+          t.projectDetail.rebuildQuestionnaireAlertAlreadyPresentTitle,
+          t.projectDetail.rebuildQuestionnaireAlertAlreadyPresentDescription,
         );
         return;
       }
@@ -3822,7 +3828,7 @@ export default function ProjectDetailPage() {
           'update',
           'projects',
           projectId,
-          `Rebuilt questionnaire data using template: ${selectedTemplateName}`,
+          `Added form to project using template: ${selectedTemplateName}`,
           projectId,
         );
       }
@@ -3834,7 +3840,7 @@ export default function ProjectDetailPage() {
         t.projectDetail.rebuildQuestionnaireAlertSuccessDescription,
       );
     } catch (err) {
-      console.error("Rebuild error:", err);
+      console.error("Add form error:", err);
       showAlert(
         t.projectDetail.rebuildQuestionnaireAlertFailedTitle,
         t.projectDetail.rebuildQuestionnaireAlertFailedDescription,
@@ -3855,7 +3861,8 @@ export default function ProjectDetailPage() {
       // assign the same order to two new pages.
       const results: boolean[] = [];
       for (const m of matches) {
-        results.push(await DB.projects.addTemplatePages(projectId, m.templateId));
+        const res = await DB.projects.addTemplatePages(projectId, m.templateId);
+        results.push(res.ok);
       }
       const failed = matches.filter((_, idx) => !results[idx]);
 
@@ -5468,7 +5475,18 @@ export default function ProjectDetailPage() {
             )}
           >
             {activeTab === 'forms' && visiblePages.length > 0 && (isProjectAdmin || canCreateCustomersAndProjects) ? (
-              <div className="flex shrink-0 items-center justify-end gap-2 bg-[#F8F9FA] px-4 pt-2 sm:px-6 lg:px-8">
+              <div className="flex shrink-0 items-center justify-between gap-2 bg-[#F8F9FA] px-4 pt-2 sm:px-6 lg:px-8">
+                {!isSelectingPagesToDelete ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowRebuildModal(true)}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
+                  >
+                    <Plus size={12} /> {t.projectDetail.rebuildQuestionnaire}
+                  </button>
+                ) : (
+                  <span />
+                )}
                 {isSelectingPagesToDelete ? (
                   <>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
