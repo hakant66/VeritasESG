@@ -1,0 +1,3 @@
+# Empty: this phase is evaluation-only (no adapter training yet).
+# A non-null data.train path is required by Hermit's config schema even for
+# `hermit eval`, but its content isn't read by the eval path.

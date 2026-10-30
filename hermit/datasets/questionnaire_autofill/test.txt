@@ -1,0 +1,6 @@
+# Only cases with a real, seeded fixture (see scripts/seed-hermit-eval-fixture.ts)
+# go here. The other 7 starter cases (VE-002..VE-008) need more fixture rows —
+# see docs/hermit/architecture-review.md limitation 2/3 — and are deliberately
+# left out of eval until they're runnable, rather than scored against a
+# fixture they don't actually have.
+VE-001

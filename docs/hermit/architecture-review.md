@@ -1,7 +1,9 @@
 # VeritasESG AI Quality & Continuous Improvement — Architecture Review
 
-Status: **Stage 1 (Discovery) complete. Stage 2 (Evaluation foundation) started.**
+Status: **Stage 1 (Discovery) complete. Stage 2 (Evaluation foundation): first real, verified evaluation run completed.**
 This document is the mandatory first deliverable before any Hermit integration code was written, per the project brief's own implementation order. It records what was actually found in the repository (not assumed) and the integration design that follows from it.
+
+**Update, same day:** `hermit-harness` was installed in a local Python 3.14 venv (`python3 -m venv` + `pip install hermit-harness` — no system Python was touched), and `hermit check` / `hermit eval --config hermit/configs/questionnaire_autofill_smoke.yaml --adapter none` were run for real against the real, running VeritasESG app (not simulated). A seeded evaluation-fixture project (`scripts/seed-hermit-eval-fixture.ts`) + a minted service JWT made case `VE-001` runnable end-to-end. Result: `mean_score: 1.0, errors: 0` — the system correctly reported `kb-rag/no-indexed-docs` for a question with no Knowledge Base, and the judge correctly scored that as the expected `insufficient_evidence` outcome. Several config/contract details in section 5 were corrected from guesses to verified facts in the process (see the inline comments in `pipeline.py`/`judge.py`/`questionnaire_autofill_smoke.yaml`, and limitation 1 below).
 
 ## 1. What Hermit actually is (verified against the real repo/docs, 2026-10-30)
 
@@ -93,30 +95,41 @@ Design notes:
 
 ## 5. Priority PoC target: local questionnaire autofill
 
-Scaffolded (not yet executed against a live `hermit` install — see "Known limitations" below):
+**Executed for real**, not just scaffolded. `hermit eval --config hermit/configs/questionnaire_autofill_smoke.yaml --adapter none` runs successfully via the real `hermit` CLI against the real running app, for the one case (`VE-001`) that has a real seeded fixture:
 
 ```
 hermit/
   pipelines/
     questionnaire_autofill/
-      pipeline.py       # run(task, adapter) -> calls POST /api/kb-rag/tasks/autofill-answer
-      judge.py           # score(task, output) -> deterministic + reference-based checks
+      pipeline.py       # run(task, adapter) -> hermit.task.RunOutput; calls POST /api/kb-rag/tasks/autofill-answer
+      judge.py           # score(task, output) -> hermit.task.JudgeResult; deterministic + reference-based checks
       task-info/
         README.md
   datasets/
     questionnaire_autofill/
-      starter.json        # 8 illustrative cases (not the full ~200); schema matches the brief's example
+      starter.json / .jsonl   # 8 illustrative cases (not the full ~200); .jsonl is what Hermit actually reads
+      train.txt                # empty — eval-only phase, see config comments
+      test.txt                 # only VE-001 — the rest need more fixture rows first (section 8, limitation 3)
   configs/
-    questionnaire_autofill_smoke.yaml
+    questionnaire_autofill_smoke.yaml    # verified against the installed hermit-harness 0.1.0's own config.py/defaults.yaml
   adapters/                # empty; populated once a real training run produces one
-  judges/                  # shared judge helpers (schema validation, citation checks)
-  results/                 # .gitignore'd — evaluation run output
+  judges/                  # shared judge helpers (schema validation, citation checks) — not needed yet, this task's judge is self-contained
+  results/                 # .gitignore'd — real eval output now lands here (hermit/results/questionnaire_autofill/...)
   reports/                 # .gitignore'd — human-readable summaries
 ```
 
-`pipeline.py`'s `run()` makes a real HTTP call to the real, existing `/api/kb-rag/tasks/autofill-answer` endpoint — no duplicate/parallel autofill logic was written. It reads the adapter (if any) and, when present, forwards its text as an extra instruction block; wiring that block into `buildLocalAutofillUserPrompt` itself is **not yet done** (see limitations) because there is no approved adapter to inject yet and no case to test the splice against.
+Corrections made while getting this to actually run (the installed package was read directly to resolve these, not guessed twice):
+- The custom-task contract uses Hermit's own `hermit.task.RunOutput` / `hermit.task.JudgeResult` dataclasses, not custom ones — `pipeline.py` returns `RunOutput(output=..., extra={...})`, `judge.py` returns `JudgeResult(score=..., feedback=..., extra={...})`.
+- A task's identifying field is `id` (or `task_id`), not an arbitrary custom key — the dataset cases now carry both `case_id` (ours) and `id` (Hermit's).
+- Config needs `agent.name: path/to/pipeline.py:run` (not a separate `pipeline:` top-level key), plus `data.train`/`data.test` split files (plain text, one task id per line) and a `template:` (built-in `prompt-only@1.0` here).
+- `evolver.name` is required by schema validation (`hermit check` and even `hermit eval` both call `Config.load`/`validate`) but is never actually resolved or called by `hermit eval` (only `hermit train`'s `Trainer` does) — confirmed by reading `hermit/evaluate.py`. A placeholder name is enough for this phase; `hermit check` will still flag it (and the empty training split, and no budget) as training-readiness problems, which is expected and does not block `hermit eval`.
+- The real endpoint returns evidence-absence as an HTTP 400 (`kb-rag/no-indexed-docs`), not a graceful 200 with an empty/hedged answer — discovered via the actual call, not assumed. `judge.py` now treats that specific error code as a correct `insufficient_evidence` outcome rather than a hard pipeline failure.
 
-`judge.py` implements only deterministic/reference-based checks for now (schema validity of the response, presence/absence of citations matching `expected_citations`, correct `insufficient_evidence` handling) — no LLM-assisted judge yet, per the brief's instruction to start with evaluation-only, deterministic-first.
+`pipeline.py` reads an adapter's `ADAPTER.md` when present and records whether it was present, but — deliberately, for this phase — does **not** splice it into the real prompt yet; wiring that into `lib/taskLocalAutofillPrompt.ts` is still future work (section 8).
+
+`judge.py` implements only deterministic/reference-based checks (schema validity, citation match, correct `insufficient_evidence` handling, including the real error-code case above) — no LLM-assisted judge yet, per the brief's instruction to start deterministic-first.
+
+**Real result** (`hermit/results/questionnaire_autofill/.../eval/none/summary.json`, reproducible via the commands in section 9): `{"adapter": "none", "tasks": 1, "mean_score": 1.0, "errors": 0}`. This is a genuine baseline evaluation of production behavior, not a fabricated number.
 
 ## 6. `hermit-worker` service (scaffolded, not started by default)
 
@@ -136,15 +149,18 @@ Added to `docker-compose.yml` under Docker Compose **profiles** (`profiles: ["he
 
 Being honest about scope, per the brief's own "clearly distinguish completed and tested from partially implemented or proposed" requirement:
 
-1. **`hermit-harness` is not installed anywhere yet** (not in a venv, not in a container). `hermit check`/`hermit eval` have not been run. The pipeline/judge/task files are written against the verified real contract but are untested against the real CLI.
-2. **No service-account authentication exists yet** for the Python worker to call the real, `requireAuth`-protected `/api/kb-rag/tasks/autofill-answer` endpoint. `pipeline.py` reads a `HERMIT_SERVICE_TOKEN` env var that does not yet correspond to a real, provisioned, scoped-down platform user — this needs a real decision (dedicated evaluation service account vs. a new narrow service-auth header) before any real evaluation run can execute.
-3. The dataset has **8 starter cases, not ~200**. Expanding it is expert-reviewable content work, not something to fabricate.
+1. ~~`hermit-harness` is not installed anywhere~~ **Resolved**: installed in a local venv, `hermit check` and `hermit eval` both run successfully against the real app (section 5). Not yet installed inside the `hermit-worker` container itself (its `Dockerfile`/`requirements.txt` list it, but the image has not been built in this pass) — building and smoke-testing that image is the most mechanical remaining step.
+2. ~~No service-account authentication exists~~ **Resolved for the fixture project**: `scripts/seed-hermit-eval-fixture.ts` creates a dedicated internal Customer/Project/PlatformUser/Question/Assignment and mints a working JWT (1-day expiry — fine for interactive verification, but a real recurring/automated run needs either a longer-lived token or a refresh step; not decided yet).
+3. The dataset has **8 starter cases, of which exactly 1 (`VE-001`) has real fixture rows and is in `test.txt`**. The other 7 are real, reviewable case *designs* (not placeholders to delete) but need more seeded fixture data — some need genuinely new fixtures (two conflicting documents for VE-006, an injection-laced document for VE-007, a second fixture customer for VE-008) before they can run. Expanding further toward ~200 cases is expert-reviewable content work, not something to fabricate.
 4. **Module D (compliance assistance)** evaluation is deferred — the two endpoints named in the brief do not exist in this repository; needs a decision from the team on the real mapping before any work starts there.
 5. **No Judge uses an LLM yet** — deterministic/reference checks only.
-6. **No adapter has ever been trained, evaluated, approved, or deployed** — `AiAdapterVersion`/`AiAdapterApproval`/`AiAdapterDeployment` tables exist and are migrated, but are empty, and no UI exists yet to populate them (the "Evaluation runs", "Adapter experiments", "Approval management", "Quality trends" sections of the brief's Phase 8 are not built — only "Overview" exists, and only its toggle is functional).
+6. **No adapter has ever been trained, evaluated, approved, or deployed** — `AiAdapterVersion`/`AiAdapterApproval`/`AiAdapterDeployment` tables exist and are migrated, but are empty. The real eval run in section 5 was **not yet persisted into `AiEvaluationRun`/`AiEvaluationResult`** — it exists only as the `hermit/results/.../summary.json`/`results.jsonl` files on disk. No UI exists yet to trigger or inspect runs (the "Evaluation runs", "Adapter experiments", "Approval management", "Quality trends" sections of the brief's Phase 8 are not built — only "Overview" exists, and only its toggle is functional).
 7. **No Hermit-specific automated tests** exist yet (dataset validation, judge correctness, tenant isolation, prompt injection, rollback, etc. — all listed in the brief's Phase 10).
 8. The remaining `docs/hermit/*.md` files (integration-design, installation-guide, evaluation-methodology, adapter-management, governance-safeguards, operations-runbook, implementation-report) are not written yet — this file covers what they'd collectively need to, but is not a substitute for them.
+9. `hermit check`'s three flagged "problems" (no resolvable evolver, empty training split, no hard budget) are expected and harmless for this eval-only phase (explained in section 5) — but they mean `check`'s exit code is non-zero, so it cannot be used as a CI gate as-is until a real evolver/training setup exists.
 
-## 9. Recommended next slice (not started)
+## 9. Recommended next slice
 
-In order: (a) decide and implement the worker's service-authentication mechanism, (b) install `hermit-harness` in `hermit-worker` and get `hermit check`/`hermit eval` running against the starter dataset with a **baseline, no-adapter** run only, (c) persist that run's results into `AiEvaluationRun`/`AiEvaluationResult`, (d) build the "Evaluation runs" admin UI section to trigger/inspect it. Do not attempt adapter *training* until (a)–(d) are working and reviewed.
+Reproduce locally: `python3 -m venv .venv && .venv/bin/pip install hermit-harness`, `DATABASE_URL=... npx tsx scripts/seed-hermit-eval-fixture.ts` (prints a fresh `HERMIT_SERVICE_TOKEN`), then from `hermit/configs/`: `HERMIT_SERVICE_TOKEN=... VERITASESG_API_BASE=http://localhost:3011 .venv/bin/hermit eval --config questionnaire_autofill_smoke.yaml --adapter none`.
+
+Next, in order: (a) build and smoke-test the `hermit-worker` Docker image (the Dockerfile exists; it hasn't been built), (b) persist a run's results into `AiEvaluationRun`/`AiEvaluationResult` (parse `results.jsonl`/`summary.json` — the exact real shape is now known, see section 5), (c) build the "Evaluation runs" admin UI section to trigger/inspect runs through the worker's `/evaluate` endpoint instead of the CLI by hand, (d) seed fixture rows for VE-002..VE-005 (the four that only need an indexed KB document, not a novel fixture type) and add them to `test.txt`. Do not attempt adapter *training* until (a)–(d) are working and reviewed.

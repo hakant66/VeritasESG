@@ -23,3 +23,7 @@ env.txt
 # Hermit evaluation run output/reports — generated, not source
 /hermit/results/
 /hermit/reports/
+
+# Python bytecode cache (hermit/, hermit-worker/)
+__pycache__/
+*.pyc
