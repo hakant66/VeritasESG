@@ -46,6 +46,11 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **Organizational boundary entry point moved** | The "Organizasyonel sınır" button moved from the Firmalar list toolbar to the individual Customer Profile page header. |
 | **`consultant_manager` admin access widened** | Can now access Kullanıcılar / Sektörler / Kategoriler / Bilgi Bankası / Önemlilik Yönetimi / Denetim (previously `platform_admin`-only), matching that role's documented scope ("manage customers, all projects"). Settings and Translations stay `platform_admin`-only. |
 | **Public legal pages** | Privacy Policy and Terms of Service pages, sourced from new Settings fields (legal entity, address, jurisdiction, contact emails), linked from the login footer, sidebar footer, and 404 page. |
+| **Formlar: bulk-delete & additive add** | Formlar tab gained multi-select ("Silinecek Formları Seç") to delete a chosen subset of a project's forms/questions without wiping the rest. **Form Ekle** is now additive (and always visible, not just on an empty project) — it adds a template's pages/questions alongside what's already there instead of replacing everything; the old full-wipe rebuild is still used internally when a project genuinely starts from zero. |
+| **Reporting Framework auto-load** | Saving a project's Raporlama Çerçevesi selection now offers to auto-add the matching form template(s) (GRI, TSRS1, TSRS2) when exactly the newly-selected frameworks imply them — e.g. selecting both TSRS 1 and TSRS 2 adds both side by side. Ambiguous or unmapped selections (IFRS S1/S2, ESRS/CSRD, CDP, TCFD) fall back to manual **Form Ekle**. |
+| **GRI Template populated** | The "GRI" template (previously empty — `Form Ekle → GRI` produced 0 questions) now has 5 pages / 69 questions covering all 38 GRI standards; GRI 1/2/3 use real disclosure text extracted from the uploaded GRI Universal Standards PDFs, the remaining 35 topic standards are AI-estimated pending source documents. Reproducible via `scripts/seed-gri-template.py`. |
+| **KB ingest job status bug fix** | Fixed a stale-closure bug (`ingestJobToMutable`) where a Knowledge Base document's indexing job status never persisted to the database — jobs looked permanently "queued" even after completing or failing, which is what caused the "Dizine alma kuyruğa alındı ancak başlamadı" message. Also hardened chunk insertion (`skipDuplicates`) and raised the ingest worker's stall-detection window. |
+| **VeritasESG AI Quality & Continuous Improvement (Hermit)** | New optional, `platform_admin`-managed subsystem (Settings → **AI Quality**) for evaluating — and eventually, with human approval, improving — the prompting behind AI-assisted features, via [Hermit](https://github.com/Infini-AI-Lab/hermit). Off by default; see [`docs/hermit/architecture-review.md`](docs/hermit/architecture-review.md). |
 
 ## Recent changes (September 2026)
 
@@ -75,6 +80,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **Materiality (DMA)** | GRI / ESRS / ISSB double materiality scoring and admin matrix design |
 | **Materiality surveys** | Stakeholder double-materiality surveys, weighted aggregation, matrix + CSV export |
 | **AI autofill** | RAG-backed customer profile suggestions from indexed documents |
+| **AI Quality** (optional) | `platform_admin`-managed evaluation & continuous-improvement subsystem for AI-assisted features, powered by Hermit; off by default |
 | **Settings & ops** | LLM providers, scheduled DB backup, demo seed, external Customer API docs |
 
 ---
@@ -86,6 +92,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | Tab | Feature |
 |-----|---------|
 | **LLM** | Multi-provider server LLM (Gemini, OpenAI, Claude, Ollama); task prompts for Lokal/Genel AI |
+| **AI Quality** | Enable/disable the Hermit-powered AI Quality & Continuous Improvement subsystem (off by default) |
 | **Backup** | Scheduled database backup (engine-aware `pg_dump`) via Docker; create/toggle/run jobs |
 | **Demo** | Restore frozen demo snapshot (`POST /api/demo/seed`) |
 | **API** | Customer API v1 documentation (`x-api-key` auth) |
@@ -100,6 +107,17 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 Env fallbacks until saved in UI: `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OLLAMA_BASE_URL`, etc. (see `.env.example`).
 
 > Browser Knowledge Chat may still use `VITE_GEMINI_API_KEY` separately from server LLM settings.
+
+### AI Quality & Continuous Improvement (Hermit)
+
+Optional, `platform_admin`-managed subsystem that evaluates — and, once a human approves a candidate, can improve — the prompting behind AI-assisted features (questionnaire autofill, customer profile autofill, KB RAG), via [Hermit](https://github.com/Infini-AI-Lab/hermit). **Off by default**; enabling the toggle alone changes nothing on its own — it only unlocks the evaluation/adapter workflow for an admin to use.
+
+- **UI:** Settings → **AI Quality**
+- **API:** `GET/PUT /api/admin/ai-quality/settings`
+- **Code:** `lib/aiQualitySettings.ts`, `server/lib/aiQuality/`, `src/components/admin/AiQualityPanel.tsx`
+- **Evaluation harness:** `hermit/` (pipelines, datasets, configs — isolated from the app; see `docs/hermit/architecture-review.md`), run via an optional, profile-gated `hermit-worker` Docker Compose service (`docker compose --profile hermit up hermit-worker`) — not started by `docker compose up`.
+
+See [`docs/hermit/architecture-review.md`](docs/hermit/architecture-review.md) for the full design, what's built and verified vs. still planned, and governance/security decisions.
 
 ### Scheduled database backup
 
@@ -363,6 +381,7 @@ Full index: [`docs/README.md`](docs/README.md).
 | [`docs/sqlmigration/README.md`](docs/sqlmigration/README.md) | MongoDB → PostgreSQL migration journal |
 | [`docs/sqlmigration/prod-cutover-checklist.md`](docs/sqlmigration/prod-cutover-checklist.md) | Production cutover checklist |
 | [`docs/adr/ADR-08-customer-rag-autofill.md`](docs/adr/ADR-08-customer-rag-autofill.md) | Customer RAG autofill ADR |
+| [`docs/hermit/architecture-review.md`](docs/hermit/architecture-review.md) | AI Quality & Continuous Improvement (Hermit) — architecture, what's built/verified vs. planned |
 
 ### Turkish user guide
 
@@ -382,6 +401,7 @@ For Turkish-speaking consultants and Firma users:
 - **Survey reminders** — the `/api/materiality/surveys/cron/reminders` sweep must be scheduled (scheduler job or external cron) to send reminder emails automatically.
 - **Scheduled backup** — requires Docker socket in app container; verify job logs after first run.
 - **Large avatars without S3** — files over 350 KB need working MinIO/S3 or upload fails.
+- **AI Quality subsystem** — only the enable/disable toggle and Overview are built. Evaluation runs, adapter experiments, approvals, and quality trends are designed but not yet implemented; see `docs/hermit/architecture-review.md` for exact status.
 
 ---
 
