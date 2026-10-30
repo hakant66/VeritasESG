@@ -19,3 +19,7 @@ env.txt
 
 # Scheduled-job DB backup output (docker-compose.yml bind mount; contains real data)
 /backups/
+
+# Hermit evaluation run output/reports — generated, not source
+/hermit/results/
+/hermit/reports/

@@ -1469,3 +1469,144 @@ model MaterialitySurveyReminderLog {
   @@index([stakeholderId])
   @@map("materialitysurveyreminderlogs")
 }
+
+// ---------------------------------------------------------------------------
+// VeritasESG AI Quality & Continuous Improvement (Hermit integration).
+// Optional, platform_admin-gated subsystem — see docs/hermit/architecture-review.md.
+// All evaluation/adapter data here is additive and inert unless AppSetting
+// key "aiQuality" has enabled=true (lib/aiQualitySettings.ts).
+// ---------------------------------------------------------------------------
+
+/// A versioned, reviewable set of evaluation cases for one AI module.
+model AiEvaluationDataset {
+  id          String   @id @default(cuid())
+  name        String
+  module      String
+  description String   @default("") @db.Text
+  version     Int      @default(1)
+  status      String   @default("draft")
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([module])
+  @@index([status])
+  @@map("aievaluationdatasets")
+}
+
+/// One expert-reviewable test case: input, expected behaviour, split membership.
+model AiEvaluationCase {
+  id                String   @id @default(cuid())
+  datasetId         String
+  externalCaseId    String
+  module            String
+  language          String   @default("en")
+  split             String   @default("validation")
+  input             Json     @default("{}")
+  expectedBehaviour String   @default("")
+  expectedCitations Json     @default("[]")
+  riskLevel         String   @default("medium")
+  reviewStatus      String   @default("draft")
+  createdBy         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  @@index([datasetId])
+  @@index([module])
+  @@index([split])
+  @@map("aievaluationcases")
+}
+
+/// One execution of a dataset against a baseline or candidate adapter.
+model AiEvaluationRun {
+  id              String    @id @default(cuid())
+  datasetId       String
+  module          String
+  adapterVersionId String?
+  modelProvider   String    @default("")
+  modelId         String    @default("")
+  status          String    @default("queued")
+  configJson      Json      @default("{}")
+  triggeredBy     String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  errorMessage    String    @default("") @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+
+  @@index([datasetId])
+  @@index([adapterVersionId])
+  @@index([status])
+  @@map("aievaluationruns")
+}
+
+/// Per-case outcome of an AiEvaluationRun: scores, judge reasoning, safety flags.
+model AiEvaluationResult {
+  id              String   @id @default(cuid())
+  runId           String
+  caseId          String
+  passed          Boolean  @default(false)
+  scoreBreakdown  Json     @default("{}")
+  judgeReasoning  String   @default("") @db.Text
+  safetyFlags     Json     @default("[]")
+  createdAt       DateTime @default(now())
+
+  @@index([runId])
+  @@index([caseId])
+  @@map("aievaluationresults")
+}
+
+/// A candidate harness adapter produced by a Hermit evolution method. Content is the
+/// learned instruction text (small) or a reference + hash when stored in object storage.
+model AiAdapterVersion {
+  id               String   @id @default(cuid())
+  name             String
+  evolutionMethod  String
+  parentVersionId  String?
+  baselineRunId    String?
+  candidateRunId   String?
+  contentText      String   @default("") @db.Text
+  contentFileUrl   String?
+  contentHash      String
+  status           String   @default("draft")
+  createdBy        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+
+  @@index([status])
+  @@index([parentVersionId])
+  @@map("aiadapterversions")
+}
+
+/// Human review decision for a candidate adapter version. Required before deployment.
+model AiAdapterApproval {
+  id                  String    @id @default(cuid())
+  adapterVersionId    String
+  reviewerId          String
+  decision            String
+  notes               String    @default("") @db.Text
+  regressionResults   Json      @default("{}")
+  safetyGateStatus    String    @default("pending")
+  decidedAt           DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([adapterVersionId])
+  @@map("aiadapterapprovals")
+}
+
+/// Which adapter version is live for a given module, and the rollback trail.
+model AiAdapterDeployment {
+  id               String    @id @default(cuid())
+  adapterVersionId String
+  module           String
+  active           Boolean   @default(true)
+  deployedBy       String?
+  deployedAt       DateTime  @default(now())
+  rolledBackBy     String?
+  rolledBackAt     DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([module])
+  @@index([active])
+  @@map("aiadapterdeployments")
+}

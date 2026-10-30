@@ -125,6 +125,26 @@ services:
       postgres:
         condition: service_healthy
 
+  # VeritasESG AI Quality & Continuous Improvement (Hermit) — isolated evaluation
+  # worker. Opt-in on TWO independent levels: this container only starts when
+  # explicitly requested (`docker compose --profile hermit up hermit-worker`),
+  # and even then the Express app only calls out to it when a platform_admin
+  # has enabled the "AI Quality" toggle in Settings. Not part of `docker compose
+  # up` / `npm run docker:up` by default. See docs/hermit/architecture-review.md.
+  hermit-worker:
+    build:
+      context: ./hermit-worker
+      dockerfile: Dockerfile
+    profiles: ["hermit"]
+    environment:
+      VERITASESG_API_BASE: http://app:3010
+      HERMIT_SERVICE_TOKEN: ${HERMIT_SERVICE_TOKEN:-}
+    volumes:
+      - ./hermit:/hermit:ro
+    # No ports published: internal-only, reached by the app over the compose network.
+    depends_on:
+      - app
+
 volumes:
   minio_data:
   qdrant_data:

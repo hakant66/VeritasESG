@@ -1,0 +1,5 @@
+# Core Hermit only — no --group gepa/skillopt/harness2 (evaluation-only phase).
+hermit-harness>=0.1.0
+requests>=2.32
+fastapi>=0.115
+uvicorn>=0.32

@@ -31,6 +31,7 @@ import {
   Archive,
   Play,
   Clock,
+  FlaskConical,
 } from 'lucide-react';
 import { getHelpEmbedUrl, videoIframeAllow } from '../../lib/helpVideoEmbed';
 import { cn } from '../../lib/utils';
@@ -49,6 +50,7 @@ import { MarkdownEditorModal } from '../../components/ui/MarkdownEditorModal';
 import Modal from '../../components/ui/Modal';
 import DemoManagement from '../../components/admin/DemoManagement';
 import LlmSettingsPanel from '../../components/admin/LlmSettingsPanel';
+import AiQualityPanel from '../../components/admin/AiQualityPanel';
 import { apiRequest } from '../../lib/apiClient';
 import { HELP_TOUR_CONFIG, type HelpTourKey } from '../../lib/helpTour';
 import { ESRS_STANDARDS } from '../../lib/esrsStandards';
@@ -208,7 +210,7 @@ export default function SettingsPage() {
     );
   }
 
-  const activeTab = (searchParams.get('tab') as 'platform' | 'content' | 'domains' | 'modules' | 'demo' | 'llm' | 'api' | 'backup') || 'platform';
+  const activeTab = (searchParams.get('tab') as 'platform' | 'content' | 'domains' | 'modules' | 'demo' | 'llm' | 'aiQuality' | 'api' | 'backup') || 'platform';
   
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
@@ -588,6 +590,7 @@ export default function SettingsPage() {
             { id: 'modules', label: t.settingsPage.tabModules, icon: CheckSquare },
             { id: 'demo', label: t.settingsPage.tabDemo, icon: Database },
             { id: 'llm', label: t.settingsPage.tabLlm, icon: Sparkles },
+            { id: 'aiQuality', label: t.settingsPage.tabAiQuality, icon: FlaskConical },
             { id: 'backup', label: t.settingsPage.tabBackup, icon: Archive },
             { id: 'api', label: t.settingsPage.tabApi, icon: Code },
           ].map((tab) => (
@@ -1273,6 +1276,12 @@ export default function SettingsPage() {
         {activeTab === 'llm' && (
           <div className="lg:col-span-12">
             <LlmSettingsPanel />
+          </div>
+        )}
+
+        {activeTab === 'aiQuality' && (
+          <div className="lg:col-span-12">
+            <AiQualityPanel />
           </div>
         )}
 

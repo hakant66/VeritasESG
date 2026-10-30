@@ -1,0 +1,28 @@
+# VeritasESG — questionnaire_autofill smoke-eval config (DRAFT, UNVERIFIED).
+#
+# This was written against Hermit's documented config structure, but has
+# NOT been run through `hermit check` yet (hermit-harness is not installed
+# anywhere in this project — see docs/hermit/architecture-review.md,
+# limitation 1). The docs show two slightly different task-integration
+# shapes (a bare `pipeline.py:run` custom task, and an `agent.name:
+# path:ClassName` shape used in the bundled recipes); this file uses the
+# former, matching the "bring your own task" tutorial. Confirm with
+# `hermit check --config hermit/configs/questionnaire_autofill_smoke.yaml`
+# before relying on this file, and correct it if the real CLI disagrees.
+
+data:
+  tasks: ../datasets/questionnaire_autofill/starter.jsonl
+
+task_info: ../pipelines/questionnaire_autofill/task-info
+
+pipeline: ../pipelines/questionnaire_autofill/pipeline.py
+
+judge:
+  path: ../pipelines/questionnaire_autofill/judge.py
+
+# Evaluation-only for this phase: no evolver/trainer section. Running
+# `hermit eval --config this_file --adapter none` should score the
+# dataset against the live endpoint with no adapter applied (the
+# baseline). Adapter training is deliberately not configured yet.
+eval:
+  repeats: 1
