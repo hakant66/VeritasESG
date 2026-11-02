@@ -30,11 +30,21 @@ export type CustomerAutofillFieldSuggestion = {
   sourceExcerpt?: string;
 };
 
+export type CustomerAutofillFieldConflict = {
+  key: string;
+  existingValue: unknown;
+  suggestedValue: CustomerAutofillFieldSuggestion['value'];
+  sourceDocumentName?: string;
+  sourceChunkIndex?: number;
+};
+
 export type CustomerAutofillResult = {
   customerId: string;
   groups: CustomerAutofillGroupId[];
   chunkCount: number;
   suggestions: Record<string, CustomerAutofillFieldSuggestion>;
+  /** Suggestions that contradict an already-saved, non-empty field value (graph engine only — see customerAutofillGraph.ts). Also merged into `suggestions` so the existing review UI doesn't lose them. */
+  flaggedConflicts?: CustomerAutofillFieldConflict[];
   stakeholderSuggestions?: StakeholderAutofillSuggestion[];
   branchSuggestions?: BranchAutofillSuggestion[];
   contextChunks: Array<{
@@ -89,7 +99,7 @@ function normalizePolicyStatus(raw: unknown): string | null {
   return POLICY_STATUS_VALUES.has(normalized) ? normalized : null;
 }
 
-function dedupeHits(hits: CustomerKbSearchHit[]) {
+export function dedupeHits(hits: CustomerKbSearchHit[]) {
   const seen = new Set<string>();
   const unique: CustomerKbSearchHit[] = [];
   for (const hit of hits) {
@@ -110,7 +120,7 @@ function buildContextBlock(hits: CustomerKbSearchHit[]) {
     .join('\n\n---\n\n');
 }
 
-async function extractGroupFields(
+export async function extractGroupFields(
   group: CustomerAutofillGroupSpec,
   hits: CustomerKbSearchHit[],
   customerName: string,

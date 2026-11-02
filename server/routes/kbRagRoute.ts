@@ -21,6 +21,12 @@ import {
   isKbIngestQueueEnabled,
 } from '../lib/rag/kbIngestQueue.ts';
 import { autofillCustomerFromKb } from '../lib/rag/customerAutofill.ts';
+import { autofillCustomerFromKbViaGraph } from '../lib/rag/customerAutofillGraph.ts';
+
+/** Opt-in only — unset/false keeps the existing single-shot autofillCustomerFromKb() path. */
+function isGraphAutofillEnabled() {
+  return process.env.CUSTOMER_AUTOFILL_ENGINE === 'graph';
+}
 import { normalizeAutofillGroupIds } from '../lib/rag/customerAutofillGroups.ts';
 import { searchCustomerKbChunks } from '../lib/rag/searchCustomerKb.ts';
 import { answerKnowledgeChatQuery } from '../lib/rag/knowledgeChatAnswer.ts';
@@ -304,11 +310,9 @@ export function registerKbRagRoutes(app: Express, options: { jwtSecret: string }
 
       const groupIds = normalizeAutofillGroupIds(req.body?.groups);
       try {
-        const result = await autofillCustomerFromKb(
-          customerId,
-          String(customer.name ?? ''),
-          groupIds,
-        );
+        const result = isGraphAutofillEnabled()
+          ? await autofillCustomerFromKbViaGraph(customerId, customer as Record<string, unknown>, groupIds)
+          : await autofillCustomerFromKb(customerId, String(customer.name ?? ''), groupIds);
         success(res, result);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Autofill failed';
