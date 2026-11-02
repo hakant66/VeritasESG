@@ -1,7 +1,9 @@
 # VeritasESG — Architecture Analysis
 
-**Generated:** 2026-05-30  
-**Status:** Active — see roadmap for prioritized action items.
+**Generated:** 2026-05-30
+**Status:** Historical point-in-time review — see note below before relying on it.
+
+> **2026-11-02 note:** Sections 1–6 below were written before the MongoDB → PostgreSQL/Prisma migration (now complete; see `docs/migration/mongo-to-sql-migration-plan.md` and CLAUDE.md) and describe a backend (Mongoose models, `server/models/index.ts`, unauthenticated `GET /api/db/*`) that no longer exists in that form. Several issues in the register below may already be resolved by that migration (e.g. I-2's unauthenticated-reads finding — the current `registerMongoApiRoutes` requires `requireAuth: true`) or may need re-verification against the current PostgreSQL/Prisma codebase; this document was **not** re-audited as part of that migration or the changes below. Treat the issue register and line numbers as historical, not current. For the current, maintained stack reference, see [`tech-stack-architecture.md`](tech-stack-architecture.md). Section 7, added below, covers what's new since this review and is current as of today.
 
 ---
 
@@ -132,3 +134,28 @@ The pattern `registerXRoutes(app, ctx)` already exists (`registerMongoApiRoutes`
 - **I-1 (no row-level auth):** A `customer` role user with a valid JWT can modify another tenant's answers or project data.
 - **I-3 (no validation):** Over-posting allows untrusted clients to set internal fields (e.g. `ownerId`, `isConfirmed`, `platformRole`) directly on created documents.
 - **I-7 (hardcoded secrets):** If server.ts is ever exposed (e.g., source leak), the fallback JWT secret is compromised; any token becomes forgeable.
+
+---
+
+## 7. Since this review (current as of 2026-11-02)
+
+The findings above predate several architectural changes. This section is current; sections 1–6 are not (see the note at the top of this document).
+
+### MongoDB → PostgreSQL/Prisma migration (complete)
+
+The backend described in sections 1–6 (Mongoose, `server/models/index.ts`, MongoDB-backed `/api/db/*`) has been fully replaced. PostgreSQL via Prisma 6 is now the only backend; `prisma/schema.prisma` is the single source of truth for the data model. See [`tech-stack-architecture.md`](tech-stack-architecture.md) (the maintained, current stack reference) and `docs/migration/mongo-to-sql-migration-plan.md` / `docs/migration/mongo-to-sql-implementation-status.md` for the migration itself. `server/routes/mongoApi.ts` keeps its name for historical reasons only — it is Postgres-only, and `registerMongoApiRoutes` is registered with `requireAuth: true`, closing the I-2 unauthenticated-reads finding above (row-level/tenant authorization per I-1 has not been re-audited against the current codebase).
+
+### VeritasESG AI Quality & Continuous Improvement (Hermit)
+
+A new, optional, `platform_admin`-managed subsystem (Settings → **AI Quality**, off by default) for evaluating — and, once a human approves a candidate, improving — the prompting behind AI-assisted features (questionnaire autofill, customer profile autofill, KB RAG), built on the open-source [Hermit](https://github.com/Infini-AI-Lab/hermit) harness-adapter framework.
+
+- **Admin gate:** `lib/aiQualitySettings.ts`, `server/lib/aiQuality/aiQualityConfig.ts`, `server/routes/aiQualityRoute.ts` (`GET/PUT /api/admin/ai-quality/settings`), `src/components/admin/AiQualityPanel.tsx`. Built and live-verified end to end (API + UI, toggle persists).
+- **Schema:** 7 new, additive Prisma models — `AiEvaluationDataset`, `AiEvaluationCase`, `AiEvaluationRun`, `AiEvaluationResult`, `AiAdapterVersion`, `AiAdapterApproval`, `AiAdapterDeployment` — migrated, currently empty.
+- **Isolation:** Hermit itself is Python, run in a separate, profile-gated `hermit-worker` Docker Compose service (`docker compose --profile hermit up hermit-worker`) — never started by `docker compose up`, and never embedded in an Express request handler. A real baseline evaluation was run through the actual Hermit CLI against the live app (`hermit/` — pipelines, datasets, configs), proving the integration works, not just scaffolded.
+- **What's not built yet:** persisting evaluation results into the new tables, the "Evaluation runs" / "Adapter experiments" / "Approval management" / "Quality trends" admin UI sections, any LLM-assisted judging, and — deliberately, pending human review — any actual adapter training, approval, or deployment.
+
+Full design, verified facts about Hermit's real contract, and an honest list of what's done vs. planned: [`docs/hermit/architecture-review.md`](../hermit/architecture-review.md).
+
+### Formlar / reporting-framework workflow changes
+
+The Formlar (forms) tab moved from a single destructive "rebuild" model to an additive one: **Form Ekle** now adds a template's pages/questions alongside what a project already has (instead of wiping it), is visible even when forms already exist (not just on an empty project), and a new multi-select lets an admin delete a chosen subset of forms without affecting the rest. Saving a project's Reporting Framework selection can now auto-add the matching template(s) (e.g. selecting both TSRS 1 and TSRS 2 adds both) when the selection unambiguously implies them.
