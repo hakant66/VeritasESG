@@ -42,6 +42,8 @@ export type CustomerAutofillResult = {
   customerId: string;
   groups: CustomerAutofillGroupId[];
   chunkCount: number;
+  /** Which extraction engine produced this result — see customerAutofillEngineConfig.ts. */
+  engine: 'default' | 'graph';
   suggestions: Record<string, CustomerAutofillFieldSuggestion>;
   /** Suggestions that contradict an already-saved, non-empty field value (graph engine only — see customerAutofillGraph.ts). Also merged into `suggestions` so the existing review UI doesn't lose them. */
   flaggedConflicts?: CustomerAutofillFieldConflict[];
@@ -278,6 +280,7 @@ export async function autofillCustomerFromKb(
     customerId,
     groups: groupIds,
     chunkCount,
+    engine: 'default',
     suggestions: mergedSuggestions,
     stakeholderSuggestions:
       stakeholderSuggestions.length > 0 ? stakeholderSuggestions : undefined,

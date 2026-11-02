@@ -272,6 +272,7 @@ export async function autofillCustomerFromKbViaGraph(
     customerId,
     groups: groupIds,
     chunkCount,
+    engine: 'graph',
     suggestions: mergedSuggestions,
     flaggedConflicts: flaggedConflicts.length > 0 ? flaggedConflicts : undefined,
     stakeholderSuggestions: stakeholderSuggestions.length > 0 ? stakeholderSuggestions : undefined,

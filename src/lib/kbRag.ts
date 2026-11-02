@@ -16,6 +16,7 @@ export {
   searchCustomerKb,
   waitForKbDocumentIndexed,
   type BranchAutofillSuggestion,
+  type CustomerAutofillFieldConflict,
   type CustomerAutofillFieldSuggestion,
   type CustomerAutofillGroupId,
   type CustomerAutofillResult,

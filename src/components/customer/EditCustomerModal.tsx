@@ -13,6 +13,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import {
   autofillCustomerFromKb,
   type BranchAutofillSuggestion,
+  type CustomerAutofillFieldConflict,
   type CustomerAutofillFieldSuggestion,
   type StakeholderAutofillSuggestion,
 } from '../../lib/kbRag';
@@ -108,6 +109,8 @@ export function EditCustomerModal({
     string,
     CustomerAutofillFieldSuggestion
   > | null>(null);
+  const [autofillConflicts, setAutofillConflicts] = useState<CustomerAutofillFieldConflict[] | null>(null);
+  const [appliedConflictKeys, setAppliedConflictKeys] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<CustomerFormTabId>('basic');
   const [autofillDraft, setAutofillDraft] = useState<Partial<Customer> | null>(null);
   const [stakeholderReviewOpen, setStakeholderReviewOpen] = useState(false);
@@ -135,6 +138,8 @@ export function EditCustomerModal({
       setAutofillDraft(null);
       setAutofillNotice(null);
       setAutofillSuggestions(null);
+      setAutofillConflicts(null);
+      setAppliedConflictKeys(new Set());
       setOnlyFillEmpty(true);
       setAutofillScope('basic');
       setStakeholderReviewOpen(false);
@@ -326,6 +331,8 @@ export function EditCustomerModal({
     setAutofillDraft(null);
     setAutofillNotice(null);
     setAutofillSuggestions(null);
+    setAutofillConflicts(null);
+    setAppliedConflictKeys(new Set());
     onClose();
   };
 
@@ -441,6 +448,15 @@ export function EditCustomerModal({
         delete patch.sectorIds;
       }
 
+      // Conflicting fields (graph engine only) are never auto-applied — the user
+      // must explicitly click "Use suggested value" per field in the panel below.
+      const conflicts = result.flaggedConflicts ?? null;
+      for (const conflict of conflicts ?? []) {
+        delete (patch as Record<string, unknown>)[conflict.key];
+      }
+      setAutofillConflicts(conflicts);
+      setAppliedConflictKeys(new Set());
+
       const resolvedSectorNames =
         patch.sectorIds?.map((id) => sectors.find((s) => s.id === id)?.name).filter(Boolean) as string[] ||
         [];
@@ -472,6 +488,7 @@ export function EditCustomerModal({
               : t.customers.aiAutofillEmpty;
         alert(emptyMessage);
         setAutofillSuggestions(null);
+        setAutofillConflicts(null);
         return;
       }
 
@@ -508,6 +525,15 @@ export function EditCustomerModal({
     }
   };
 
+  const handleApplyConflict = (key: string) => {
+    const suggestion = autofillSuggestions?.[key];
+    if (!suggestion) return;
+    const patch = customerPatchFromAutofill({ [key]: suggestion });
+    setAutofillDraft((prev) => mergeCustomerPatches(prev, patch));
+    setAppliedConflictKeys((prev) => new Set(prev).add(key));
+    formKeyRef.current += 1;
+  };
+
   return (
     <Modal
       size="2xl"
@@ -533,6 +559,9 @@ export function EditCustomerModal({
             disabled={isSubmitting}
             suggestions={autofillSuggestions}
             activeTab={activeTab}
+            conflicts={autofillConflicts ?? undefined}
+            appliedConflictKeys={appliedConflictKeys}
+            onApplyConflict={handleApplyConflict}
           />
           {autofillNotice ? (
             <p className="text-xs font-medium text-blue-800">{autofillNotice}</p>

@@ -51,6 +51,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **GRI Template populated** | The "GRI" template (previously empty — `Form Ekle → GRI` produced 0 questions) now has 5 pages / 69 questions covering all 38 GRI standards; GRI 1/2/3 use real disclosure text extracted from the uploaded GRI Universal Standards PDFs, the remaining 35 topic standards are AI-estimated pending source documents. Reproducible via `scripts/seed-gri-template.py`. |
 | **KB ingest job status bug fix** | Fixed a stale-closure bug (`ingestJobToMutable`) where a Knowledge Base document's indexing job status never persisted to the database — jobs looked permanently "queued" even after completing or failing, which is what caused the "Dizine alma kuyruğa alındı ancak başlamadı" message. Also hardened chunk insertion (`skipDuplicates`) and raised the ingest worker's stall-detection window. |
 | **VeritasESG AI Quality & Continuous Improvement (Hermit)** | New optional, `platform_admin`-managed subsystem (Settings → **AI Quality**) for evaluating — and eventually, with human approval, improving — the prompting behind AI-assisted features, via [Hermit](https://github.com/Infini-AI-Lab/hermit). Off by default; see [`docs/hermit/architecture-review.md`](docs/hermit/architecture-review.md). |
+| **LangGraph customer-autofill engine** | New optional, `platform_admin`-managed alternative engine for "AI ile doldur" customer-profile extraction (Settings → **Autofill Engine**), built on [LangGraph](https://langchain-ai.github.io/langgraphjs/) (`@langchain/langgraph`, in-process — no new runtime). Adds deterministic citation verification, a bounded retrieval retry, and a cross-check that flags (instead of silently applying) any suggestion that contradicts an already-saved customer value; flagged conflicts get their own review section in the Edit Customer autofill panel, with a one-click "use suggested value" per field. Off by default — the existing single-shot extraction is unchanged. |
 
 ## Recent changes (September 2026)
 
@@ -79,7 +80,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **Emissions** | Emission ledger, factors, Scope 1–3; metric entry approval workflow |
 | **Materiality (DMA)** | GRI / ESRS / ISSB double materiality scoring and admin matrix design |
 | **Materiality surveys** | Stakeholder double-materiality surveys, weighted aggregation, matrix + CSV export |
-| **AI autofill** | RAG-backed customer profile suggestions from indexed documents |
+| **AI autofill** | RAG-backed customer profile suggestions from indexed documents; optional LangGraph engine adds citation verification + saved-value conflict detection |
 | **AI Quality** (optional) | `platform_admin`-managed evaluation & continuous-improvement subsystem for AI-assisted features, powered by Hermit; off by default |
 | **Settings & ops** | LLM providers, scheduled DB backup, demo seed, external Customer API docs |
 
@@ -92,6 +93,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | Tab | Feature |
 |-----|---------|
 | **LLM** | Multi-provider server LLM (Gemini, OpenAI, Claude, Ollama); task prompts for Lokal/Genel AI |
+| **Autofill Engine** | Enable/disable the LangGraph customer-autofill engine (off by default) |
 | **AI Quality** | Enable/disable the Hermit-powered AI Quality & Continuous Improvement subsystem (off by default) |
 | **Backup** | Scheduled database backup (engine-aware `pg_dump`) via Docker; create/toggle/run jobs |
 | **Demo** | Restore frozen demo snapshot (`POST /api/demo/seed`) |
@@ -107,6 +109,25 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 Env fallbacks until saved in UI: `GEMINI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OLLAMA_BASE_URL`, etc. (see `.env.example`).
 
 > Browser Knowledge Chat may still use `VITE_GEMINI_API_KEY` separately from server LLM settings.
+
+### LangGraph customer-autofill engine
+
+Optional, `platform_admin`-managed alternative engine for "AI ile doldur" customer-profile extraction (`POST /api/kb-rag/customers/:customerId/autofill`), built on [LangGraph](https://langchain-ai.github.io/langgraphjs/) (`@langchain/langgraph`). **Off by default** — leaves the existing single-shot extraction (`server/lib/rag/customerAutofill.ts`) completely unchanged; the toggle only decides which engine `kbRagRoute.ts` calls.
+
+Runs **in-process**, not as an isolated worker like Hermit — its graph nodes call the same existing TypeScript functions (`searchCustomerKbChunks`, `extractGroupFields`) directly, so there's no new network hop and no new runtime dependency to operate.
+
+Per generic field group (basic/workforce/sector/reporting/esg — stakeholders/facilities keep their own dedicated extractors unchanged), the graph runs `retrieve → extract → verifyCitations → [retry ≤2× | crossCheck]`:
+
+- **`verifyCitations`** replaces a fuzzy substring-match fallback with a deterministic check: a suggestion is kept only if its quoted excerpt actually appears in the *specific* source chunk it claims to cite.
+- **Retry** reformulates the retrieval query toward whatever fields failed verification and loops back, bounded at 2 attempts.
+- **`crossCheck`** flags — rather than silently applies — any suggestion that contradicts an already-saved, non-empty customer field. Flagged fields are excluded from the auto-applied patch and shown in their own "Conflicts with saved values" section in the Edit Customer autofill panel, each with the existing vs. suggested value and a one-click **"Use suggested value"** to apply that single field.
+
+Live-verified against a real customer's indexed Knowledge Base (not simulated): it correctly flagged a real conflict between an already-saved `legalName` and a KB-sourced suggestion using the group's shorter brand name, instead of silently overwriting the more precise saved value.
+
+- **UI:** Settings → **Autofill Engine**; conflict review surfaces in the Edit Customer modal's "AI ile doldur" panel.
+- **API:** `GET/PUT /api/admin/customer-autofill-engine/settings`
+- **Code:** `lib/customerAutofillEngineSettings.ts`, `server/lib/rag/customerAutofillEngineConfig.ts`, `server/lib/rag/customerAutofillGraph.ts`, `src/components/admin/CustomerAutofillEnginePanel.tsx`
+- **Ops override:** `CUSTOMER_AUTOFILL_ENGINE=graph|default` env var takes precedence over the saved setting (useful for debugging without touching Settings).
 
 ### AI Quality & Continuous Improvement (Hermit)
 

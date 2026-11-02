@@ -73,11 +73,23 @@ export type CustomerAutofillFieldSuggestion = {
   sourceExcerpt?: string;
 };
 
+export type CustomerAutofillFieldConflict = {
+  key: string;
+  existingValue: unknown;
+  suggestedValue: CustomerAutofillFieldSuggestion['value'];
+  sourceDocumentName?: string;
+  sourceChunkIndex?: number;
+};
+
 export type CustomerAutofillResult = {
   customerId: string;
   groups: CustomerAutofillGroupId[];
   chunkCount: number;
+  /** Which extraction engine produced this result (see Settings -> Autofill Engine). */
+  engine?: 'default' | 'graph';
   suggestions: Record<string, CustomerAutofillFieldSuggestion>;
+  /** Suggestions that contradict an already-saved value (graph engine only). Also present in `suggestions`. */
+  flaggedConflicts?: CustomerAutofillFieldConflict[];
   stakeholderSuggestions?: StakeholderAutofillSuggestion[];
   branchSuggestions?: BranchAutofillSuggestion[];
   contextChunks: Array<{
