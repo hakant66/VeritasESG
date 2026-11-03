@@ -26,6 +26,13 @@ import { isGraphAutofillEngineEnabled } from '../lib/rag/customerAutofillEngineC
 import { normalizeAutofillGroupIds } from '../lib/rag/customerAutofillGroups.ts';
 import { searchCustomerKbChunks } from '../lib/rag/searchCustomerKb.ts';
 import { answerKnowledgeChatQuery } from '../lib/rag/knowledgeChatAnswer.ts';
+import { answerKnowledgeChatQueryViaGraph } from '../lib/rag/knowledgeChatGraph.ts';
+import { randomUUID } from 'node:crypto';
+
+/** Opt-in only — unset/false keeps the existing stateless answerKnowledgeChatQuery() path. */
+function isKnowledgeChatGraphEnabled() {
+  return process.env.KNOWLEDGE_CHAT_ENGINE === 'graph';
+}
 import { autofillTaskQuestionAnswer } from '../lib/rag/taskQuestionAutofill.ts';
 import { pingQdrant } from '../lib/rag/qdrantStore.ts';
 import { assertTaskQuestionAutofillAccess } from '../lib/taskAutofillAccess.ts';
@@ -369,24 +376,40 @@ export function registerKbRagRoutes(app: Express, options: { jwtSecret: string }
           ? req.body.projectId.trim()
           : undefined;
 
+      const normalizedUserContext = {
+        projectName:
+          typeof userContext.projectName === 'string' ? userContext.projectName : undefined,
+        customerName:
+          typeof userContext.customerName === 'string' ? userContext.customerName : undefined,
+        domains: Array.isArray(userContext.domains)
+          ? userContext.domains.map((d: unknown) => String(d).trim()).filter(Boolean)
+          : undefined,
+      };
+
       try {
-        const result = await answerKnowledgeChatQuery({
-          query,
-          kbIds,
-          lang,
-          userContext: {
-            projectName:
-              typeof userContext.projectName === 'string' ? userContext.projectName : undefined,
-            customerName:
-              typeof userContext.customerName === 'string' ? userContext.customerName : undefined,
-            domains: Array.isArray(userContext.domains)
-              ? userContext.domains.map((d: unknown) => String(d).trim()).filter(Boolean)
-              : undefined,
-          },
-          customerId,
-          projectId,
-          limit,
-        });
+        const result = isKnowledgeChatGraphEnabled()
+          ? await answerKnowledgeChatQueryViaGraph({
+              conversationId:
+                typeof req.body?.conversationId === 'string' && req.body.conversationId.trim()
+                  ? req.body.conversationId.trim()
+                  : randomUUID(),
+              query,
+              kbIds,
+              lang,
+              userContext: normalizedUserContext,
+              customerId,
+              projectId,
+              limit,
+            })
+          : await answerKnowledgeChatQuery({
+              query,
+              kbIds,
+              lang,
+              userContext: normalizedUserContext,
+              customerId,
+              projectId,
+              limit,
+            });
         success(res, result);
       } catch (err: unknown) {
         const llmErr = mapLlmRouteError(err);

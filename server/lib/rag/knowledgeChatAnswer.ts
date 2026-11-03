@@ -26,9 +26,13 @@ export type KnowledgeChatAnswer = {
   kbIds: string[];
   chunkCount: number;
   sources: KnowledgeChatSource[];
+  /** Which chat engine produced this — see knowledgeChatEngineConfig.ts. */
+  engine?: 'default' | 'graph';
+  /** Graph engine only: the thread id its checkpointer stores conversation turns under. Echo this back on the next request in the same conversation. */
+  conversationId?: string;
 };
 
-function dedupeHits(hits: KnowledgeKbSearchHit[]) {
+export function dedupeHits(hits: KnowledgeKbSearchHit[]) {
   const seen = new Set<string>();
   const unique: KnowledgeKbSearchHit[] = [];
   for (const hit of hits) {
@@ -40,13 +44,63 @@ function dedupeHits(hits: KnowledgeKbSearchHit[]) {
   return unique;
 }
 
-function buildContextBlock(hits: KnowledgeKbSearchHit[]) {
+export function buildContextBlock(hits: KnowledgeKbSearchHit[]) {
   return hits
     .map(
       (hit, idx) =>
         `[Chunk ${idx + 1} | SOURCE: ${hit.documentName} #${hit.chunkIndex} | score ${hit.score.toFixed(3)}]\n${hit.text}`,
     )
     .join('\n\n---\n\n');
+}
+
+/** Extracted so knowledgeChatGraph.ts can reuse the exact same prompt, optionally with prior turns. */
+export function buildKnowledgeChatPrompt(
+  hits: KnowledgeKbSearchHit[],
+  query: string,
+  lang: 'tr' | 'en',
+  userContext: KnowledgeChatUserContext,
+  conversationHistory?: Array<{ query: string; answer: string }>,
+): string {
+  const languageInstruction =
+    lang === 'tr'
+      ? 'You MUST write your entire answer in Turkish (Türkçe). Use English only for proper nouns, standard abbreviations (e.g. IFRS, ISSB), or verbatim quotes from the sources.'
+      : 'You MUST write your entire answer in English. Use Turkish only when quoting text from the knowledge base context.';
+
+  const noContextFallback =
+    lang === 'tr'
+      ? 'Bilgi tabanında bu konuya dair özel bir bilgi bulamadım; ancak genel standartlara dayanarak'
+      : "I don't have specific information on that in the knowledge base, but based on general standards";
+
+  const historyBlock =
+    conversationHistory && conversationHistory.length > 0
+      ? `\nPRIOR CONVERSATION (for context only — answer the CURRENT question, do not re-answer these):\n${conversationHistory
+          .map((turn) => `Q: ${turn.query}\nA: ${turn.answer}`)
+          .join('\n\n')}\n`
+      : '';
+
+  return `You are an expert AI assistant specializing in corporate governance, sustainability, and domain-specific knowledge.
+Your goal is to answer the user's question accurately using ONLY the retrieved knowledge-base chunks below.
+
+RESPONSE LANGUAGE (mandatory): ${languageInstruction}
+
+USER CONTEXT:
+Project: ${userContext.projectName || 'N/A'}
+Customer: ${userContext.customerName || 'N/A'}
+Related Domains: ${userContext.domains?.join(', ') || 'Global'}
+${historyBlock}
+RETRIEVED KNOWLEDGE CHUNKS:
+${buildContextBlock(hits)}
+
+CURRENT USER QUESTION:
+${query}
+
+INSTRUCTIONS:
+1. Follow the RESPONSE LANGUAGE rule above for every sentence.
+2. Answer using ONLY facts supported by the retrieved chunks. Do not invent data.
+3. If the chunks do not contain enough information, begin with "${noContextFallback}..." and explain what is missing (still in the required response language).
+4. Keep the tone professional, concise, and helpful.
+5. Use Markdown for formatting.
+6. Cite source document names inline when referencing specific facts (e.g. "according to *Report.pdf*").`;
 }
 
 export async function answerKnowledgeChatQuery(options: {
@@ -109,40 +163,7 @@ export async function answerKnowledgeChatQuery(options: {
     };
   }
 
-  const languageInstruction =
-    lang === 'tr'
-      ? 'You MUST write your entire answer in Turkish (Türkçe). Use English only for proper nouns, standard abbreviations (e.g. IFRS, ISSB), or verbatim quotes from the sources.'
-      : 'You MUST write your entire answer in English. Use Turkish only when quoting text from the knowledge base context.';
-
-  const noContextFallback =
-    lang === 'tr'
-      ? 'Bilgi tabanında bu konuya dair özel bir bilgi bulamadım; ancak genel standartlara dayanarak'
-      : "I don't have specific information on that in the knowledge base, but based on general standards";
-
-  const prompt = `You are an expert AI assistant specializing in corporate governance, sustainability, and domain-specific knowledge.
-Your goal is to answer the user's question accurately using ONLY the retrieved knowledge-base chunks below.
-
-RESPONSE LANGUAGE (mandatory): ${languageInstruction}
-
-USER CONTEXT:
-Project: ${userContext.projectName || 'N/A'}
-Customer: ${userContext.customerName || 'N/A'}
-Related Domains: ${userContext.domains?.join(', ') || 'Global'}
-
-RETRIEVED KNOWLEDGE CHUNKS:
-${buildContextBlock(hits)}
-
-USER QUESTION:
-${query}
-
-INSTRUCTIONS:
-1. Follow the RESPONSE LANGUAGE rule above for every sentence.
-2. Answer using ONLY facts supported by the retrieved chunks. Do not invent data.
-3. If the chunks do not contain enough information, begin with "${noContextFallback}..." and explain what is missing (still in the required response language).
-4. Keep the tone professional, concise, and helpful.
-5. Use Markdown for formatting.
-6. Cite source document names inline when referencing specific facts (e.g. "according to *Report.pdf*").`;
-
+  const prompt = buildKnowledgeChatPrompt(hits, query, lang, userContext);
   const answer = await generateTextFromPrompt(prompt);
 
   return {

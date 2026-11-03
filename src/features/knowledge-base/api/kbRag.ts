@@ -155,6 +155,10 @@ export type KnowledgeChatResult = {
   kbIds: string[];
   chunkCount: number;
   sources: KnowledgeChatSource[];
+  /** Which chat engine produced this (see Settings -> Autofill Engine -style toggle, once added for chat). */
+  engine?: 'default' | 'graph';
+  /** Graph engine only: echo this back on the next request in the same conversation for multi-turn memory. */
+  conversationId?: string;
 };
 
 export type TaskQuestionAutofillResult = {
@@ -203,6 +207,8 @@ export async function chatKnowledgeBase(options: {
   customerId?: string;
   projectId?: string;
   limit?: number;
+  /** Graph engine only: pass the conversationId a previous response in this chat session returned. */
+  conversationId?: string;
 }) {
   return apiRequest<KnowledgeChatResult>('/api/kb-rag/chat', {
     method: 'POST',

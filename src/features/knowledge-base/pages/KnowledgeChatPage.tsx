@@ -160,6 +160,8 @@ export default function KnowledgeChatPage() {
   const [sampleQuestionsLoading, setSampleQuestionsLoading] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  /** Graph engine only (no-op otherwise): set once the server assigns one, echoed back on later turns for multi-turn memory. */
+  const conversationIdRef = useRef<string | undefined>(undefined);
 
   const contextKbGroups = useMemo(() => {
     const groups: Record<KnowledgeBaseSpecification, KnowledgeBase[]> = {
@@ -313,7 +315,9 @@ export default function KnowledgeChatPage() {
         },
         customerId: selectedKb?.customerId,
         projectId: selectedKb?.projectId,
+        conversationId: conversationIdRef.current,
       });
+      if (result.conversationId) conversationIdRef.current = result.conversationId;
 
       const botMessage: Message = {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
