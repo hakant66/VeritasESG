@@ -3,7 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { findKbDocumentsByIds, searchKbChunksByKeywordRegex } from '../../data/kbRagDataAccess.ts';
+import {
+  findKbDocumentsByIds,
+  searchKbChunksByKeywordRegex,
+  searchKbChunksByKeywordRegexForKbIds,
+} from '../../data/kbRagDataAccess.ts';
 import type { CustomerKbSearchHit } from './searchCustomerKb.ts';
 
 function sanitizeKeywordQuery(query: string): string {
@@ -60,5 +64,23 @@ export async function searchCustomerKbChunksByText(
   return hydrateChunkHits(
     chunks.map((chunk, index) => ({ ...chunk, score: 1 - index * 0.01 })),
     customerId,
+  );
+}
+
+/** Same as searchCustomerKbChunksByText, scoped by kbIds instead of a single customerId — used by Knowledge Chat, which can span multiple KBs. */
+export async function searchKnowledgeKbChunksByText(
+  kbIds: string[],
+  query: string,
+  limit = 10,
+  options?: { customerId?: string; projectId?: string },
+): Promise<CustomerKbSearchHit[]> {
+  const searchText = sanitizeKeywordQuery(query.trim());
+  if (!searchText) return [];
+
+  const tokens = searchText.split(/\s+/).filter(Boolean);
+  const chunks = await searchKbChunksByKeywordRegexForKbIds(kbIds, tokens, limit, options);
+  return hydrateChunkHits(
+    chunks.map((chunk, index) => ({ ...chunk, score: 1 - index * 0.01 })),
+    options?.customerId ?? '',
   );
 }

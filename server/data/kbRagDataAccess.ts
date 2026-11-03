@@ -178,6 +178,26 @@ export async function searchKbChunksByKeywordRegex(
   return withExternalIds(rows as Row[]);
 }
 
+/** Same as searchKbChunksByKeywordRegex, scoped by kbIds instead of a single customerId (Knowledge Chat can span multiple KBs). */
+export async function searchKbChunksByKeywordRegexForKbIds(
+  kbIds: string[],
+  keywords: string[],
+  limit = 10,
+  options?: { customerId?: string; projectId?: string },
+): Promise<Row[]> {
+  if (keywords.length === 0 || kbIds.length === 0) return [];
+  const rows = await getPrisma().kbChunk.findMany({
+    where: {
+      kbId: { in: kbIds },
+      ...(options?.customerId ? { customerId: options.customerId } : {}),
+      ...(options?.projectId ? { projectId: options.projectId } : {}),
+      OR: keywords.map((keyword) => ({ text: { contains: keyword, mode: 'insensitive' } })),
+    },
+    take: limit,
+  });
+  return withExternalIds(rows as Row[]);
+}
+
 export async function findKbDocumentsByIds(docIds: string[]): Promise<Row[]> {
   if (docIds.length === 0) return [];
   const rows = await getPrisma().kBDocument.findMany({
