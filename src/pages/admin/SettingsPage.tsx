@@ -33,6 +33,7 @@ import {
   Clock,
   FlaskConical,
   GitBranch,
+  MessagesSquare,
 } from 'lucide-react';
 import { getHelpEmbedUrl, videoIframeAllow } from '../../lib/helpVideoEmbed';
 import { cn } from '../../lib/utils';
@@ -53,6 +54,7 @@ import DemoManagement from '../../components/admin/DemoManagement';
 import LlmSettingsPanel from '../../components/admin/LlmSettingsPanel';
 import AiQualityPanel from '../../components/admin/AiQualityPanel';
 import CustomerAutofillEnginePanel from '../../components/admin/CustomerAutofillEnginePanel';
+import KnowledgeChatEnginePanel from '../../components/admin/KnowledgeChatEnginePanel';
 import { apiRequest } from '../../lib/apiClient';
 import { HELP_TOUR_CONFIG, type HelpTourKey } from '../../lib/helpTour';
 import { ESRS_STANDARDS } from '../../lib/esrsStandards';
@@ -212,7 +214,7 @@ export default function SettingsPage() {
     );
   }
 
-  const activeTab = (searchParams.get('tab') as 'platform' | 'content' | 'domains' | 'modules' | 'demo' | 'llm' | 'aiQuality' | 'autofillEngine' | 'api' | 'backup') || 'platform';
+  const activeTab = (searchParams.get('tab') as 'platform' | 'content' | 'domains' | 'modules' | 'demo' | 'llm' | 'aiQuality' | 'autofillEngine' | 'chatEngine' | 'api' | 'backup') || 'platform';
   
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
@@ -594,6 +596,7 @@ export default function SettingsPage() {
             { id: 'llm', label: t.settingsPage.tabLlm, icon: Sparkles },
             { id: 'aiQuality', label: t.settingsPage.tabAiQuality, icon: FlaskConical },
             { id: 'autofillEngine', label: t.settingsPage.tabAutofillEngine, icon: GitBranch },
+            { id: 'chatEngine', label: t.settingsPage.tabChatEngine, icon: MessagesSquare },
             { id: 'backup', label: t.settingsPage.tabBackup, icon: Archive },
             { id: 'api', label: t.settingsPage.tabApi, icon: Code },
           ].map((tab) => (
@@ -1285,6 +1288,12 @@ export default function SettingsPage() {
         {activeTab === 'autofillEngine' && (
           <div className="lg:col-span-12">
             <CustomerAutofillEnginePanel />
+          </div>
+        )}
+
+        {activeTab === 'chatEngine' && (
+          <div className="lg:col-span-12">
+            <KnowledgeChatEnginePanel />
           </div>
         )}
 

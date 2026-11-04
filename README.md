@@ -52,6 +52,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 | **KB ingest job status bug fix** | Fixed a stale-closure bug (`ingestJobToMutable`) where a Knowledge Base document's indexing job status never persisted to the database — jobs looked permanently "queued" even after completing or failing, which is what caused the "Dizine alma kuyruğa alındı ancak başlamadı" message. Also hardened chunk insertion (`skipDuplicates`) and raised the ingest worker's stall-detection window. |
 | **VeritasESG AI Quality & Continuous Improvement (Hermit)** | New optional, `platform_admin`-managed subsystem (Settings → **AI Quality**) for evaluating — and eventually, with human approval, improving — the prompting behind AI-assisted features, via [Hermit](https://github.com/Infini-AI-Lab/hermit). Off by default; see [`docs/hermit/architecture-review.md`](docs/hermit/architecture-review.md). |
 | **LangGraph customer-autofill engine** | New optional, `platform_admin`-managed alternative engine for "AI ile doldur" customer-profile extraction (Settings → **Autofill Engine**), built on [LangGraph](https://langchain-ai.github.io/langgraphjs/) (`@langchain/langgraph`, in-process — no new runtime). Adds deterministic citation verification, a bounded retrieval retry, and a cross-check that flags (instead of silently applying) any suggestion that contradicts an already-saved customer value; flagged conflicts get their own review section in the Edit Customer autofill panel, with a one-click "use suggested value" per field. Off by default — the existing single-shot extraction is unchanged. |
+| **LangGraph Knowledge Chat engine** | New optional, `platform_admin`-managed alternative engine for Knowledge Chat (Settings → **Chat Engine**), also on `@langchain/langgraph`, in-process. The default chat engine is stateless per request — no conversation history reaches the backend, so a follow-up like "what about Scope 3?" is answered with no awareness of the prior turn. The graph engine adds real multi-turn memory (a LangGraph checkpointer persists history across requests), a query-rewrite step that resolves references to prior turns before retrieval runs, one bounded retry on a weak retrieval, and a citation check flagging any source the model cites but wasn't actually given. Fixed a real, pre-existing bug along the way: Knowledge Chat's retrieval only ever queried Qdrant directly with no fallback, silently returning zero hits on this deployment's default `pgvector` backend (Qdrant was empty) — now uses the same hybrid vector+full-text search as customer autofill. Off by default — the existing chat behavior is unchanged. |
 
 ## Recent changes (September 2026)
 
@@ -94,6 +95,7 @@ Default login language (Vite build-time): set `VITE_LOGIN_LANG=tr` or `en` in `.
 |-----|---------|
 | **LLM** | Multi-provider server LLM (Gemini, OpenAI, Claude, Ollama); task prompts for Lokal/Genel AI |
 | **Autofill Engine** | Enable/disable the LangGraph customer-autofill engine (off by default) |
+| **Chat Engine** | Enable/disable the LangGraph Knowledge Chat engine (off by default) |
 | **AI Quality** | Enable/disable the Hermit-powered AI Quality & Continuous Improvement subsystem (off by default) |
 | **Backup** | Scheduled database backup (engine-aware `pg_dump`) via Docker; create/toggle/run jobs |
 | **Demo** | Restore frozen demo snapshot (`POST /api/demo/seed`) |
@@ -128,6 +130,26 @@ Live-verified against a real customer's indexed Knowledge Base (not simulated): 
 - **API:** `GET/PUT /api/admin/customer-autofill-engine/settings`
 - **Code:** `lib/customerAutofillEngineSettings.ts`, `server/lib/rag/customerAutofillEngineConfig.ts`, `server/lib/rag/customerAutofillGraph.ts`, `src/components/admin/CustomerAutofillEnginePanel.tsx`
 - **Ops override:** `CUSTOMER_AUTOFILL_ENGINE=graph|default` env var takes precedence over the saved setting (useful for debugging without touching Settings).
+
+### LangGraph Knowledge Chat engine
+
+Optional, `platform_admin`-managed alternative engine for Knowledge Chat (`POST /api/kb-rag/chat`), also built on `@langchain/langgraph`, in-process. **Off by default** — leaves the existing stateless chat (`server/lib/rag/knowledgeChatAnswer.ts`) completely unchanged.
+
+The real gap this closes: the default engine carries **no conversation history** at all — every request is independent, so a follow-up like "what about Scope 3?" is answered with zero awareness of what was just discussed. The graph runs `rewriteQuery → retrieve → [broadenQuery retry ≤1× | generateAnswer] → checkFaithfulness → appendHistory`:
+
+- **`rewriteQuery`** resolves pronouns/implicit references against the last 3 turns before retrieval runs (no-op on a conversation's first turn).
+- A LangGraph **checkpointer** (in-memory — fine for this single-process deployment) persists `history` across requests, keyed by a `conversationId` the server assigns on first contact and the client echoes back.
+- A weak top-hit score triggers one broadened retry instead of immediately giving up.
+- **`checkFaithfulness`** is deterministic, not another LLM call: flags any inline `*document.pdf*`-style citation that isn't actually among the retrieved sources.
+
+Fixed a real, pre-existing bug while building this (unrelated to the graph itself): `searchKnowledgeKb.ts` only ever queried Qdrant directly with no fallback, so on this deployment's default `VECTOR_BACKEND=pgvector` — where Qdrant is simply unused and empty — it silently returned zero hits for every query. Now uses the same hybrid vector+full-text pattern `searchCustomerKb.ts` already had, so retrieval works regardless of which vector backend is actually populated.
+
+Live-verified against a real customer's indexed Knowledge Base (not simulated), two real turns: turn 1 asked about subsidiaries and got a sourced answer listing several; turn 2 asked "when was the first one acquired?" and the model's answer engaged naturally with the specific companies from turn 1 instead of treating the question as a context-free non-sequitur.
+
+- **UI:** Settings → **Chat Engine**
+- **API:** `GET/PUT /api/admin/knowledge-chat-engine/settings`
+- **Code:** `lib/knowledgeChatEngineSettings.ts`, `server/lib/rag/knowledgeChatEngineConfig.ts`, `server/lib/rag/knowledgeChatGraph.ts`, `src/components/admin/KnowledgeChatEnginePanel.tsx`
+- **Ops override:** `KNOWLEDGE_CHAT_ENGINE=graph|default` env var takes precedence over the saved setting.
 
 ### AI Quality & Continuous Improvement (Hermit)
 

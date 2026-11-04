@@ -1255,8 +1255,21 @@ function hello() {
       tabLlm: 'LLM',
       tabAiQuality: 'AI Quality',
       tabAutofillEngine: 'Autofill Engine',
+      tabChatEngine: 'Chat Engine',
       tabBackup: 'Backup',
       tabApi: 'API Guideline',
+      chatEngineTitle: 'Knowledge Chat Engine',
+      chatEngineDescription:
+        'Optional, platform_admin-managed switch for the Knowledge Chat answer engine. Disabled by default — leaves the existing stateless chat behavior unchanged.',
+      chatEngineSaved: 'Saved.',
+      chatEngineSaveFailed: 'Failed to save. Please try again.',
+      chatEngineComparisonTitle: 'What changes',
+      chatEngineDefaultLabel: 'Default (off)',
+      chatEngineDefaultDescription:
+        'One retrieval + one answer per question. No memory of earlier turns reaches the backend at all — a follow-up like "what about Scope 3?" is answered with no idea what was just discussed.',
+      chatEngineGraphLabel: 'LangGraph engine (on)',
+      chatEngineGraphDescription:
+        'Adds real multi-turn memory (conversation history persists across requests), a query-rewrite step that resolves references to prior turns before retrieval runs, one retry when retrieval comes back weak, and a citation check that flags any source the model cites but wasn\'t actually given.',
       autofillEngineTitle: 'Customer Autofill Engine',
       autofillEngineDescription:
         'Optional, platform_admin-managed switch for the "AI ile doldur" customer-profile extraction engine. Disabled by default — leaves the existing single-shot extraction unchanged.',
@@ -3403,8 +3416,21 @@ function merhaba() {
       tabLlm: 'LLM',
       tabAiQuality: 'AI Kalite',
       tabAutofillEngine: 'Otomatik Doldurma Motoru',
+      tabChatEngine: 'Sohbet Motoru',
       tabBackup: 'Yedekleme',
       tabApi: 'API rehberi',
+      chatEngineTitle: 'Bilgi Bankası Sohbet Motoru',
+      chatEngineDescription:
+        'Bilgi Bankası Sohbet yanıt motoru için isteğe bağlı, yalnızca platform_admin tarafından yönetilen bir anahtar. Varsayılan olarak kapalıdır — mevcut durumsuz (hafızasız) sohbet davranışını değiştirmez.',
+      chatEngineSaved: 'Kaydedildi.',
+      chatEngineSaveFailed: 'Kaydedilemedi. Lütfen tekrar deneyin.',
+      chatEngineComparisonTitle: 'Ne değişir',
+      chatEngineDefaultLabel: 'Varsayılan (kapalı)',
+      chatEngineDefaultDescription:
+        'Her soru için tek bir arama + tek bir yanıt. Önceki turlara dair hiçbir hafıza sunucuya ulaşmaz — "ya Kapsam 3?" gibi bir takip sorusu, az önce ne konuşulduğundan habersiz şekilde yanıtlanır.',
+      chatEngineGraphLabel: 'LangGraph motoru (açık)',
+      chatEngineGraphDescription:
+        'Gerçek çok turlu hafıza ekler (konuşma geçmişi istekler arasında kalıcıdır), arama yapılmadan önce önceki turlara yapılan atıfları çözen bir sorgu yeniden yazma adımı, arama sonucu zayıf geldiğinde bir yeniden deneme ve modelin atıfta bulunduğu ama aslında kendisine verilmemiş bir kaynağı işaretleyen bir alıntı kontrolü ekler.',
       autofillEngineTitle: 'Müşteri Otomatik Doldurma Motoru',
       autofillEngineDescription:
         '"AI ile doldur" müşteri profili çıkarım motoru için isteğe bağlı, yalnızca platform_admin tarafından yönetilen bir anahtar. Varsayılan olarak kapalıdır — mevcut tek adımlı çıkarım davranışını değiştirmez.',

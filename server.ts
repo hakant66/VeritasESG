@@ -19,6 +19,7 @@ import { registerKbRagRoutes } from './server/routes/kbRagRoute.ts';
 import { registerLlmSettingsRoutes } from './server/routes/llmSettingsRoute.ts';
 import { registerAiQualityRoutes } from './server/routes/aiQualityRoute.ts';
 import { registerCustomerAutofillEngineRoutes } from './server/routes/customerAutofillEngineRoute.ts';
+import { registerKnowledgeChatEngineRoutes } from './server/routes/knowledgeChatEngineRoute.ts';
 import { registerDemoSeedRoutes } from './server/routes/demoSeedRoute.ts';
 import { registerSchedulerRoutes } from './server/routes/schedulerRoute.ts';
 import { startKbIngestWorker } from './server/lib/rag/kbIngestQueue.ts';
@@ -1013,6 +1014,7 @@ async function startServer() {
   registerLlmSettingsRoutes(app, { jwtSecret: JWT_SECRET });
   registerAiQualityRoutes(app, { jwtSecret: JWT_SECRET });
   registerCustomerAutofillEngineRoutes(app, { jwtSecret: JWT_SECRET });
+  registerKnowledgeChatEngineRoutes(app, { jwtSecret: JWT_SECRET });
   registerDemoSeedRoutes(app, { jwtSecret: JWT_SECRET });
   registerSchedulerRoutes(app, { jwtSecret: JWT_SECRET });
   startKbIngestWorker();

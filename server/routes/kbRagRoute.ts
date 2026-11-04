@@ -27,12 +27,8 @@ import { normalizeAutofillGroupIds } from '../lib/rag/customerAutofillGroups.ts'
 import { searchCustomerKbChunks } from '../lib/rag/searchCustomerKb.ts';
 import { answerKnowledgeChatQuery } from '../lib/rag/knowledgeChatAnswer.ts';
 import { answerKnowledgeChatQueryViaGraph } from '../lib/rag/knowledgeChatGraph.ts';
+import { isGraphChatEngineEnabled } from '../lib/rag/knowledgeChatEngineConfig.ts';
 import { randomUUID } from 'node:crypto';
-
-/** Opt-in only — unset/false keeps the existing stateless answerKnowledgeChatQuery() path. */
-function isKnowledgeChatGraphEnabled() {
-  return process.env.KNOWLEDGE_CHAT_ENGINE === 'graph';
-}
 import { autofillTaskQuestionAnswer } from '../lib/rag/taskQuestionAutofill.ts';
 import { pingQdrant } from '../lib/rag/qdrantStore.ts';
 import { assertTaskQuestionAutofillAccess } from '../lib/taskAutofillAccess.ts';
@@ -387,7 +383,7 @@ export function registerKbRagRoutes(app: Express, options: { jwtSecret: string }
       };
 
       try {
-        const result = isKnowledgeChatGraphEnabled()
+        const result = (await isGraphChatEngineEnabled())
           ? await answerKnowledgeChatQueryViaGraph({
               conversationId:
                 typeof req.body?.conversationId === 'string' && req.body.conversationId.trim()
